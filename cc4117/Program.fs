@@ -2,8 +2,7 @@
 
 open System
 
-open Module1
-
+open Evaluator
 
 [<EntryPoint>]
 let main argv =
