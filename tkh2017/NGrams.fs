@@ -7,39 +7,41 @@ let moduleTok =
      ['u'], false, false;
      ['l'], false, false;
      ['e'], false, false;
-     [' '], false, false]
+     [' '], true, false]
 
 let identifierTok =
-    [['a'..'z']@['A'..'Z'], true, false;
+    [['a'..'z'] @ ['A'..'Z'], true, false;
      ['0'..'9'], true, true;
      [' '], true, true]
 
 let punctuationTok = 
-    [['('; ')'; '['; ']'; '{'; '}'; ':'; ';'; ','], false, false]
+    [['('; ')'; '['; ']'; '{'; '}'; ':'; ';'; ','], false, false;
+     [' '], true, true]
 
 let andTok = 
     [['a'], false, false;
      ['n'], false, false;
      ['d'], false, false;
-     [' '], false, false]
+     [' '], true, false]
 
 let orTok = 
     [['o'], false, false;
      ['r'], false, false;
-     [' '], false, false]
+     [' '], true, false]
 
 let notTok = 
     [['n'], false, false;
      ['o'], false, false;
      ['t'], false, false;
-     [' '], false, false]
+     [' '], true, false]
 
 let inputTok = 
     [['i'], false, false;
      ['n'], false, false;
      ['p'], false, false;
      ['u'], false, false;
-     ['t'], false, false]
+     ['t'], false, false;
+     [' '], true, false]
 
 let outputTok = 
     [['o'], false, false;
@@ -47,7 +49,15 @@ let outputTok =
      ['t'], false, false;
      ['p'], false, false;
      ['u'], false, false;
-     ['t'], false, false]
+     ['t'], false, false;
+     [' '], true, false]
+
+let wireTok = 
+    [['w'], false, false;
+     ['i'], false, false;
+     ['r'], false, false;
+     ['e'], false, false;
+     [' '], true, false]
 
 let endModuleTok =
     [['e'], false, false;
