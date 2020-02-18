@@ -10,8 +10,8 @@ let moduleTok =
      [' '], true, false]
 
 let identifierTok =
-    [['a'..'z'] @ ['A'..'Z'], true, false;
-     ['0'..'9'], true, true;
+    [['a'..'z'] @ ['A'..'Z'] @ ['_'], true, false;
+     ['0'..'9'] @ ['_'], true, true;
      [' '], true, true]
 
 let punctuationTok = 
@@ -69,3 +69,7 @@ let endModuleTok =
      ['u'], false, false;
      ['l'], false, false;
      ['e'], false, false]
+
+let emptyLine = 
+    [['\010'], false, false;
+     [' '], true, true]

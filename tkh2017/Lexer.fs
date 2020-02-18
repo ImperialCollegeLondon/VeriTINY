@@ -1,5 +1,6 @@
 module Lexer
 open NGrams
+open System
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
@@ -34,30 +35,31 @@ let lexNGram (ngram: NGram) (cLst: char list) : (char list * char list) option =
 
     (Some ([], cLst), ngram) ||> List.fold folder
 
-let (<|>) lex1 lex2 =
-    fun clst ->
-        Option.orElse (lex2 clst) (lex1 clst)
-
-let combinedLexers =
-    [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok] //tries to lex from the beginning of the list 
-    |> List.map lexNGram
-    |> List.reduce (<|>)
-
 let rec lexMoreThanOne cLst = 
+    let (<|>) lex1 lex2 =
+        fun clst ->
+            Option.orElse (lex2 clst) (lex1 clst)
+
+    let combinedLexers =
+        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok; emptyLine] //tries to lex from the beginning of the list 
+        |> List.map lexNGram
+        |> List.reduce (<|>)
+        
     match combinedLexers cLst with 
     | Some (tokens, rest) -> 
         match lexMoreThanOne rest with 
         | Some (tokens', rest') -> Some ([tokens] @ tokens', rest')
         | None -> Some ([tokens], rest)
     | None -> None
-
-let charListToString lst = 
-    lst |> List.map string |> List.reduce (+)
-
-let trim (inpstring: string) = 
-    inpstring.Trim()
     
 let implodeLexedChars inpstring = 
+
+    let charListToString lst = 
+        lst |> List.map string |> List.reduce (+)
+
+    let trim (inpstring: string) = 
+        inpstring.Trim()
+        
     match lexMoreThanOne (Seq.toList inpstring) with 
     | Some (lexedList, remaining) -> 
         Some (lexedList |> List.map (charListToString >> trim), remaining)
@@ -92,6 +94,7 @@ let tokenise inpstring =
         | ";"::rest -> [Semicolon] @ replaceWithTokens rest
         | ":"::rest -> [Colon] @ replaceWithTokens rest
         | ","::rest -> [Comma] @ replaceWithTokens rest
+        | ""::rest -> replaceWithTokens rest //to deal with newlines
         | "and"::rest -> [And] @ replaceWithTokens rest
         | "or"::rest -> [Or] @ replaceWithTokens rest
         | "not"::rest -> [Not] @ replaceWithTokens rest
@@ -113,6 +116,13 @@ let tokenise inpstring =
 
     replaceWithTokens (fst unwrapped)
 
+let sampleCode = Seq.toList (System.IO.File.ReadAllText "sampleverilog.v")
+
+implodeLexedChars sampleCode
+
 // lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
 // implodeLexedChars "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
 tokenise "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
+tokenise "module mux(out, sel, a, b); output out; input sel, a, b; wire c; or orgate (a, b, c); endmodule"
+tokenise sampleCode
+
