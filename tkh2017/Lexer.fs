@@ -3,7 +3,7 @@ open NGrams
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
-type Token = | Module | ModuleName of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output of string | Input of string | OpBrace | ClBrace | Wire of string | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
+type Token = | Module | Identifier of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output of string | Input of string | OpBrace | ClBrace | Wire of string | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) : (char list * char list) option =
     
@@ -64,9 +64,55 @@ let implodeLexedChars inpstring =
     | _ -> None  
 
 let tokenise inpstring = 
-    let implodeLexedChars inpstring 
- 
+    let unwrapped =  implodeLexedChars inpstring |> Option.defaultValue ([],[])
 
+    let takeIfNotInStrings strings (acc,lst) = 
+        match lst with 
+        | hd::tl when not (List.exists ((=) hd) strings) ->
+            Some(acc @ [hd], tl)
+        | _ -> None
 
-lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
-implodeLexedChars "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
+    let rec takeWhileNotInStrings strings (acc,lst) =
+        match lst with 
+        | hd::tl when not (List.exists ((=) hd) strings) -> 
+            if takeIfNotInStrings strings (acc @ [hd], tl) = None 
+            then Some (acc @ [hd], tl)
+            else takeWhileNotInStrings strings (acc @ [hd], tl)
+        | _ -> None
+
+    let rec replaceWithTokens stringList = 
+        match stringList with 
+        | "module"::rest -> [Module] @ replaceWithTokens rest
+        | "("::rest -> [OpRoundBracket] @ replaceWithTokens rest
+        | ")"::rest -> [ClRoundBracket] @ replaceWithTokens rest 
+        | "["::rest -> [OpSqBracket] @ replaceWithTokens rest
+        | "]"::rest -> [ClSqBracket] @ replaceWithTokens rest
+        | "{"::rest -> [OpBrace] @ replaceWithTokens rest
+        | "}"::rest -> [ClBrace] @ replaceWithTokens rest
+        | ";"::rest -> [Semicolon] @ replaceWithTokens rest
+        | ":"::rest -> [Colon] @ replaceWithTokens rest
+        | ","::rest -> [Comma] @ replaceWithTokens rest
+        | "and"::rest -> [And] @ replaceWithTokens rest
+        | "or"::rest -> [Or] @ replaceWithTokens rest
+        | "not"::rest -> [Not] @ replaceWithTokens rest
+        | "endmodule"::rest -> [EndModule] @ replaceWithTokens rest
+        | "input"::rest ->
+            match takeWhileNotInStrings [";"] ([], rest) with
+            | Some (inputs, remStrings) -> [Input (inputs |> List.reduce (+))] @ replaceWithTokens remStrings  
+            | None -> replaceWithTokens rest
+        | "output"::rest ->
+            match takeWhileNotInStrings [";"] ([], rest) with
+            | Some (outputs, remStrings) -> [Output (outputs |> List.reduce (+))] @ replaceWithTokens remStrings  
+            | None -> replaceWithTokens rest
+        | "wire"::rest ->
+            match takeWhileNotInStrings [";"] ([], rest) with
+            | Some (wires, remStrings) -> [Wire (wires |> List.reduce (+))] @ replaceWithTokens remStrings  
+            | None -> replaceWithTokens rest
+        | name::rest -> [Identifier name] @ replaceWithTokens rest            
+        | [] -> [] 
+
+    replaceWithTokens (fst unwrapped)
+
+// lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
+// implodeLexedChars "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
+tokenise "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
