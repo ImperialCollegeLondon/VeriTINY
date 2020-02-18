@@ -3,6 +3,7 @@ open NGrams
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
+type Token = | Module | ModuleName of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output of string | Input of string | OpBrace | ClBrace | Wire of string | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) : (char list * char list) option =
     
@@ -52,12 +53,20 @@ let rec lexMoreThanOne cLst =
 
 let charListToString lst = 
     lst |> List.map string |> List.reduce (+)
+
+let trim (inpstring: string) = 
+    inpstring.Trim()
     
 let implodeLexedChars inpstring = 
     match lexMoreThanOne (Seq.toList inpstring) with 
     | Some (lexedList, remaining) -> 
-        Some (lexedList |> List.map charListToString, remaining)
-    | _ -> None
-    
+        Some (lexedList |> List.map (charListToString >> trim), remaining)
+    | _ -> None  
+
+let tokenise inpstring = 
+    let implodeLexedChars inpstring 
+ 
+
+
 lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
-implodeLexedChars "module a99 (out, a, b); "
+implodeLexedChars "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
