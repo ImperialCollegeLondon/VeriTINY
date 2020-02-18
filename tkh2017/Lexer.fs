@@ -1,8 +1,10 @@
-// module Lexer
+module Lexer
+open NGrams
 
 type Lexer = char list -> (char list * char list) option
+type NGram = (char list * bool * bool) list
 
-let lexNGram (ngram: (char list * bool * bool) list) (cLst: char list) : (char list * char list) option =
+let lexNGram (ngram: NGram) (cLst: char list) : (char list * char list) option =
     
     let takeIfInChars chars (acc,lst) isOpt = 
         match lst with 
@@ -31,37 +33,12 @@ let lexNGram (ngram: (char list * bool * bool) list) (cLst: char list) : (char l
 
     (Some ([], cLst), ngram) ||> List.fold folder
 
-let moduleTok =
-    [['m'], false, false;
-     ['o'], false, false;
-     ['d'], false, false;
-     ['u'], false, false;
-     ['l'], false, false;
-     ['e'], false, false;
-     [' '], false, false]
-
-let endModuleTok =
-    [['e'], false, false;
-     ['n'], false, false;
-     ['d'], false, false;
-     ['m'], false, false;
-     ['o'], false, false;
-     ['d'], false, false;
-     ['u'], false, false;
-     ['l'], false, false;
-     ['e'], false, false]
-
-let moduleNameTok =
-    [['a'..'z']@['A'..'Z'], true, false;
-     ['0'..'9'], true, true;
-     [' '], true, true]
-
 let (<|>) lex1 lex2 =
     fun clst ->
         Option.orElse (lex2 clst) (lex1 clst)
 
 let combinedLexers =
-    [moduleTok; moduleNameTok] //tries to lex from the beginning of the list 
+    [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok] //tries to lex from the beginning of the list 
     |> List.map lexNGram
     |> List.reduce (<|>)
 
@@ -73,5 +50,14 @@ let rec lexMoreThanOne cLst =
         | None -> Some ([tokens], rest)
     | None -> None
 
-lexMoreThanOne (Seq.toList "module a9")
-let test = lexNGram moduleTok (Seq.toList "module")
+let charListToString lst = 
+    lst |> List.map string |> List.reduce (+)
+    
+let implodeLexedChars inpstring = 
+    match lexMoreThanOne (Seq.toList inpstring) with 
+    | Some (lexedList, remaining) -> 
+        Some (lexedList |> List.map charListToString, remaining)
+    | _ -> None
+    
+lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
+implodeLexedChars "module a99 (out, a, b); "
