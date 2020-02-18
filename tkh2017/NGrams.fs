@@ -11,7 +11,7 @@ let moduleTok =
 
 let identifierTok =
     [['a'..'z'] @ ['A'..'Z'] @ ['_'], true, false;
-     ['0'..'9'] @ ['_'], true, true;
+     ['0'..'9'] @ ['_'] @ ['$'] @ ['a'..'z'] @ ['A'..'Z'], true, true;
      [' '], true, true]
 
 let punctuationTok = 
