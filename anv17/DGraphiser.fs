@@ -1,4 +1,4 @@
-module Verilog2.DGraphiser
+module DGraphiser
 
 //TODO: make slice parser and integrate with AdjListEntry type
 //TODO: Use results instead of failwithfs so errors can be propagated to UI
