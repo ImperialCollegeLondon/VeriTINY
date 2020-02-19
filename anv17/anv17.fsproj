@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../shared/SharedTypes.fs" />
     <Compile Include="DGraphiser.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
