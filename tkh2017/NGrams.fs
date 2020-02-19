@@ -14,6 +14,9 @@ let identifierTok =
      ['0'..'9'] @ ['_'] @ ['$'] @ ['a'..'z'] @ ['A'..'Z'], true, true;
      [' '], true, true]
 
+let numberTok = 
+    [['0'..'9'], true, false]
+
 let punctuationTok = 
     [['('; ')'; '['; ']'; '{'; '}'; ':'; ';'; ','], false, false;
      [' '], true, true]

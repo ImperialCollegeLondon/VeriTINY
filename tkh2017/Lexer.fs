@@ -4,9 +4,9 @@ open System
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
-type Token = | Module | Identifier of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output of string | Input of string | OpBrace | ClBrace | Wire of string | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
+type Token = | Module | Identifier of string | Number of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
 
-let lexNGram (ngram: NGram) (cLst: char list) : (char list * char list) option =
+let lexNGram (ngram: NGram) (cLst: char list) =
     
     let takeIfInChars chars (acc,lst) isOpt = 
         match lst with 
@@ -36,12 +36,13 @@ let lexNGram (ngram: NGram) (cLst: char list) : (char list * char list) option =
     (Some ([], cLst), ngram) ||> List.fold folder
 
 let rec lexMoreThanOne cLst = 
+
     let (<|>) lex1 lex2 =
         fun clst ->
             Option.orElse (lex2 clst) (lex1 clst)
 
     let combinedLexers =
-        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok; emptyLine] //tries to lex from the beginning of the list 
+        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
         |> List.map lexNGram
         |> List.reduce (<|>)
         
@@ -52,7 +53,7 @@ let rec lexMoreThanOne cLst =
         | None -> Some ([tokens], rest)
     | None -> None
     
-let implodeLexedChars inpstring = 
+let lexAndImplode inpstring = 
 
     let charListToString lst = 
         lst |> List.map string |> List.reduce (+)
@@ -66,7 +67,7 @@ let implodeLexedChars inpstring =
     | _ -> None  
 
 let tokenise inpstring = 
-    let unwrapped =  implodeLexedChars inpstring |> Option.defaultValue ([],[])
+    let unwrapped =  lexAndImplode inpstring |> Option.defaultValue ([],[])
 
     let takeIfNotInStrings strings (acc,lst) = 
         match lst with 
@@ -81,6 +82,8 @@ let tokenise inpstring =
             then Some (acc @ [hd], tl)
             else takeWhileNotInStrings strings (acc @ [hd], tl)
         | _ -> None
+
+    let containsOnlyNumbers (s:string) = System.Int32.TryParse s |> fst
 
     let rec replaceWithTokens stringList = 
         match stringList with 
@@ -99,30 +102,20 @@ let tokenise inpstring =
         | "or"::rest -> [Or] @ replaceWithTokens rest
         | "not"::rest -> [Not] @ replaceWithTokens rest
         | "endmodule"::rest -> [EndModule] @ replaceWithTokens rest
-        | "input"::rest ->
-            match takeWhileNotInStrings [";"] ([], rest) with
-            | Some (inputs, remStrings) -> [Input (inputs |> List.reduce (+))] @ replaceWithTokens remStrings  
-            | None -> replaceWithTokens rest
-        | "output"::rest ->
-            match takeWhileNotInStrings [";"] ([], rest) with
-            | Some (outputs, remStrings) -> [Output (outputs |> List.reduce (+))] @ replaceWithTokens remStrings  
-            | None -> replaceWithTokens rest
-        | "wire"::rest ->
-            match takeWhileNotInStrings [";"] ([], rest) with
-            | Some (wires, remStrings) -> [Wire (wires |> List.reduce (+))] @ replaceWithTokens remStrings  
-            | None -> replaceWithTokens rest
+        | "input"::rest -> [Input] @ replaceWithTokens rest
+        | "output"::rest -> [Output] @ replaceWithTokens rest
+        | "wire"::rest -> [Wire] @ replaceWithTokens rest
+        | number::rest when containsOnlyNumbers number -> [Number number] @ replaceWithTokens rest
         | name::rest -> [Identifier name] @ replaceWithTokens rest            
         | [] -> [] 
 
     replaceWithTokens (fst unwrapped)
 
-let sampleCode = Seq.toList (System.IO.File.ReadAllText "sampleverilog.v")
-
-implodeLexedChars sampleCode
-
 // lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
 // implodeLexedChars "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
-tokenise "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
-tokenise "module mux(out, sel, a, b); output out; input sel, a, b; wire c; or orgate (a, b, c); endmodule"
-tokenise sampleCode
+// tokenise "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
+// tokenise "module mux(out, sel, a, b); output out; input sel, a, b; wire c; or orgate (a, b, c); endmodule"
 
+let sampleCode = Seq.toList (System.IO.File.ReadAllText "sampleverilog.v")
+
+tokenise sampleCode
