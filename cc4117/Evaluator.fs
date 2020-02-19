@@ -40,10 +40,10 @@ let GenNetListOutC : GeneralNet list =
     [false, ("COut", Wire (Map [0, Low]))]
 
 /// example connection list
-let connectListEx = 
-    [("Module A", GenNetListInA, GenNetListOutA);
-    ("Module B", GenNetListInB, GenNetListOutB);
-    ("DFF", GenNetListInDFF, GenNetListOutDFF);
-    ("Module C", GenNetListInC, GenNetListOutC)
+let connectListEx : Connection list= 
+    [(Name "Module A", GenNetListInA, GenNetListOutA);
+    (Name "Module B", GenNetListInB, GenNetListOutB);
+    (Name "DFF", GenNetListInDFF, GenNetListOutDFF);
+    (Name "Module C", GenNetListInC, GenNetListOutC)
     ]
 
