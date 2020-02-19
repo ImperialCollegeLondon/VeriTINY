@@ -8,7 +8,7 @@
   
 4. \<port> ::= \<identifier>
   
-5. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> | 
+5. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> 
 
 6. \<input_declaration> ::= "input" \<variable_list> ";" | input" \<range> \<variable_list> ";"
 
