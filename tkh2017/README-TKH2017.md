@@ -4,7 +4,7 @@
 
 2. \<module_name> ::= \<identifier>
 
-3. \<port_list> ::= "(" \<port> \<, <port>>* ")"
+3. \<port_list> ::= "(" \<port> \<"," \<port>>* ")"
   
 4. \<port> ::= \<identifier>
   
@@ -18,7 +18,7 @@
 
 9. \<net_type> ::= wire
 
-10. \<variable_list> ::= \<variable_name> \<"," <variable_name>>*
+10. \<variable_list> ::= \<variable_name> \<"," \<variable_name>>*
 
 11. \<variable_name> ::= \<identifier>
 
