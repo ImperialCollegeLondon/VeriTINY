@@ -16,7 +16,7 @@
 
 8. \<net_declaration> ::= "net" \<range>? \<variable_list> ";"
 
-9. \<net_type> ::= wire
+9. \<net_type> ::= "wire"
 
 10. \<variable_list> ::= \<variable_name> \<"," <variable_name>>*
 
