@@ -2,6 +2,8 @@ module Lexer
 open NGrams
 open System
 
+//TODO: concatenation
+
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
 type Token = | Module | Identifier of string | Number of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
@@ -66,48 +68,28 @@ let lexAndImplode inpstring =
         Some (lexedList |> List.map (charListToString >> trim), remaining)
     | _ -> None  
 
+let tokenMap = Map ["module", Module; "(", OpRoundBracket; ")", ClRoundBracket; "[", OpSqBracket; "]", ClSqBracket; 
+                    "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", And; "or", Or; "not", Not;
+                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire]
+
+let (|SingleValTok|_|) inpstring =
+    Map.tryFind inpstring tokenMap
+
+let (|MultValTok|_|) inpstring = 
+    if System.Int32.TryParse (inpstring: string) |> fst
+    then Some (Number inpstring)
+    else Some (Identifier inpstring)
+
 let tokenise inpstring = 
     let unwrapped =  lexAndImplode inpstring |> Option.defaultValue ([],[])
 
-    let takeIfNotInStrings strings (acc,lst) = 
-        match lst with 
-        | hd::tl when not (List.exists ((=) hd) strings) ->
-            Some(acc @ [hd], tl)
-        | _ -> None
-
-    let rec takeWhileNotInStrings strings (acc,lst) =
-        match lst with 
-        | hd::tl when not (List.exists ((=) hd) strings) -> 
-            if takeIfNotInStrings strings (acc @ [hd], tl) = None 
-            then Some (acc @ [hd], tl)
-            else takeWhileNotInStrings strings (acc @ [hd], tl)
-        | _ -> None
-
-    let containsOnlyNumbers (s:string) = System.Int32.TryParse s |> fst
-
     let rec replaceWithTokens stringList = 
         match stringList with 
-        | "module"::rest -> [Module] @ replaceWithTokens rest
-        | "("::rest -> [OpRoundBracket] @ replaceWithTokens rest
-        | ")"::rest -> [ClRoundBracket] @ replaceWithTokens rest 
-        | "["::rest -> [OpSqBracket] @ replaceWithTokens rest
-        | "]"::rest -> [ClSqBracket] @ replaceWithTokens rest
-        | "{"::rest -> [OpBrace] @ replaceWithTokens rest
-        | "}"::rest -> [ClBrace] @ replaceWithTokens rest
-        | ";"::rest -> [Semicolon] @ replaceWithTokens rest
-        | ":"::rest -> [Colon] @ replaceWithTokens rest
-        | ","::rest -> [Comma] @ replaceWithTokens rest
-        | ""::rest -> replaceWithTokens rest //to deal with newlines
-        | "and"::rest -> [And] @ replaceWithTokens rest
-        | "or"::rest -> [Or] @ replaceWithTokens rest
-        | "not"::rest -> [Not] @ replaceWithTokens rest
-        | "endmodule"::rest -> [EndModule] @ replaceWithTokens rest
-        | "input"::rest -> [Input] @ replaceWithTokens rest
-        | "output"::rest -> [Output] @ replaceWithTokens rest
-        | "wire"::rest -> [Wire] @ replaceWithTokens rest
-        | number::rest when containsOnlyNumbers number -> [Number number] @ replaceWithTokens rest
-        | name::rest -> [Identifier name] @ replaceWithTokens rest            
+        | "" :: rest -> replaceWithTokens rest //to deal with newline
+        | SingleValTok token :: rest -> [token] @ replaceWithTokens rest  
+        | MultValTok token :: rest -> [token] @ replaceWithTokens rest   
         | [] -> [] 
+        | _ -> failwithf "What?"
 
     replaceWithTokens (fst unwrapped)
 
