@@ -19,7 +19,7 @@ type TLogic = {
     Wires: string list
 }  
 
-type Connection = (Megablock * GeneralNet list * GeneralNet) list 
+type Connection = Megablock * GeneralNet list * GeneralNet list 
 
 type GraphEndPoint = |LogicLevel |BusInput of int
 
