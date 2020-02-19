@@ -4,6 +4,8 @@ open System
 
 open Evaluator
 
+let hi = connectListEx
+
 [<EntryPoint>]
 let main argv =
     printfn "Hello World from F#!"

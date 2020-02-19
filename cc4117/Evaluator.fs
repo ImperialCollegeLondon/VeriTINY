@@ -2,11 +2,11 @@ module Evaluator
 open SharedTypes
 
 
-
 // GeneralNet = bool * NamedNet
 // NamedNet = string * Net
 // Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
 
+let hehe = 2
 // test purposes
 let GenNetListInA : GeneralNet list = 
     [false, ("A0", Wire (Map [0, Low]));
@@ -39,6 +39,8 @@ let GenNetListInC : GeneralNet list =
 let GenNetListOutC : GeneralNet list = 
     [false, ("COut", Wire (Map [0, Low]))]
 
+// type Megablock = Name of string
+// type connection = Megablock, GenNet list , GenNet list
 /// example connection list
 let connectListEx : Connection list= 
     [(Name "Module A", GenNetListInA, GenNetListOutA);
@@ -47,3 +49,7 @@ let connectListEx : Connection list=
     (Name "Module C", GenNetListInC, GenNetListOutC)
     ]
 
+// given Connection list, find all synchronous elements
+let updateDFF (input:Connection) = 
+    let Name block, genNetIn, genNetOut = input
+    if block = "DFF" then sprintf "hi" else sprintf "no"
