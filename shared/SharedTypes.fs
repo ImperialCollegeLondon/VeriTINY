@@ -13,7 +13,7 @@ type Lexer = char list -> (char list * char list) option
 
 type TLogic = {
     Name: string
-    ExpressionList: (Operator * string * string option) list
+    ExpressionList: (Operator * string list * string list) list
     Inputs: string list
     Outputs: string list
     Wires: string list
