@@ -4,42 +4,32 @@
 
 2. \<module_name> ::= \<identifier>
 
-3. \<port_list> ::= \<port> | \<port> "," \<port_list>
+3. \<port_list> ::= \<identifier> | \<identifier> "," \<port_list>
   
-4. \<port> ::= \<identifier>
-  
-5. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> 
+4. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> 
 
-6. \<input_declaration> ::= "input" \<variable_list> ";" | input" \<range> \<variable_list> ";"
+5. \<input_declaration> ::= "input" \<variable_list> ";" | "input" \<range> \<variable_list> ";"
 
-7. \<output_declaration> ::= "output" \<variable_list> ";" | "output" \<range> \<variable_list> ";"
+6. \<output_declaration> ::= "output" \<variable_list> ";" | "output" \<range> \<variable_list> ";"
 
-8. \<net_declaration> ::= "net" \<variable_list> ";" | "net" \<range> \<variable_list> ";"
+7. \<net_declaration> ::= "wire" \<variable_list> ";" | "wire" \<range> \<variable_list> ";"
 
-9. \<net_type> ::= "wire"
+8. \<variable_list> ::= \<identifier> | \<identifier> "," \<variable_list>
 
-10. \<variable_list> ::= \<variable_name> | \<variable_name> "," \<variable_list>
+9. \<range> ::= "\[" \<number> ":" \<number> "\]" 
 
-11. \<variable_name> ::= \<identifier>
+10. \<gate_instantiation> ::= <gate_type> <gate_instance> ";"
 
-12. \<range> ::= "\[" \<number> ":" \<number> "\]" 
+11. \<gate_type> ::= "and" | "or" | "not"
 
-13. \<gate_instantiation> ::= <gate_type> <gate_instance> ";"
+12. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")"
 
-14. \<gate_type> ::= "and" | "or" | "not"
+13. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]"  
 
-15. \<gate_instance> ::= \<gate_instance_name> "(" \<terminal_list> ")"
-  
-16. \<gate_instance_name> ::= \<identifier>
+14. \<number> ::= //any sequence of 0..9 
 
-17. \<terminal> ::= \<identifer> | \<expression>
+15. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
 
-19. \<expression> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]"  
+16. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
 
-20. \<number> ::= //any sequence of 0..9 
-
-21. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
-
-22. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
-
-23. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
+17. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
