@@ -64,6 +64,17 @@ let mixedEx : GeneralNet list =
     false, ("WireC", Wire(Map [0, High]))
     ]
 
+let dffMixedIn : GeneralNet list =
+    [false, ("Wire A", Wire(Map [0, Low]));
+    false, ("Bus B", Wire(Map [0, Low; 1, High]));
+    false, ("Wire C", Wire(Map [0, High]));
+    ]
+
+let dffMixedOut : GeneralNet list =
+    [true, ("Bus D", Bus(Map [0, Low; 1, Low; 2, Low]));
+    true, ("Wire E", Wire(Map [0, Low]));
+    ]
+
 
 let extractNet (genNetIn: GeneralNet): Net =
     match genNetIn with
@@ -90,49 +101,45 @@ let findLength (lst: GeneralNet list) =
 
 // tail recursion
 // generate list of lists of LogicLevel of appropriate size for output
-let rec splitPls acc (logLst:LogicLevel list) (lstOfLengths: int list) =
+let rec splitLst acc (logLst:LogicLevel list) (lstOfLengths: int list) =
     match lstOfLengths with
     | hd::tl ->
         let acc', logLst' = List.splitAt hd logLst
-        splitPls (acc @ [acc']) logLst' tl
+        splitLst (acc @ [acc']) logLst' tl
     | [] -> 
         acc
 
-let test' = splitPls [] [High;Low;High;Low;High;Low;High;Low] [1;3;3;2]
+let splitTest = splitLst [] [High;Low;High;Low;High;Low;High;Low] [1;3;3;1]
 
-/// generate list of logic level updates (in order)
-let generateNewLogList (genNetLst: GeneralNet list) =
-    List.collect (extractNet >> extractLogLevel) genNetLst
-
-
-let extractfromGenNet (genNetIn: GeneralNet) =
-    genNetIn |> extractNet |> extractLogLevel 
-    //let listOfLog = genNetIn |> extractNet |> extractLogLevel 
-    //let n = List.length listOfLog // don't necessarily know the length corresponds with input
-    //([0..n-1], listOfLog) ||> List.zip 
-
-// let newMapGen (genNetLst: GeneralNet list) = 
-//     genNetLst 
-//     |> List.map (extractfromGenNet >> Map.ofList)   
-
-
-
-// variant of below, which takes in a Net type
-let netUpdateOld (netIn: Net) (index: int) (newLog:LogicLevel) : Net =
-    match netIn with
-    | Bus netMap ->
-        Bus(Map.add index newLog netMap)
-    | Wire netMap -> 
-        Wire(Map.add 0 newLog netMap)
-
-
-// currently requires index and newlogic level, accepts genNet type e.g. Bus/Wire 
-let genNetUpdate (genNetIn: GeneralNet) (index: int) (newLog:LogicLevel) : GeneralNet =
+// rebuild GeneralNet with newMap
+let reconstructNet (genNetIn: GeneralNet) newMap =
     match genNetIn with
-    | (sync, (str, Bus netMap)) ->
-        sync, (str, Bus(Map.add index newLog netMap))
-    | (sync, (str, Wire netMap)) -> 
-        sync, (str, Wire(Map.add 0 newLog netMap))
+    | (sync, (str, Wire _)) -> 
+        sync, (str, Wire newMap)
+    | (sync, (str, Bus _)) ->
+        sync, (str, Bus newMap)
+
+/// operate on two lists 
+let rec lstOpParallel acc f lstA lstB =
+        match lstA, lstB with
+        | h1::t1, h2::t2 ->
+            let acc' = f h1 h2
+            lstOpParallel (acc @ [acc']) f t1 t2
+        | _ -> 
+            acc
+
+let updateDFF genNetLstIn genNetLstOut =
+    let generateList n = [0..n-1]
+    let lstOfLog = List.collect (extractNet >> extractLogLevel) genNetLstIn
+    let lstOfLengths = findLength genNetLstOut
+    let grpLog = splitLst [] lstOfLog lstOfLengths
+    let grpNum = List.map generateList lstOfLengths
+    let zipOut = lstOpParallel [] List.zip grpNum grpLog
+    let newMaps = zipOut |> List.map Map.ofList
+    lstOpParallel [] reconstructNet genNetLstOut newMaps
+
+let updateDFFTest = updateDFF dffMixedIn dffMixedOut
+
 
 //given Connection list, find all synchronous elements
 // let updateDFF (input:Connection) : Connection = 
@@ -152,9 +159,6 @@ let genNetUpdate (genNetIn: GeneralNet) (index: int) (newLog:LogicLevel) : Gener
 //         true, (str, wireUpdate newLog)
 
 
-// how to update maps 
-let ym = Map ["cat",7 ; "the",3]
-let ym' = Map.add "cat" 5 ym
 
     
 
