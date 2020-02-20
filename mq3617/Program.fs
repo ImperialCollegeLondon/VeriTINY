@@ -1,7 +1,7 @@
 ﻿open System
 open Connectioniser
 
-UserIn (0)
+UserIn |>ignore
 [<EntryPoint>]
 let main argv =
     Console.ReadKey()|>ignore

@@ -14,7 +14,10 @@ let avaliableBlocks = [l1]
 //////////////////////////////////////////////////////////////////////
 let MakeConnection (net1:GeneralNet)(net2:GeneralNet) =
     ((fst net1 || fst net2) , snd net1)
- 
+
+let rec genGenNets (blist:string list)=
+    List.map (fun str ->[false, (str, Wire (Map [0, Low]))]) blist  //only works for unclocked wires
+
 let searchBlocks name (block:TLogic)=
     match block.Name with
     |n when n =name-> true
@@ -22,7 +25,7 @@ let searchBlocks name (block:TLogic)=
 
 let genConnections name blist=
     let mBlock = (List.filter (searchBlocks name) blist).Head
-    [(name,mBlock.Inputs,mBlock.Outputs)]
+    (name,genGenNets mBlock.Inputs,genGenNets mBlock.Outputs)
 
 let rec AddMegaBlock []=
     match Console.ReadLine() with
@@ -31,7 +34,8 @@ let rec AddMegaBlock []=
     |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s" str
             AddMegaBlock []
 
-let rec UserIn o =
+
+let rec UserIn =
     let blockLst = AddMegaBlock []
     printf "%A" blockLst
     
