@@ -1,10 +1,15 @@
-module rec Parser 
+module Parser 
+//TODO: recursive module?
 
 open Lexer
 
 type GateType = AND | OR | NOT
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int
 type GateInstantiationType = GATEINST of GateType * string * TerminalType list
+type InputDeclarationType = INPWire of string list | INPBus of int * int * string list
+type OutputDeclarationType = OUTWire of string list | OUTBus of int * int * string list
+type NetDeclarationType = WIRE of string list 
+
 
 /// Match single value token
 let (|MATCHSINGLE|_|) tokenToMatch (tokList: Result<Token list, Token list>) =
@@ -34,6 +39,9 @@ let (|MATCHNUM|_|) (tokList: Result<Token list, Token list>) =
     | Ok (Number value :: tl) -> Some (Some value, Ok tl)
     | _ -> None  
 
+
+//------------------- Parse rules -------------------------
+
 let (|TERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
@@ -45,7 +53,6 @@ let (|TERMINAL|_|) tokList =
     | MATCHID (Some idname, Ok tokList') -> Some (Some (TERMID idname), Ok tokList')
     | _ -> None 
 
-//TODO: rec needed ?
 let rec (|LISTTERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
@@ -69,6 +76,7 @@ let (|GATEINSTANTIATION|_|) tokList =
         | And -> AND
         | Or -> OR
         | Not -> NOT
+        | _ -> failwithf "Shouldn't happen"
 
     match tokList with 
     | Error tokList' ->
@@ -77,16 +85,60 @@ let (|GATEINSTANTIATION|_|) tokList =
         Some (Some (GATEINST (convertToGateType gatetype, gateid, termlist)), Ok tokList')
     | _ -> None
 
+let (|RANGE|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | MATCHSINGLE OpSqBracket (MATCHNUM (Some number1, MATCHSINGLE Colon (MATCHNUM (Some number2, MATCHSINGLE ClSqBracket (Ok tokList'))))) -> 
+        Some (Some (number1, number2), Ok tokList')
+    | _ -> None
+
+let rec (|LISTVAR|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | MATCHID (Some parsed, MATCHSINGLE Comma (LISTVAR (Some parsed', Ok tokList'))) ->  
+        Some (Some ([parsed] @ parsed'), Ok tokList')
+    | MATCHID (Some parsed, Ok tokList') -> Some (Some [parsed], Ok tokList')
+    | _ -> None 
+
+let (|INPDECLARATION|_|) tokList = 
+    match tokList with 
+    | Error tokList' ->
+        Some (None, Error tokList')
+    | MATCHSINGLE Input (RANGE (Some (num1, num2), LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList')))) -> 
+        Some (Some (INPBus (num1, num2, varlist)), Ok tokList')
+    | MATCHSINGLE Input (LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList'))) -> 
+        Some (Some (INPWire varlist), Ok tokList')
+    | _ -> None
+
+let (|OUTDECLARATION|_|) tokList = 
+    match tokList with 
+    | Error tokList' ->
+        Some (None, Error tokList')
+    | MATCHSINGLE Output (RANGE (Some (num1, num2), LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList')))) -> 
+        Some (Some (OUTBus (num1, num2, varlist)), Ok tokList')
+    | MATCHSINGLE Output (LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList'))) -> 
+        Some (Some (OUTWire varlist), Ok tokList')
+    | _ -> None
+
+let (|NETDECLARATION|_|) tokList = 
+    match tokList with 
+    | Error tokList' ->
+        Some (None, Error tokList')
+    | MATCHSINGLE Wire (LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList'))) -> 
+        Some (Some (WIRE varlist), Ok tokList')
+    | _ -> None
 
 //TODO: Final parse function
 let parse inpTokList =
     match Ok inpTokList with
-    | GATEINSTANTIATION (Some ast, Ok []) -> Ok ast
-    | GATEINSTANTIATION (_, Error lst) //?
-    | GATEINSTANTIATION (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
+    | NETDECLARATION (Some ast, Ok []) -> Ok ast
+    | NETDECLARATION (_, Error lst) //?
+    | NETDECLARATION (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
 
 
-let sampleCode = Seq.toList "and a1 (out, b);"
+let sampleCode = Seq.toList "wire a, b, c;"
 
 tokenise sampleCode |> parse
