@@ -4,10 +4,12 @@ open SharedTypes
 //TODO: make slice parser and integrate with AdjListEntry type
 //TODO: Use results instead of failwithfs so errors can be propagated to UI
 
-type Expression = (Operator * string * string)
+type Expression = (Operator * string list * string list)
 type NetIdentifier = {
     Name: string;
-    SliceIndices: (int * int) option
+    SliceIndices: (int * int option) option //first int is upper index for slicing/IO bus definitions or wire index in bus if a single wire in a bus needs to be selected
+    //second int is lower index for slicing/IO bus definitions
+    //SliceIndicies can be None if whole bus is to be selected 
 }
 type TLogic = {
     Name: string
@@ -27,7 +29,7 @@ type DGraphNode = |DGraphNetNode|DGraphOpNode
 type DGraphEdge = {
     Input: DGraphNode
     Output: DGraphNode
-    SliceIndicies: (int * int) option
+    SliceIndicies: (int * int option) option
     IsSliceOfInput: bool
 }
 
@@ -60,9 +62,11 @@ let formNetNodesFromIDs netIDLst =
             BusSize = 1
         }
            
-        match (netID.SliceIndices) with
-        |Some (x, y) -> {node with BusSize = x - y }
+        match netID.SliceIndices with
+        |Some (x, Some y)-> {node with BusSize = x - y }
         |None -> node
+        |_ -> failwithf "Expected IO net definition, got %A" netID.SliceIndices
+
 
     let foldNetIDtoNode nodeLst netID =
         List.append nodeLst [netIdentifierToNetNode netID]
@@ -100,6 +104,4 @@ let formEdgesAndOpNodes netNodeLst exprLst =
         let inputEdges = ([], exprInputNetIDS) ||> List.fold (edgeFolder formInputEdge)
         let outputEdges = ([], exprOutputsNetIDS) ||> List.fold (edgeFolder formOutputEdge)
 
-        List.append inputEdges outputEdges
-
-        
+        List.append inputEdges outputEdges     
