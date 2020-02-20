@@ -6,13 +6,13 @@ open System
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
-type Token = | Module | Identifier of string | Number of string | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
+type Token = | Module | Identifier of string | Number of int | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) =
     
     let takeIfInChars chars (acc,lst) isOpt = 
         match lst with 
-        | hd::tl when List.exists ((=) hd) chars ->
+        | hd :: tl when List.exists ((=) hd) chars ->
             Some(acc @ [hd], tl)
         | _ when isOpt -> 
             Some(acc, lst)
@@ -20,7 +20,7 @@ let lexNGram (ngram: NGram) (cLst: char list) =
 
     let rec takeWhileInChars chars (acc,lst) isOpt =
         match lst with 
-        | hd::tl when List.exists ((=) hd) chars -> 
+        | hd :: tl when List.exists ((=) hd) chars -> 
             if takeIfInChars chars (acc @ [hd], tl) isOpt = None 
             then Some (acc @ [hd], tl)
             else takeWhileInChars chars (acc @ [hd], tl) isOpt
@@ -77,7 +77,7 @@ let (|SingleValTok|_|) inpstring =
 
 let (|MultValTok|_|) inpstring = 
     if System.Int32.TryParse (inpstring: string) |> fst
-    then Some (Number inpstring)
+    then Some (Number (System.Int32.TryParse (inpstring: string) |> snd))
     else Some (Identifier inpstring)
 
 let tokenise inpstring = 
@@ -98,6 +98,3 @@ let tokenise inpstring =
 // tokenise "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
 // tokenise "module mux(out, sel, a, b); output out; input sel, a, b; wire c; or orgate (a, b, c); endmodule"
 
-let sampleCode = Seq.toList (System.IO.File.ReadAllText "sampleverilog.v")
-
-tokenise sampleCode
