@@ -138,3 +138,14 @@ let createNamedNetList netNodes =
     List.fold foldNetNodesToNamedNets [] netNodes
 
 
+let updateBus bus (a, b) newLogicLevels = 
+ 
+    if (b - a + 1) <> (List.length newLogicLevels) || not (Map.containsKey b bus) || not (Map.containsKey a bus)
+    then failwith "Cannot update bus, given bus slice is not the same size as logic level list"
+    else
+        bus
+        |> Map.map (fun key oldVal ->
+            if key >= a && key <= b
+            then newLogicLevels.[key - a]
+            else oldVal
+            )
