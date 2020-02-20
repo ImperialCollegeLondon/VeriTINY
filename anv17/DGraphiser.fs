@@ -64,7 +64,7 @@ let formNetNodesFromIDs netIDLst =
         }
            
         match netID.SliceIndices with
-        |Some (x, Some y)-> {node with BusSize = x - y }
+        |Some (x, Some y)-> {node with BusSize = x - y + 1}
         |None -> node
         |_ -> failwithf "Expected IO net definition, got %A" netID.SliceIndices
 
@@ -108,3 +108,4 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
 //*********Graph Execution***********
 
+type GraphEndPoint = |LogicLevel |BusInput of int //TODO: Change BusInput to BusValue
