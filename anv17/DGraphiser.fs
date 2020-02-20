@@ -40,11 +40,14 @@ type NetNameToken = |Name of string|OpenSqBracket|SliceIndex of int|SemiColon|Cl
 let getNetIDFromStr netIdentifierStr = failwithf "Not implemented yet - Requires Lexer Module"
 
 
-let formNetNodes tLogicModule = 
-   
+let formNetIDsFromStrLst netIDStrLst =
     let foldNetIDStr netIDs netIDStr =
         getNetIDFromStr netIDStr
         |> List.append netIDs
+
+    List.fold foldNetIDStr [] netIDStrLst
+
+let formNetNodes netIDLst =   
 
     let netIdentifierToNetNode (netID: NetIdentifier) = 
 
@@ -60,10 +63,9 @@ let formNetNodes tLogicModule =
 
     let foldNetIDtoNode nodeLst netID =
         List.append nodeLst [netIdentifierToNetNode netID]
+  
 
-    tLogicModule.Inputs @ tLogicModule.Outputs @ tLogicModule.Wires
-    |> List.fold foldNetIDStr []
-    |> List.fold foldNetIDtoNode []
+    List.fold foldNetIDtoNode [] netIDLst
 
 
 
