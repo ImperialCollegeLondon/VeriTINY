@@ -5,13 +5,14 @@ open Lexer
 
 type GateType = AND | OR | NOT
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int
-type GateInstantiationType = GATEINST of GateType * string * TerminalType list
-type DeclarationType = 
+type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
     | INPWire of string list 
     | INPBus of int * int * string list
     | WIRE of string list 
+    | GATEINST of GateType * string * TerminalType list
+type ModuleType = MODULE of string * string list * ModuleItemType list
 
 /// Match single value token
 let (|MATCHSINGLE|_|) tokenToMatch (tokList: Result<Token list, Token list>) =
@@ -143,6 +144,8 @@ let (|MODULEITEM|_|) tokList =
         Some (Some output, Ok tokList')
     | NETDECLARATION (Some net, Ok tokList') -> 
         Some (Some net, Ok tokList')
+    | GATEINSTANTIATION (Some gateinst, Ok tokList') -> 
+        Some (Some gateinst, Ok tokList')
     | _ -> None
                
 let rec (|LISTMODITEM|_|) tokList = 
@@ -155,16 +158,31 @@ let rec (|LISTMODITEM|_|) tokList =
         Some (Some [moditem], Ok tokList')
     | _ -> None 
 
+let (|MODULENAME|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | MATCHID (Some modname, Ok tokList') -> 
+        Some (Some modname, Ok tokList')
+    | _ -> None 
+
+let (|MATCHMODULE|_|) tokList  = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList') 
+    | MATCHSINGLE Module (MODULENAME (Some modname, MATCHSINGLE OpRoundBracket (LISTVAR (Some varlist, MATCHSINGLE ClRoundBracket (MATCHSINGLE Semicolon (LISTMODITEM (Some moditemlist, MATCHSINGLE EndModule (Ok tokList')))))))) -> 
+        Some (Some (MODULE (modname, varlist, moditemlist)), Ok tokList')
+    | _ -> None
 
 //TODO: Final parse function
 let parse inpTokList =
     match Ok inpTokList with
-    | LISTMODITEM (Some ast, Ok []) -> Ok ast
-    | LISTMODITEM (_, Error lst) //?
-    | LISTMODITEM (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
+    | MATCHMODULE (Some ast, Ok []) -> Ok ast
+    | MATCHMODULE (_, Error lst) //?
+    | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
 
 
-let sampleCode = Seq.toList "output a, b, c; input[3:0] d, e; wire f;"
+let sampleCode = Seq.toList (System.IO.File.ReadAllText "sampleverilog.v")
 
 tokenise sampleCode |> parse
