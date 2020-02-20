@@ -116,12 +116,13 @@ type NamedNet = string * Net
 
 //**************Net Helper functions*******************
 
-let createNamedNetList netNodes =
-    let createNewBus (a, b) = 
+let createNewBus (a, b) = 
         [a..b]
         |> List.map (fun x -> (x, Low)) 
         |> Map
         |> Bus
+
+let createNamedNetList netNodes =
 
     let netNodeToNet node = 
         match node.BusIndicies with 
