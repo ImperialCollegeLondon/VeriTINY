@@ -6,10 +6,12 @@ open Lexer
 type GateType = AND | OR | NOT
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int
 type GateInstantiationType = GATEINST of GateType * string * TerminalType list
-type InputDeclarationType = INPWire of string list | INPBus of int * int * string list
-type OutputDeclarationType = OUTWire of string list | OUTBus of int * int * string list
-type NetDeclarationType = WIRE of string list 
-
+type DeclarationType = 
+    | OUTWire of string list 
+    | OUTBus of int * int * string list
+    | INPWire of string list 
+    | INPBus of int * int * string list
+    | WIRE of string list 
 
 /// Match single value token
 let (|MATCHSINGLE|_|) tokenToMatch (tokList: Result<Token list, Token list>) =
@@ -99,7 +101,8 @@ let rec (|LISTVAR|_|) tokList =
         Some (None, Error tokList')
     | MATCHID (Some parsed, MATCHSINGLE Comma (LISTVAR (Some parsed', Ok tokList'))) ->  
         Some (Some ([parsed] @ parsed'), Ok tokList')
-    | MATCHID (Some parsed, Ok tokList') -> Some (Some [parsed], Ok tokList')
+    | MATCHID (Some parsed, Ok tokList') -> 
+        Some (Some [parsed], Ok tokList')
     | _ -> None 
 
 let (|INPDECLARATION|_|) tokList = 
@@ -130,15 +133,38 @@ let (|NETDECLARATION|_|) tokList =
         Some (Some (WIRE varlist), Ok tokList')
     | _ -> None
 
+let (|MODULEITEM|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList') 
+    | INPDECLARATION (Some input, Ok tokList') -> 
+        Some (Some input, Ok tokList')
+    | OUTDECLARATION (Some output, Ok tokList') -> 
+        Some (Some output, Ok tokList')
+    | NETDECLARATION (Some net, Ok tokList') -> 
+        Some (Some net, Ok tokList')
+    | _ -> None
+               
+let rec (|LISTMODITEM|_|) tokList = 
+    match tokList with 
+    | Error tokList' ->
+        Some (None, Error tokList')
+    | MODULEITEM (Some moditem, LISTMODITEM (Some moditem', Ok tokList')) -> 
+        Some (Some ([moditem] @ moditem'), Ok tokList')
+    | MODULEITEM (Some moditem, Ok tokList') -> 
+        Some (Some [moditem], Ok tokList')
+    | _ -> None 
+
+
 //TODO: Final parse function
 let parse inpTokList =
     match Ok inpTokList with
-    | NETDECLARATION (Some ast, Ok []) -> Ok ast
-    | NETDECLARATION (_, Error lst) //?
-    | NETDECLARATION (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
+    | LISTMODITEM (Some ast, Ok []) -> Ok ast
+    | LISTMODITEM (_, Error lst) //?
+    | LISTMODITEM (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
 
 
-let sampleCode = Seq.toList "wire a, b, c;"
+let sampleCode = Seq.toList "output a, b, c; input[3:0] d, e; wire f;"
 
 tokenise sampleCode |> parse
