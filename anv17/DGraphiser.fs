@@ -25,11 +25,11 @@ type DGraphNetNode = {
 }
 
 type DGraphOpNode = Operator
-type DGraphNode = |DGraphNetNode|DGraphOpNode
+type DGraphNode = |NetNode of DGraphNetNode|OpNode of DGraphOpNode
 type DGraphEdge = {
     Input: DGraphNode
     Output: DGraphNode
-    SliceIndicies: (int * int option) option
+    SliceIndices: (int * int option) option
     IsSliceOfInput: bool
 }
 
@@ -77,31 +77,30 @@ let formNetNodesFromIDs netIDLst =
 
 let formEdgesAndOpNodes netNodeLst exprLst = 
 
-    let processExpression (op, inputs, outputs) =
-        let opNode = op
+    let processExpression (op, inputs, outputs) =        
 
         let exprInputNetIDS = formNetIDsFromStrLst inputs
         let exprOutputsNetIDS = formNetIDsFromStrLst outputs 
 
-        let formInputEdge opNode netID = 
+        let formInputEdge op (netID : NetIdentifier) = 
             {
-                Input = getNetNodeByName netID.Name netNodeLst
-                Output = opNode
+                Input = NetNode (getNetNodeByName netID.Name netNodeLst)
+                Output = OpNode (op)
                 SliceIndices = netID.SliceIndices
                 IsSliceOfInput = true
             }
-
-        let formOutputEdge opNode netID = 
+        let formOutputEdge op (netID : NetIdentifier) = 
             {
-                Input = opNode
-                Output = getNetNodeByName netID.Name netNodeLst
+                Input = OpNode (op)
+                Output = NetNode (getNetNodeByName netID.Name netNodeLst)
                 SliceIndices = netID.SliceIndices
                 IsSliceOfInput = false
             }
-
-        let edgeFolder idToEdge edgLst netID = List.append edgLst (idToEdge opNode netID)
+        let edgeFolder idToEdge edgLst netID = List.append edgLst [idToEdge op netID]
 
         let inputEdges = ([], exprInputNetIDS) ||> List.fold (edgeFolder formInputEdge)
         let outputEdges = ([], exprOutputsNetIDS) ||> List.fold (edgeFolder formOutputEdge)
 
-        List.append inputEdges outputEdges     
+        List.append inputEdges outputEdges
+
+    ([], exprLst) ||> List.fold (fun allEdges expression -> List.append allEdges (processExpression expression))     
