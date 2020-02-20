@@ -9,7 +9,6 @@ type NGram = (char list * bool * bool) list
 type Token = | Module | Identifier of string | Number of int | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) =
-    
     let takeIfInChars chars (acc,lst) isOpt = 
         match lst with 
         | hd :: tl when List.exists ((=) hd) chars ->
@@ -37,8 +36,7 @@ let lexNGram (ngram: NGram) (cLst: char list) =
 
     (Some ([], cLst), ngram) ||> List.fold folder
 
-let rec lexMoreThanOne cLst = 
-
+let rec lexMoreThanOne cLst =
     let (<|>) lex1 lex2 =
         fun clst ->
             Option.orElse (lex2 clst) (lex1 clst)
@@ -56,7 +54,6 @@ let rec lexMoreThanOne cLst =
     | None -> None
     
 let lexAndImplode inpstring = 
-
     let charListToString lst = 
         lst |> List.map string |> List.reduce (+)
 
@@ -92,9 +89,3 @@ let tokenise inpstring =
         | _ -> failwithf "What?"
 
     replaceWithTokens (fst unwrapped)
-
-// lexMoreThanOne (Seq.toList "module a99 (out, a, b); ")
-// implodeLexedChars "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
-// tokenise "module a99 (out, a, b); output out; input a, b; and a1 (a, b); endmodule"
-// tokenise "module mux(out, sel, a, b); output out; input sel, a, b; wire c; or orgate (a, b, c); endmodule"
-
