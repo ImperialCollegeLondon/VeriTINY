@@ -22,7 +22,7 @@ type TLogic = {
 
 type DGraphNetNode = {
     NetName: string
-    BusSize: int
+    BusIndicies: (int * int) option
 }
 
 type DGraphOpNode = Operator
@@ -60,11 +60,11 @@ let formNetNodesFromIDs netIDLst =
 
         let node = {
             NetName = netID.Name
-            BusSize = 1
+            BusIndicies = None
         }
            
         match netID.SliceIndices with
-        |Some (x, Some y)-> {node with BusSize = x - y + 1}
+        |Some (x, Some y)-> {node with BusIndicies = Some(x,y)}
         |None -> node
         |_ -> failwithf "Expected IO net definition, got %A" netID.SliceIndices
 
@@ -108,4 +108,11 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
 //*********Graph Execution***********
 
-type GraphEndPoint = |LogicLevel |BusInput of int //TODO: Change BusInput to BusValue
+//******Types********* - TOOD: replace with types in shared types later 
+type GraphEndPoint = |LogicLevel|BusInput of int //TODO: Change BusInput to BusValue
+type Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
+type NamedNet = string * Net
+
+//**************Net Helper functions*******************
+
+
