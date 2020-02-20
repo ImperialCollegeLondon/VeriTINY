@@ -73,7 +73,7 @@ let rec makeLinks clist=
     |str when List.contains (true) (List.map (searchInNets str) clist) -> printf "Select Output Node"
                                                                           match Console.ReadLine() with
                                                                           |st2 when List.contains (true) (List.map (searchOutNets st2) clist)->
-                                                                          (str,st2,)::makeLinks clist
+                                                                          (str,st2)::makeLinks clist
                                                                           |st2 -> printf "NANI?! match failed when joining nets, could not understand: %s" st2
                                                                           makeLinks clist
     |str -> printf "NANI?! match failed when joining nets, could not understand: %s" str
