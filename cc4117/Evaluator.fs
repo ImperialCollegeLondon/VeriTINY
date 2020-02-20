@@ -57,9 +57,14 @@ let BusEx : GeneralNet =
     false, ("BusA", Bus(Map [0, Low; 1, High; 2, Low; 3, High]))
 let wireEx : GeneralNet =
     false, ("WireA", Wire(Map [0, Low]))
+let mixedEx : GeneralNet list =
+    [false, ("BusA", Bus(Map [0, Low; 1, High; 2, Low; 3, High]));
+    false, ("WireA", Wire(Map [0, Low]));
+    false, ("WireB", Wire(Map [0, High]));
+    false, ("WireC", Wire(Map [0, High]))
+    ]
 
 
-/// extract Net from GeneralNet
 let extractNet (genNetIn: GeneralNet): Net =
     match genNetIn with
     | (_, (_, Wire netMap)) -> 
@@ -67,16 +72,62 @@ let extractNet (genNetIn: GeneralNet): Net =
     | (_, (_, Bus netMap)) ->
         Bus netMap
     
-
-/// extract LogicLevel from Net
 let extractLogLevel (netIn: Net) =
     match netIn with
     | Wire netMap
     | Bus netMap ->
     netMap |> Map.toList |> List.map snd
-     
 
-let netUpdate (genNetIn: GeneralNet) (index: int) (newLog:LogicLevel) : GeneralNet =
+let netSize (netIn: Net): int =
+    match netIn with
+    | Wire netMap
+    | Bus netMap ->
+    netMap |> Map.toList |> List.map fst |> List.length
+
+/// find length of output nets from genNetOut list 
+let findLength (lst: GeneralNet list) =
+    List.map (extractNet >> netSize) lst
+
+// tail recursion
+// generate list of lists of LogicLevel of appropriate size for output
+let rec splitPls acc (logLst:LogicLevel list) (lstOfLengths: int list) =
+    match lstOfLengths with
+    | hd::tl ->
+        let acc', logLst' = List.splitAt hd logLst
+        splitPls (acc @ [acc']) logLst' tl
+    | [] -> 
+        acc
+
+let test' = splitPls [] [High;Low;High;Low;High;Low;High;Low] [1;3;3;2]
+
+/// generate list of logic level updates (in order)
+let generateNewLogList (genNetLst: GeneralNet list) =
+    List.collect (extractNet >> extractLogLevel) genNetLst
+
+
+let extractfromGenNet (genNetIn: GeneralNet) =
+    genNetIn |> extractNet |> extractLogLevel 
+    //let listOfLog = genNetIn |> extractNet |> extractLogLevel 
+    //let n = List.length listOfLog // don't necessarily know the length corresponds with input
+    //([0..n-1], listOfLog) ||> List.zip 
+
+// let newMapGen (genNetLst: GeneralNet list) = 
+//     genNetLst 
+//     |> List.map (extractfromGenNet >> Map.ofList)   
+
+
+
+// variant of below, which takes in a Net type
+let netUpdateOld (netIn: Net) (index: int) (newLog:LogicLevel) : Net =
+    match netIn with
+    | Bus netMap ->
+        Bus(Map.add index newLog netMap)
+    | Wire netMap -> 
+        Wire(Map.add 0 newLog netMap)
+
+
+// currently requires index and newlogic level, accepts genNet type e.g. Bus/Wire 
+let genNetUpdate (genNetIn: GeneralNet) (index: int) (newLog:LogicLevel) : GeneralNet =
     match genNetIn with
     | (sync, (str, Bus netMap)) ->
         sync, (str, Bus(Map.add index newLog netMap))
