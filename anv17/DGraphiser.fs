@@ -109,10 +109,31 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 //*********Graph Execution***********
 
 //******Types********* - TOOD: replace with types in shared types later 
+type LogicLevel = | High | Low
 type GraphEndPoint = |LogicLevel|BusInput of int //TODO: Change BusInput to BusValue
 type Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
 type NamedNet = string * Net
 
 //**************Net Helper functions*******************
+
+let createNamedNetList netNodes =
+    let createNewBus (a, b) = 
+        [a..b]
+        |> List.map (fun x -> (x, Low)) 
+        |> Map
+        |> Bus
+
+    let netNodeToNet node = 
+        match node.BusIndicies with 
+        |Some busIndices ->  createNewBus busIndices
+        |None -> Wire (Map [(0, Low)])
+
+    let netNodeToNamedNet node = 
+        let net = netNodeToNet node
+        NamedNet(node.NetName, net)
+
+    let foldNetNodesToNamedNets namedNetLst netNode = List.append namedNetLst [netNodeToNamedNet netNode]
+
+    List.fold foldNetNodesToNamedNets [] netNodes
 
 
