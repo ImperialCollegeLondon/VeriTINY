@@ -1,94 +1,69 @@
 module DGraphiser
+open SharedTypes
 
 //TODO: make slice parser and integrate with AdjListEntry type
 //TODO: Use results instead of failwithfs so errors can be propagated to UI
 
-type Operator = | And | Or | Not | Pass //Pass to just pass signal through in case outputs have slices of intermediate nets 
-
 type Expression = (Operator * string * string)
-
+type NetIdentifier = {
+    Name: string;
+    UpperSliceIndex: int option
+    LowerSliceIndex: int option
+}
 type TLogic = {
     Name: string
-    ExpressionList: Expression list //first string is input net, second string is output net
+    ExpressionList: (Operator * string list * string list) list
     Inputs: string list
     Outputs: string list
+    Wires: string list
+}  
+
+type DGraphNetNode = {
+    NetName: string
+    BusSize: int
 }
 
-type ExprGraphNode = | Net of (Operator * string) | InputNet of string  //Net string is net name
+type DGraphOpNode = Operator
+type DGraphNode = |DGraphNetNode|DGraphOpNode
+type DGraphEdge = {
+    Input: DGraphNode
+    Output: DGraphNode
+    SliceIndicies: (int * int) option
+    IsSliceOfInput: bool
+}
 
-type AdjListEntry = {
-    Input: ExprGraphNode;
-    Output: ExprGraphNode;
-    SliceIndices: (int * int) option//stores indices of bus slices
-} 
-
-let findAllNets (expressionLst: Expression list) =
-    let isNewNet netName knownNets = List.contains netName knownNets
-
-    let addIfNewNet netName knownNets = 
-        match isNewNet netName knownNets with
-        |true -> List.append knownNets [netName]
-        |false -> knownNets
-
-    let addNewNetsFromExpr knownNets expression  =
-        let _, inpNet, outNet = expression
-        addIfNewNet inpNet knownNets |> addIfNewNet outNet
-
-    ([], expressionLst) ||> List.fold addNewNetsFromExpr
+//********Lexing and tokenising code - to be replaced by Lexer module - except for NGram definitions ***********
+type NetNameToken = |Name of string|OpenSqBracket|SliceIndex of int|SemiColon|CloseSqBracket
 
 
-let formDGraphNodes (expressionLst: Expression list) uniqueNetLst =   
-
-    let tryFindExprWithNetAsOutput netName = 
-        let getExprOutput expr =
-            match expr with
-            |_, _, outputNet -> outputNet
-
-        let tryMatchNetNameWithOutput expr = (=) (getExprOutput expr) netName
-
-        List.tryFind tryMatchNetNameWithOutput expressionLst
-            
-    let netToNode netName = 
-        match tryFindExprWithNetAsOutput netName with
-        |Some (op, _, outNet) -> Net(op, outNet)
-        |None -> InputNet(netName)
-
-    let foldNetsIntoNodes nodeLst netName = List.append nodeLst [(netToNode netName)]
-
-    List.fold foldNetsIntoNodes [] uniqueNetLst
+//takes netIdentifier string in format name[number:number] or just name and returns a NetIdentifier module with the information
+let getNetIDFromStr netIdentifierStr = failwithf "Not implemented yet - Requires Lexer Module"
 
 
-let formAdjList (expressionLst: Expression list) nodeLst =
-    let getNodeNetName node = 
-        match node with
-        |Net (_, name)
-        |InputNet name -> name
+let formNetNodes tLogicModule = 
+   
+    let foldNetIDStr netIDs netIDStr =
+        getNetIDFromStr netIDStr
+        |> List.append netIDs
 
-    let tryFindNodeWithName name = List.tryFind (fun node -> (=) (getNodeNetName node) name) nodeLst
+    let netIdentifierToNetNode (netID: NetIdentifier) = 
 
-    let exprToEdge (_, inpNet, outNet) =
-          let inpNode = 
-            match tryFindNodeWithName inpNet with
-            |Some node -> node
-            |None -> failwithf  "Could not find node with name %s" inpNet
-
-          let outNode = 
-            match tryFindNodeWithName outNet with
-            |Some node -> node
-            |None -> failwithf  "Could not find node with name %s" outNet
-
-          {
-              Input = inpNode;
-              Output = outNode;
-              SliceIndices = None
-          }
+        let node = {
+            NetName = netID.Name
+            BusSize = 1
+        }
            
+        match (netID.UpperSliceIndex, netID.LowerSliceIndex) with
+        |(Some x , Some y) -> {node with BusSize = x - y }
+        |(None, None) -> node
+        |_ -> failwithf "Given net identifier not formed properly: %A" netID
 
-    let foldExpressionsToEdges edgeLst expression = List.append edgeLst [exprToEdge expression]
+    let foldNetIDtoNode nodeLst netID =
+        List.append nodeLst [netIdentifierToNetNode netID]
 
-    List.fold foldExpressionsToEdges [] expressionLst
-    
-let formDGraph tLogicModule =
-    findAllNets tLogicModule.ExpressionList
-    |> formDGraphNodes tLogicModule.ExpressionList
-    |> formAdjList tLogicModule.ExpressionList
+    tLogicModule.Inputs @ tLogicModule.Outputs @ tLogicModule.Wires
+    |> List.fold foldNetIDStr []
+    |> List.fold foldNetIDtoNode []
+
+
+
