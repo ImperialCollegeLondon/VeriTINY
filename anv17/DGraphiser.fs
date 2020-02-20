@@ -3,6 +3,7 @@ open SharedTypes
 
 //TODO: make slice parser and integrate with AdjListEntry type
 //TODO: Use results instead of failwithfs so errors can be propagated to UI
+//TODO: Update types in SharedTypes folder and remove them from here
 
 type Expression = (Operator * string list * string list)
 type NetIdentifier = {
@@ -36,7 +37,7 @@ type DGraphEdge = {
 //********Lexing and tokenising code - to be replaced by Lexer module - except for NGram definitions ***********
 type NetNameToken = |Name of string|OpenSqBracket|SliceIndex of int|SemiColon|CloseSqBracket
 
-
+//*******Graph forming************
 //takes netIdentifier string in format name[number:number] or just name and returns a NetIdentifier module with the information
 let getNetIDFromStr (netIdentifierStr: string) : NetIdentifier = failwithf "Not implemented yet - Requires Lexer Module"
 
@@ -103,4 +104,7 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
         List.append inputEdges outputEdges
 
-    ([], exprLst) ||> List.fold (fun allEdges expression -> List.append allEdges (processExpression expression))     
+    ([], exprLst) ||> List.fold (fun allEdges expression -> List.append allEdges (processExpression expression))
+
+//*********Graph Execution***********
+
