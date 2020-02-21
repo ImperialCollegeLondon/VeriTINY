@@ -3,28 +3,14 @@ module Connectioniser
 open System
 open SharedTypes
 ////////////////////////////////////////////////testing,get rid of it l8r
-let  l1 ={  
-    Name = "Test1"
-    Inputs=["A";"B";"C";"D"]
-    Outputs = ["G"]
-    Wires= ["E";"F"]
-    ExpressionList = [(And,["A";"B"],["E"]);(And,["C";"D"],["F"]);(And,["E";"F"],["G"])]
+let a1 = {
+    Name="Test1"
+    ExpressionList =[] //doesnt matter 4 me 
+    Inputs = [{Name="a";SliceIndices =Some(2,Some 0)};{Name="b";SliceIndices=Some(2,Some 0)}]
+    Outputs =[{Name="out";SliceIndices=Some(2,Some 0)}]
+    Wires =[] //also dont matter 4 me
 }
-let  l2 ={  
-    Name = "Test2"
-    Inputs=["A";"B";"C";"D"]
-    Outputs = ["G"]
-    Wires= ["E";"F"]
-    ExpressionList = [(And,["A";"B"],["E"]);(And,["C";"D"],["F"]);(And,["E";"F"],["G"])]
-}
-let  DFF ={  
-    Name = "DFF"
-    Inputs=["A"]
-    Outputs = ["B"]
-    Wires= []
-    ExpressionList = []
-}
-let avaliableBlocks = [DFF;l1;l2]
+let avaliableBlocks =[a1]
 //////////////////////////////////////////////////////////////////////
 /// 3-tuple helper functions
 let first (a, _, _) = a
@@ -48,9 +34,20 @@ let netLen (net:GeneralNet): int =
     | Wire netMap
     | Bus netMap ->
     netMap |> Map.toList |> List.map fst |> List.length
+let makeBusBits int=
+    match int with
+    |0 -> Map [0,Low]
+    |int -> (List.map (fun x-> (x,Low))[0..int])|>Map.ofList
 
-let rec genGenNets (blist:string list)=
-    List.map (fun str ->false, (str, Wire (Map [0, Low]))) blist  //only works for unclocked wires
+let interpretNetId netId =
+    match netId.SliceIndices with 
+    |Some (0,_)-> Wire (Map [0,Low])
+    |Some (int1,Some int2) -> Bus (makeBusBits (int1-int2))
+    |_->printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough"
+        Wire (Map [0,Low])
+
+let rec genGenNets (blist:NetIdentifier list)=
+    List.map (fun (x:NetIdentifier) ->false, (x.Name,interpretNetId x )) blist  //only works for unclocked nets
 
 let genConnections name blist=
     let mBlock = (List.filter (searchBlocks name) blist).Head
