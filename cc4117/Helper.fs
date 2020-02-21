@@ -16,3 +16,7 @@ let createNewMap len =
         [0..len-1]
         |> List.map (fun x -> (x, Low)) 
         |> Map
+
+let generateList n = [0..n-1]
+
+let opOnTuple f (a,b) = f a, f b

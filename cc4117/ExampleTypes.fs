@@ -1,6 +1,9 @@
 module ExampleTypes
 open SharedTypes
 
+// GeneralNet = bool * NamedNet
+// NamedNet = string * Net
+// Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
 // test purposes
 let GenNetListInA : GeneralNet list = 
     [false, ("A0", Wire (Map [0, Low]));
@@ -20,10 +23,11 @@ let GenNetListOutB : GeneralNet list =
     [false, ("BOut", Wire (Map [0, Low]))]
 
 let GenNetListInDFF : GeneralNet list = 
-    [false, ("BOut", Wire (Map [1, Low]))]
+    [false, ("BOut", Wire (Map [1, High]))]
 
 let GenNetListOutDFF : GeneralNet list =
-    [true, ("C1", Wire (Map [0, Low]))]
+    [true, ("C1", Wire (Map [0, High]))]
+    
 
 let GenNetListInC : GeneralNet list =
     [false, ("C0", Wire (Map [0, Low]));
@@ -45,6 +49,19 @@ let connectListEx : Connection list=
 
 let connectSyncEx : Connection =
     Name "DFF", GenNetListInDFF, GenNetListOutDFF
+
+let connectMixedEx: Connection =
+    Name "DFF", 
+        [true, ("test", Bus (Map [0, High; 1, High; 2, High]));
+        true, ("C1", Wire (Map [0, High]));
+        false, ("hehe", Bus (Map [0, High; 1, High; 2, High]))
+        ],
+        [true, ("C1", Wire (Map [0, High]));
+        true, ("test", Bus (Map [0, High; 1, High; 2, High]));
+        false, ("hehe", Bus (Map [0, High; 1, High; 2, High]))
+        ]
+    
+    
 
 // to update a genNet need to know:
 // if bus: which wire in a bus (0, 1, 2) 

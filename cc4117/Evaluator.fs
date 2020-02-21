@@ -3,6 +3,10 @@ open SharedTypes
 open ExampleTypes
 open Helper
 
+let extractGenNetLsts (cIn: Connection) =
+    let _, lstIn, lstOut = cIn
+    lstIn, lstOut
+
 let extractNet (genNetIn: GeneralNet): Net =
     match genNetIn with
     | (_, (_, Wire netMap)) -> 
@@ -16,14 +20,6 @@ let extractLogLevel (netIn: Net) =
     | Bus netMap ->
     netMap |> Map.toList |> List.map snd
 
-let extractGenNetLstIn (cIn: Connection) =
-    let _, genNetLstIn, _ = cIn
-    genNetLstIn
-  
-let extractGenNetLstOut (cIn: Connection) =
-    let _, _, genNetLstOut = cIn
-    genNetLstOut 
-
 let netSize (netIn: Net): int =
     match netIn with
     | Wire netMap
@@ -34,15 +30,15 @@ let findLengths (lst: GeneralNet list) =
     List.map (extractNet >> netSize) lst
 
 // generate list of lists of LogicLevel of appropriate size for output
-let rec groupLogic acc (logLst:LogicLevel list) (lstOfLengths: int list) =
+let rec groupLogic acc lstOfLog lstOfLengths =
     match lstOfLengths with
     | hd::tl ->
-        let acc', logLst' = List.splitAt hd logLst
-        groupLogic (acc @ [acc']) logLst' tl
+        let acc', lstOfLog' = List.splitAt hd lstOfLog
+        groupLogic (acc @ [acc']) lstOfLog' tl
     | [] -> 
         acc
 
-let updateNet (genNetIn: GeneralNet) newMap =
+let updateGenNet (genNetIn: GeneralNet) newMap =
     match genNetIn with
     | (sync, (str, Wire _)) -> 
         sync, (str, Wire newMap)
@@ -50,34 +46,25 @@ let updateNet (genNetIn: GeneralNet) newMap =
         sync, (str, Bus newMap)
 
 let updateGenLst genLst newMaps =
-    lstOpParallel [] updateNet genLst newMaps    
+    lstOpParallel [] updateGenNet genLst newMaps    
 
-let takePrevInputs genNetLstIn =
-    List.collect (extractNet >> extractLogLevel) genNetLstIn 
-
-let generateNewMapLst f genNetLstIn genNetLstOut =
-    let newLogic = f genNetLstIn 
+let generateNewMapLst func genNetLstIn genNetLstOut =
+    let newLogic = func genNetLstIn 
     let lstOfLengths = findLengths genNetLstOut
 
     let grpsOfLogic = groupLogic [] newLogic lstOfLengths
-    let generateList n = [0..n-1]
     let grpsOfNum = List.map generateList lstOfLengths
 
     (grpsOfNum,grpsOfLogic) ||> lstOpParallel [] List.zip 
     |> List.map Map.ofList
 
 let updateDFF genNetLstIn genNetLstOut =
+    let takePrevInputs genNetLstIn = List.collect (extractNet >> extractLogLevel) genNetLstIn 
+
     let newMapLst = generateNewMapLst takePrevInputs genNetLstIn genNetLstOut
-    (genNetLstOut, newMapLst) ||> lstOpParallel [] updateNet 
+    (genNetLstOut, newMapLst) ||> lstOpParallel [] updateGenNet 
 
 
-let setToLow (genNetLst:GeneralNet list) =
-    let lstOfLengths = findLengths genNetLst
-    let newMaps = List.map createNewMap lstOfLengths
-    updateGenLst genNetLst newMaps
-    
-
-//given a genNet, check if synchronous or not
 let syncCheck (genNet:GeneralNet) = 
     match genNet with
     | false, _ ->
@@ -85,30 +72,25 @@ let syncCheck (genNet:GeneralNet) =
     | true, _ ->
         true
 
-// given a list of GenNets, filter out the GenNets that are asynchronous
-let removeNotSync (genNetLst:GeneralNet list) =
-    List.filter syncCheck genNetLst
+
+let initializeSync cLst =
+
+    let updateIfSync (genNet:GeneralNet) = 
+        if syncCheck genNet 
+        then
+            let newMapLen = genNet |> extractNet |> netSize 
+            updateGenNet genNet (createNewMap newMapLen)
+        else
+            genNet
+
+    let setToLow (cIn: Connection) =
+        cIn 
+        |> extractGenNetLsts 
+        |> opOnTuple (List.map updateIfSync)
+    List.map setToLow cLst
 
 
 
-let filterSync (cInLst:Connection list) =
-    List.map (extractGenNetLstIn >> removeNotSync) cInLst
-        
-// genNet
-// |> extractNet
-// |> netSize
-// |> createNewMap
-/// initialize synchronous nets (outputs of DFFs) to 0 
-let initializeSync (connectionLst:Connection List) =
-    connectionLst |> List.map extractGenNetLstIn 
-    // need to use updateNet, which requires newMap ... 
-
-    
-
-    // search for all synchronous nets then update them to 0
-    
-    // then set all of the nets to 0 using logicLst of "LOW" length N 
-    
 // how to use memoisation:
 // let memoise fn =
 //     let mutable cache = Map []

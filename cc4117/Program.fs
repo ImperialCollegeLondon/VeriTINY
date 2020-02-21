@@ -5,6 +5,11 @@ open System
 open SharedTypes
 open ExampleTypes
 open Evaluator
+open Helper
+
+
+let splitTest = groupLogic [] [High;Low;High;Low;High;Low;High;Low] [1;3;3;1]
+let updateDFFTest = updateDFF dffMixedIn dffMixedOut
 
 
 [<EntryPoint>]

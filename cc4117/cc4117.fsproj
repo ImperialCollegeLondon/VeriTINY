@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="../shared/SharedTypes.fs" />
     <Compile Include="ExampleTypes.fs" />
+    <Compile Include="Helper.fs" />
     <Compile Include="Evaluator.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
