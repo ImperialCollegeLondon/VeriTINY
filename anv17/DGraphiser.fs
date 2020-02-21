@@ -6,20 +6,7 @@ open NetHelper
 //TODO: Use results instead of failwithfs so errors can be propagated to UI
 //TODO: Update types in SharedTypes folder and remove them from here
 
-type Expression = (Operator * string list * string list)
-type NetIdentifier = {
-    Name: string;
-    SliceIndices: (int * int option) option //first int is upper index for slicing/IO bus definitions or wire index in bus if a single wire in a bus needs to be selected
-    //second int is lower index for slicing/IO bus definitions
-    //SliceIndicies can be None if whole bus is to be selected 
-}
-type TLogic = {
-    Name: string
-    ExpressionList: (Operator * string list * string list) list //first string list is nets which are inputs and second is nets which are outputs.TODO: Expression list should be implemented as record
-    Inputs: string list
-    Outputs: string list
-    Wires: string list
-}  
+type Expression = (Operator * NetIdentifier list * NetIdentifier list)
 
 type DGraphNetNode = {
     NetName: string
@@ -35,25 +22,12 @@ type DGraphEdge = {
     IsSliceOfInput: bool
 }
 
-//********Lexing and tokenising code - to be replaced by Lexer module - except for NGram definitions ***********
-type NetNameToken = |Name of string|OpenSqBracket|SliceIndex of int|SemiColon|CloseSqBracket
-
 //*******Graph forming************
-//takes netIdentifier string in format name[number:number] or just name and returns a NetIdentifier module with the information
-let getNetIDFromStr (netIdentifierStr: string) : NetIdentifier = failwithf "Not implemented yet - Requires Lexer Module"
-
-
 let getNetNodeByName name netNodeLst =
     match List.tryFind (fun node -> node.NetName = name) netNodeLst with
     |Some node -> node
     |None -> failwithf "Cannot find DGraphNetNode with name %s" name   
 
-let formNetIDsFromStrLst netIDStrLst =
-    let foldNetIDStr netIDs netIDStr =
-        [getNetIDFromStr netIDStr]
-        |> List.append netIDs
-
-    List.fold foldNetIDStr [] netIDStrLst
 
 let formNetNodesFromIDs netIDLst =   
 
@@ -81,9 +55,6 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
     let processExpression (op, inputs, outputs) =        
 
-        let exprInputNetIDS = formNetIDsFromStrLst inputs
-        let exprOutputsNetIDS = formNetIDsFromStrLst outputs 
-
         let formInputEdge op (netID : NetIdentifier) = 
             {
                 Input = NetNode (getNetNodeByName netID.Name netNodeLst)
@@ -100,8 +71,8 @@ let formEdgesAndOpNodes netNodeLst exprLst =
             }
         let edgeFolder idToEdge edgLst netID = List.append edgLst [idToEdge op netID]
 
-        let inputEdges = ([], exprInputNetIDS) ||> List.fold (edgeFolder formInputEdge)
-        let outputEdges = ([], exprOutputsNetIDS) ||> List.fold (edgeFolder formOutputEdge)
+        let inputEdges = ([], inputs) ||> List.fold (edgeFolder formInputEdge)
+        let outputEdges = ([], outputs) ||> List.fold (edgeFolder formOutputEdge)
 
         List.append inputEdges outputEdges
 
@@ -132,6 +103,8 @@ let createNamedNetMap netNodes =
 // - evaluate operator node outputs and assign the netnodes associated with them, their values
 // - remove evaluated edges from list 
 //4. Find output nodes and return their values (in order)
+
+type EDraphNode = DGraphNode * Net //EDGraphNode - Evaluation DGraphNode
 
 let evaluateGraph (graphEdges: DGraphEdge list, graphNodes: DGraphNode list)  (inputMap: Map<string,GraphEndPoint list>) =
     let nets = 
