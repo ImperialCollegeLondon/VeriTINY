@@ -1,53 +1,15 @@
 {
-  "name": "fable-elmish-electron-demo",
-  "version": "0.0",
-  "license": "NO idea",
+  "private": true,
   "scripts": {
-    "dev": "electron-webpack dev",
-    "compile": "electron-webpack",
-    "dist": "npm run compile && electron-builder",
-    "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null"
-  },
-  "electronWebpack": {
-    "title": true,
-    "main": {
-      "sourceDirectory": "src/Main",
-      "webpackConfig": "webpack.additions.main.js"
-    },
-    "renderer": {
-      "sourceDirectory": "src/Renderer",
-      "webpackConfig": "webpack.additions.renderer.js"
-    }
+    "start": "webpack-dev-server"
   },
   "dependencies": {
-    "@material-ui/core": "^4.9.2",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "4.0.0-alpha.41",
-    "autosuggest-highlight": "^3.1",
-    "match-sorter": "^4.0",
-    "mdi-material-ui": "^6.11.0",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "source-map-support": "^0.5.16",
-    "toastr": "^2",
-    "typeface-roboto": "^0",
-    "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.8.4",
-    "bufferutil": "^4.0",
-    "devtron": "^1.4",
-    "electron": "^8.0.0",
-    "electron-builder": "^22.3.2",
-    "electron-devtools-installer": "^2.2",
-    "electron-webpack": "^2.6",
-    "electron-window-state": "^5.0",
-    "fable-compiler": "^2.4.13",
-    "fable-loader": "^2.1",
-    "node-sass": "^4.13.1",
-    "remotedev": "^0.2",
-    "sass-loader": "^8.0.2",
-    "utf-8-validate": "^5.0"
+    "@babel/core": "^7.5.5",
+    "electron": "^8.0.1",
+    "fable-compiler": "^2.3.19",
+    "fable-loader": "^2.1.8",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.0"
   }
 }

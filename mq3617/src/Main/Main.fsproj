@@ -11,5 +11,6 @@
     <PackageReference Include="Fable.Import.Node" Version="0.4.3" />
     <PackageReference Include="Fable.Electron" Version="5.0.0" />
     <PackageReference Include="Fable.Promise" Version="2.0.0" />
+    <PackageReference Include="Fable.Browser.Dom" Version="1.0.0" />
   </ItemGroup>
 </Project>
