@@ -1,20 +1,8 @@
 module LogicBlockGen
 
-open SharedTypes
+open Lexer
 open Parser
-
-//TODO: delete types later
-type NetIdentifier = {
-    Name: string;
-    SliceIndices: (int * int option) option 
-}
-type TLogic = {
-    Name: string
-    ExpressionList: (Operator * NetIdentifier list * NetIdentifier list) list
-    Inputs: NetIdentifier list
-    Outputs: NetIdentifier list
-    Wires: NetIdentifier list
-}  
+open SharedTypes
 
 let getFirst threeTuple = 
     match threeTuple with 
@@ -46,9 +34,9 @@ let convertAST (ast: ModuleType) =
         | TERMIDBus (bus, num1, num2) -> genThickSliceNetList (num1, num2, [bus])
 
     let updateTerm (record: TLogic) (term: TerminalType) : TLogic = 
-        {record with ExpressionList = match record.ExpressionList with 
+        {record with ExpressionList = match List.rev record.ExpressionList with 
                                       | (op, output, termList) :: tl -> 
-                                            (op, output, genTermNetList term @ termList) :: tl
+                                            (op, output, termList @ genTermNetList term) :: tl |> List.rev
                                       | _ -> failwithf "What?"}
 
     let updateTermList (record: TLogic) (termList: TerminalType list) : TLogic = 
@@ -76,7 +64,8 @@ let convertAST (ast: ModuleType) =
     | MODULE (name, portlist, moditems) ->
         moditems |> List.fold getModItem {Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}
 
-    
 
-    
- 
+let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
+
+match tokenise sampleCode |> parse with 
+| Ok ast -> convertAST ast
