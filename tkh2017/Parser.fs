@@ -1,5 +1,4 @@
 module Parser 
-//TODO: recursive module?
 
 open Lexer
 
@@ -79,7 +78,7 @@ let (|GATEINSTANTIATION|_|) tokList =
         | And -> AND
         | Or -> OR
         | Not -> NOT
-        | _ -> failwithf "Shouldn't happen"
+        | _ -> failwithf "What?"
 
     match tokList with 
     | Error tokList' ->
@@ -182,7 +181,5 @@ let parse inpTokList =
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
 
-
-let sampleCode = Seq.toList (System.IO.File.ReadAllText "sampleverilog.v")
-
+let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
 tokenise sampleCode |> parse
