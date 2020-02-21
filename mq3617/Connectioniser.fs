@@ -78,13 +78,16 @@ let rec makeLinks ()=
     |str -> printf "enter output node"
             [(str, Console.ReadLine())]::makeLinks()
 
-
+let finaliseConnections conlist =
+    let conns = makeLinks()
+    []
 
 let rec UserIn() =
-    let blockLst = addMegaBlock ()
-    let refLst = refactor (List.sort blockLst)
-    printf"Current list %A" refLst
-    let connections = makeLinks ()
-    printf "Final list: %A" connections
+    addMegaBlock ()
+    |> List.sort
+    |> refactor
+    |> printf"Current list %A"
+    |> finaliseConnections 
+    |> printf "final output list%A" 
     
 
