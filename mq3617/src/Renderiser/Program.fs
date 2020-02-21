@@ -1,64 +1,55 @@
-﻿module Main
+﻿module Program
 
-open Fable.Core
 open Fable.Core.JsInterop
 open Fable.Import
-open Electron
-open Node.Api
+open Elmish
+open Elmish.React
 
-type Winstate = {
-    width:int
-    height:int
-    manage: BrowserWindow ->unit
-}
-// A global reference to the window object is required in order to prevent garbage collection
-let mutable mainWindow: BrowserWindow option = None
+let window = Browser.Dom.window
 
-let createMainWindow () =
-  let mainWinState = {
-      width = 500
-      height=600
-      manage = (fun x->())
-  }
- 
-  let win =
-    main.BrowserWindow.Create(jsOptions<BrowserWindowOptions>(fun o ->
-      o.width <- mainWinState.width
-      o.height <- mainWinState.height
-      o.autoHideMenuBar <- true
-      o.webPreferences <- jsOptions<WebPreferences>(fun w ->
-        w.nodeIntegration <- true
-      )
-      o.show <- false
-    ))
+// Get our canvas context 
+// As we'll see later, myCanvas is mutable hence the use of the mutable keyword
+// the unbox keyword allows to make an unsafe cast. Here we assume that getElementById will return an HTMLCanvasElement 
+let mutable myCanvas : Browser.Types.HTMLCanvasElement = unbox window.document.getElementById "myCanvas"  // myCanvas is defined in public/index.html
 
-  win.onceReadyToShow(fun _ ->
-    win.show()
-    mainWinState.manage win
-  ) |> ignore
+// Get the context
+let ctx = myCanvas.getContext_2d()
 
-  win.onClosed(fun _ -> mainWindow <- None) |> ignore
+// All these are immutables values
+let w = myCanvas.width
+let h = myCanvas.height
+let steps = 30
+let squareSize = 20
 
-  mainWindow <- Some win
+// gridWidth needs a float wo we cast tour int operation to a float using the float keyword
+let gridWidth = float (steps * squareSize) 
 
+// resize our canvas to the size of our grid
+// the arrow <- indicates we're mutating a value. It's a special operator in F#.
+myCanvas.width <- gridWidth
+myCanvas.height <- gridWidth
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-main.app.onReady(fun _ _ -> createMainWindow ()) |> ignore
+// print the grid size to our debugger console
+printfn "%i" steps
 
+// prepare our canvas operations
+[0..steps] // this is a list
+  |> Seq.iter( fun x -> // we iter through the list using an anonymous function
+      let v = float ((x) * squareSize) 
+      ctx.moveTo(v, 0.)
+      ctx.lineTo(v, gridWidth)
+      ctx.moveTo(0., v)
+      ctx.lineTo(gridWidth, v)
+    ) 
+ctx.strokeStyle <- !^"#ddd" // color
 
-// Quit when all windows are closed.
-main.app.onWindowAllClosed(fun _ ->
-  // On OS X it's common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  //if ``process``.platform <> Node.Base.Platform.Darwin then
-    main.app.quit()
-) |> ignore
+// draw our grid
+ctx.stroke() 
 
+// write Fable
+ctx.textAlign <- "center"
+ctx.fillText("aswin is gey", gridWidth * 0.5, gridWidth * 0.5)
 
-main.app.onActivate(fun _ _ ->
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if mainWindow.IsNone then createMainWindow ()
-) |> ignore
+printfn "done!"
+
 
