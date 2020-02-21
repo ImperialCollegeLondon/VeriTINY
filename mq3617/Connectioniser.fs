@@ -43,6 +43,11 @@ let searchOutNets str (conn:Connection)=
     List.contains (str) (List.map (fun x->(fst(snd x))) (third conn))
 
 /// net type helper funcitons
+let netLen (net:GeneralNet): int =
+    match  snd (snd net) with
+    | Wire netMap
+    | Bus netMap ->
+    netMap |> Map.toList |> List.map fst |> List.length
 
 let rec genGenNets (blist:string list)=
     List.map (fun str ->false, (str, Wire (Map [0, Low]))) blist  //only works for unclocked wires
@@ -55,7 +60,8 @@ let genConnections name blist=
 let rec addMegaBlock ()=
     match Console.ReadLine() with
     |"end" ->[]
-    |str when List.exists (searchBlocks str) avaliableBlocks ->(genConnections str avaliableBlocks)::(addMegaBlock () )
+    |str when List.exists (searchBlocks str) avaliableBlocks ->printf "New Megablock added"
+                                                               (genConnections str avaliableBlocks)::(addMegaBlock () )
     |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s" str
             addMegaBlock ()
 
@@ -65,24 +71,20 @@ let rec refactor (blist: Connection list) =
     |connection -> ((first connection),(List.map (fun (x:GeneralNet) -> (fst x),(((fst (snd x))+((blist.Length).ToString())),(snd (snd x)))) (second connection)),(List.map (fun (x:GeneralNet) -> (fst x),(((fst (snd x))+((blist.Length).ToString())),(snd (snd x)))) (third connection)))::(refactor blist.Tail)
     |_->[]               
 
-let rec makeLinks clist=
-    printf "Current list: %A" clist
-    printf "Select Input Node"
-    match Console.ReadLine() with  
-    | "end" ->[]
-    |str when List.contains (true) (List.map (searchInNets str) clist) -> printf "Select Output Node"
-                                                                          match Console.ReadLine() with
-                                                                          |st2 when List.contains (true) (List.map (searchOutNets st2) clist)->
-                                                                          (str,st2)::makeLinks clist
-                                                                          |st2 -> printf "NANI?! match failed when joining nets, could not understand: %s" st2
-                                                                          makeLinks clist
-    |str -> printf "NANI?! match failed when joining nets, could not understand: %s" str
-            makeLinks clist
+let rec makeLinks ()=
+    printf "Enter input node"
+    match Console.ReadLine() with
+    |"end" ->[]
+    |str -> printf "enter output node"
+            [(str, Console.ReadLine())]::makeLinks()
+
+
 
 let rec UserIn() =
     let blockLst = addMegaBlock ()
     let refLst = refactor (List.sort blockLst)
-    let conns = makeLinks refLst
-    printf "Final list: %A" conns
+    printf"Current list %A" refLst
+    let connections = makeLinks ()
+    printf "Final list: %A" connections
     
 
