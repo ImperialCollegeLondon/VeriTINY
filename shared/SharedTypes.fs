@@ -14,6 +14,9 @@ type Lexer = char list -> (char list * char list) option
 type NetIdentifier = {
     Name: string;
     SliceIndices: (int * int option) option 
+    //first int is upper index for slicing/IO bus definitions or wire index in bus if a single wire in a bus needs to be selected
+    //second int is lower index for slicing/IO bus definitions
+    //SliceIndicies can be None if whole bus is to be selected 
 }
 type TLogic = {
     Name: string
