@@ -137,6 +137,16 @@ let createNamedNetList netNodes =
 
     List.fold foldNetNodesToNamedNets [] netNodes
 
+let padBusToLength busMap fullLength =
+    if Map.count busMap >= fullLength
+    then busMap
+    else
+        [1..(fullLength - (Map.count busMap))]
+        |> List.map (fun _ -> Low)
+        |> List.append (List.map snd (Map.toList busMap))
+        |> List.mapi (fun i logicLevel -> (i, logicLevel))
+        |> Map
+
 
 let updateBus bus (a,b) newLogicLevels = 
  
