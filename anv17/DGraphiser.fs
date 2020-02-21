@@ -109,7 +109,7 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
 //*********Graph Execution***********
 
-let createNamedNetList netNodes =
+let createNamedNetMap netNodes =
 
     let netNodeToNet node = 
         match node.BusIndicies with 
@@ -122,7 +122,7 @@ let createNamedNetList netNodes =
 
     let foldNetNodesToNamedNets namedNetLst netNode = List.append namedNetLst [netNodeToNamedNet netNode]
 
-    List.fold foldNetNodesToNamedNets [] netNodes
+    List.fold foldNetNodesToNamedNets [] netNodes |> Map
 
 //graph evaluation steps
 //1. create all nets 
@@ -132,3 +132,35 @@ let createNamedNetList netNodes =
 // - evaluate operator node outputs and assign the netnodes associated with them, their values
 // - remove evaluated edges from list 
 //4. Find output nodes and return their values (in order)
+
+let evaluateGraph (graphEdges: DGraphEdge list, graphNodes: DGraphNode list)  (inputMap: Map<string,GraphEndPoint list>) =
+    let nets = 
+        List.filter (fun node ->
+            match node with
+            |DGraphNetNode _ -> true
+            |_ -> false) graphNodes
+        |> createNamedNetMap
+
+
+    let getNetByName netMap name = 
+        match Map.tryFind netMap name with
+        |Some net -> net
+        |None -> failwithf "Could not find net with name %s in list %A" name netLst
+
+    let assignInputValues inputMap = 
+        let assignInputToNet (netName:string) (netValue: GraphEndPoint) =
+            let net = getNetByName nets netName             
+            match net with
+            |Bus busMap -> 
+                let newLogicLevels = padLogicLvlListToLength (uintToLogicLevelList netValue) (Map.count net)
+                updateBus busMap None newLogicLevels
+            |Wire wireMap -> updateWire wireMap netValue
+        
+        Map.map (fun netName netValue -> 
+            if Map.containsKey netName inputMap
+            then assignInputToNet netName netValue
+            else netValue) nets
+
+    let moduleInputNetNames = 
+        Map.toList inputMap
+        |> List.map (fst)
