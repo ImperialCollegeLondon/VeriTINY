@@ -11,12 +11,16 @@ type GeneralNet = (bool * NamedNet)
 type NGram = (char list * bool * bool) list
 type Lexer = char list -> (char list * char list) option
 
+type NetIdentifier = {
+    Name: string;
+    SliceIndices: (int * int option) option 
+}
 type TLogic = {
     Name: string
-    ExpressionList: (Operator * string list * string list) list
-    Inputs: string list
-    Outputs: string list
-    Wires: string list
+    ExpressionList: (Operator * NetIdentifier list * NetIdentifier list) list
+    Inputs: NetIdentifier list
+    Outputs: NetIdentifier list
+    Wires: NetIdentifier list
 }  
 
 type Connection = Megablock * GeneralNet list * GeneralNet list 
