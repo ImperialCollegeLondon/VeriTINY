@@ -1,80 +1,11 @@
 module Evaluator
 open SharedTypes
+open ExampleTypes
 
 
 // GeneralNet = bool * NamedNet
 // NamedNet = string * Net
 // Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
-
-// test purposes
-let GenNetListInA : GeneralNet list = 
-    [false, ("A0", Wire (Map [0, Low]));
-    false, ("A1", Wire (Map [0, Low]))
-    ]
-
-let GenNetListOutA : GeneralNet List =
-    [false, ("AOut", Wire (Map [0, Low]))]
-
-// test purposes
-let GenNetListInB : GeneralNet list = 
-    [false, ("B0", Wire (Map [0, Low]));
-    false, ("B1", Wire (Map [0, Low]))
-    ]
-
-let GenNetListOutB : GeneralNet list =
-    [false, ("BOut", Wire (Map [0, Low]))]
-
-let GenNetListInDFF : GeneralNet list = 
-    [false, ("BOut", Wire (Map [1, Low]))]
-
-let GenNetListOutDFF : GeneralNet list =
-    [true, ("C1", Wire (Map [0, Low]))]
-
-let GenNetListInC : GeneralNet list =
-    [false, ("C0", Wire (Map [0, Low]));
-     true, ("C1", Wire (Map [0, Low]))
-    ]
-
-let GenNetListOutC : GeneralNet list = 
-    [false, ("COut", Wire (Map [0, Low]))]
-
-// type Megablock = Name of string
-// type connection = Megablock, GenNet list , GenNet list
-/// example connection list
-let connectListEx : Connection list= 
-    [(Name "Module A", GenNetListInA, GenNetListOutA);
-    (Name "Module B", GenNetListInB, GenNetListOutB);
-    (Name "DFF", GenNetListInDFF, GenNetListOutDFF);
-    (Name "Module C", GenNetListInC, GenNetListOutC)
-    ]
-
-// to update a genNet need to know:
-// if bus: which wire in a bus (0, 1, 2) 
-// if wire: just change the wire (0) to new logicLevel
-// can't update a map, so need to rewrite the whole map...
-// GenNet type example: false, ("BOut", Wire (Map [1, Low]))
-let BusEx : GeneralNet =
-    false, ("BusA", Bus(Map [0, Low; 1, High; 2, Low; 3, High]))
-let wireEx : GeneralNet =
-    false, ("WireA", Wire(Map [0, Low]))
-let mixedEx : GeneralNet list =
-    [false, ("BusA", Bus(Map [0, Low; 1, High; 2, Low; 3, High]));
-    false, ("WireA", Wire(Map [0, Low]));
-    false, ("WireB", Wire(Map [0, High]));
-    false, ("WireC", Wire(Map [0, High]))
-    ]
-
-let dffMixedIn : GeneralNet list =
-    [false, ("Wire A", Wire(Map [0, Low]));
-    false, ("Bus B", Wire(Map [0, Low; 1, High]));
-    false, ("Wire C", Wire(Map [0, High]));
-    ]
-
-let dffMixedOut : GeneralNet list =
-    [true, ("Bus D", Bus(Map [0, Low; 1, Low; 2, Low]));
-    true, ("Wire E", Wire(Map [0, Low]));
-    ]
-
 
 let extractNet (genNetIn: GeneralNet): Net =
     match genNetIn with
@@ -112,7 +43,7 @@ let rec splitLst acc (logLst:LogicLevel list) (lstOfLengths: int list) =
 let splitTest = splitLst [] [High;Low;High;Low;High;Low;High;Low] [1;3;3;1]
 
 // rebuild GeneralNet with newMap
-let reconstructNet (genNetIn: GeneralNet) newMap =
+let updateNet (genNetIn: GeneralNet) newMap =
     match genNetIn with
     | (sync, (str, Wire _)) -> 
         sync, (str, Wire newMap)
@@ -128,17 +59,60 @@ let rec lstOpParallel acc f lstA lstB =
         | _ -> 
             acc
 
-let updateDFF genNetLstIn genNetLstOut =
-    let generateList n = [0..n-1]
-    let lstOfLog = List.collect (extractNet >> extractLogLevel) genNetLstIn
+// will need to take megablock, function to evaluate outputs
+// also need genNetLstIn to evaluate, and genNetLstOut to know what map to create
+// currently just takes input and passes to output (DFF functionality)
+let generateNewMap genNetLstIn genNetLstOut =
+    let newLog = List.collect (extractNet >> extractLogLevel) genNetLstIn 
     let lstOfLengths = findLength genNetLstOut
-    let grpLog = splitLst [] lstOfLog lstOfLengths
+
+    let grpLog = splitLst [] newLog lstOfLengths
+    let generateList n = [0..n-1]
     let grpNum = List.map generateList lstOfLengths
+
     let zipOut = lstOpParallel [] List.zip grpNum grpLog
-    let newMaps = zipOut |> List.map Map.ofList
-    lstOpParallel [] reconstructNet genNetLstOut newMaps
+    zipOut |> List.map Map.ofList
+
+let updateDFF genNetLstIn genNetLstOut =
+    // generateNewMap will have an input argument that takes in "DFF"
+    let newMapLst = generateNewMap genNetLstIn genNetLstOut
+    lstOpParallel [] updateNet genNetLstOut newMapLst
 
 let updateDFFTest = updateDFF dffMixedIn dffMixedOut
+
+//given a genNetlist, check if synchronous or not
+let syncCheck (genNet:GeneralNet) = 
+    match genNet with
+    | false, _ ->
+        false
+    | true, _ ->
+        true
+
+let filterNotSync (genNetLst:GeneralNet list) =
+    List.filter syncCheck genNetLst
+
+/// initialize synchronous nets (outputs of DFFs) to 0 
+let initializeSync (cIn:Connection) =
+    // search for all synchronous nets then update them to 0
+    let _, genLstIn, genLstOut = cIn
+    filterNotSync genLstOut
+    // then set all of the nets to 0 using logicLst of "LOW" length N 
+    
+// how to use memoisation:
+// let memoise fn =
+//     let mutable cache = Map []
+//     fun x -> ...
+// let square x = 
+//     printfn "square called with x = %A" x
+//     x*x
+// let mSquare = memoise square
+
+
+
+// netLst = list of Nets   do i need this?
+// cLst = connection List 
+// megaLst = megablock list    type megablock = Name of String   don't need this?
+// let advanceState netLst cLst megaLst =
 
 
 //given Connection list, find all synchronous elements
@@ -149,16 +123,3 @@ let updateDFFTest = updateDFF dffMixedIn dffMixedOut
 //     let indexList = m |> Map.toList |> List.map fst
 //     else
 //     input
-
-    
-// let genNetWireUpdate (inp: GeneralNet) newLog : GeneralNet = 
-//     match inp with
-//     | false, (str, net) ->
-//         false, (str, wireUpdate newLog)
-//     | true, (str, net) -> 
-//         true, (str, wireUpdate newLog)
-
-
-
-    
-

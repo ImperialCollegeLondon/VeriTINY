@@ -2,9 +2,10 @@
 
 open System
 
+open SharedTypes
+open ExampleTypes
 open Evaluator
 
-let hi = connectListEx
 
 [<EntryPoint>]
 let main argv =
