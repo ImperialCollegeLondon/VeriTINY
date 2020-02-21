@@ -5,8 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../shared/SharedTypes.fs" />
+    <Compile Include="NetHelper.fs" />
     <Compile Include="DGraphiser.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Program.fs" />    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Expecto.FsCheck" Version="8.13.1" />

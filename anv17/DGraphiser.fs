@@ -1,5 +1,6 @@
 module DGraphiser
 open SharedTypes
+open NetHelper
 
 //TODO: make slice parser and integrate with AdjListEntry type
 //TODO: Use results instead of failwithfs so errors can be propagated to UI
@@ -108,25 +109,11 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
 //*********Graph Execution***********
 
-//******Types********* - TOOD: replace with types in shared types later 
-type LogicLevel = | High | Low
-type GraphEndPoint = |LogicLevel|BusInput of int //TODO: Change BusInput to BusValue
-type Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
-type NamedNet = string * Net
-
-//**************Net Helper functions*******************
-
-let createNewBus (a, b) = 
-        [a..b]
-        |> List.map (fun x -> (x, Low)) 
-        |> Map
-        |> Bus
-
 let createNamedNetList netNodes =
 
     let netNodeToNet node = 
         match node.BusIndicies with 
-        |Some busIndices ->  createNewBus busIndices
+        |Some busIndices -> createNewBus busIndices
         |None -> Wire (Map [(0, Low)])
 
     let netNodeToNamedNet node = 
@@ -137,42 +124,11 @@ let createNamedNetList netNodes =
 
     List.fold foldNetNodesToNamedNets [] netNodes
 
-let padLogicLvlListToLength logicLvlLst fullLength =
-
-    if List.length logicLvlLst >= fullLength
-    then logicLvlLst
-    else
-        [1..(fullLength - (List.length logicLvlLst))]
-        |> List.map (fun _ -> Low)
-        |> List.append logicLvlLst
-
-
-let updateBus bus (a,b) newLogicLevels = 
- 
-    if (b - a + 1) <> (List.length newLogicLevels) || not (Map.containsKey b bus) || not (Map.containsKey a bus)
-    then failwith "Cannot update bus, error in given bus slice"
-    else
-        bus
-        |> Map.map (fun key oldVal ->
-            if key >= a && key <= b
-            then newLogicLevels.[key - a]
-            else oldVal
-            )
-
-let updateWire wire newLogicLevel = Map.add 0 newLogicLevel wire
-
-let rec uintToLogicLevelList uint logicLvlLst =
-    if uint = 0
-    then logicLvlLst
-    else
-        if (uint % 2) = 1
-        then uintToLogicLevelList (uint / 2) (logicLvlLst @ [High])
-        else uintToLogicLevelList (uint / 2) (logicLvlLst @ [Low])
-
-let logicLevelsToUint logicLvlLst = 
-    let getDecimalValue bitPos bit = 
-        if bit = High
-        then int ((float 2) ** (float bitPos))
-        else 0
-    List.mapi getDecimalValue logicLvlLst
-    |> List.reduce (+)
+//graph evaluation steps
+//1. create all nets 
+//2. assign input values
+//3. repeatedly evaluate all possible edges in a list until no more edges remain to be evaluated
+// - find edges with operator outputs whose inputs are already evaluated
+// - evaluate operator node outputs and assign the netnodes associated with them, their values
+// - remove evaluated edges from list 
+//4. Find output nodes and return their values (in order)
