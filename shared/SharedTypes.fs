@@ -11,9 +11,13 @@ type GeneralNet = (bool * NamedNet)
 type NGram = (char list * bool * bool) list
 type Lexer = char list -> (char list * char list) option
 
+type NetIdentifier = {
+    Name: string;
+    SliceIndices: (int * int option) option 
+}
 type TLogic = {
     Name: string
-    ExpressionList: (Operator * string * string option) list
+    ExpressionList: (Operator * NetIdentifier list * NetIdentifier list) list
     Inputs: string list
     Outputs: string list
     Wires: string list
@@ -36,6 +40,3 @@ type DGraphEdge = {
     SliceIndicies: (int * int) option
     IsSliceOfInput: bool
 }
-
-
-
