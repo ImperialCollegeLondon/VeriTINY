@@ -18,9 +18,9 @@ type NetIdentifier = {
 type TLogic = {
     Name: string
     ExpressionList: (Operator * NetIdentifier list * NetIdentifier list) list
-    Inputs: string list
-    Outputs: string list
-    Wires: string list
+    Inputs: NetIdentifier list
+    Outputs: NetIdentifier list
+    Wires: NetIdentifier list
 }  
 
 type Connection = Megablock * GeneralNet list * GeneralNet list 
