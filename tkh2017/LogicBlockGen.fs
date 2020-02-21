@@ -63,9 +63,3 @@ let convertAST (ast: ModuleType) =
     match ast with 
     | MODULE (name, portlist, moditems) ->
         moditems |> List.fold getModItem {Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}
-
-
-let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
-
-match tokenise sampleCode |> parse with 
-| Ok ast -> convertAST ast

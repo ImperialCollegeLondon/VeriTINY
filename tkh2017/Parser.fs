@@ -181,5 +181,5 @@ let parse inpTokList =
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
 
-let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
-tokenise sampleCode |> parse
+// let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
+// tokenise sampleCode |> parse
