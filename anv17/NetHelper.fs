@@ -17,9 +17,18 @@ let padLogicLvlListToLength logicLvlLst fullLength =
         |> List.append logicLvlLst
 
 
-let updateBus bus (a,b) newLogicLevels = 
- 
-    if (b - a + 1) <> (List.length newLogicLevels) || not (Map.containsKey b bus) || not (Map.containsKey a bus)
+//caller can supply None for slice indicies to update whole bus
+let updateBus bus sliceIndices newLogicLevels = 
+    let (a,b) = 
+        match sliceIndices with
+        |Some (x,y) -> (x,y)
+        |None -> 
+            let wireIndices = 
+                Map.toList bus
+                |> List.map (fst)
+            (List.min wireIndices, List.max wireIndices)
+
+    if abs(b - a + 1) <> (List.length newLogicLevels) || not (Map.containsKey b bus) || not (Map.containsKey a bus)
     then failwith "Cannot update bus, error in given bus slice"
     else
         bus
