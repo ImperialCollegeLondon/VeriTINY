@@ -1,4 +1,4 @@
-module LogicEval
+module CombEval
 
 open SharedTypes
 open EvalNetHelper

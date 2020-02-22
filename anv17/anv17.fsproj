@@ -5,10 +5,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../shared/SharedTypes.fs" />
+    <Compile Include="LogicOperations.fs" />
     <Compile Include="EvalTypes.fs" />
     <Compile Include="EvalNetHelper.fs" />
-    <Compile Include="LogicEval.fs" />
-    <Compile Include="DGraphiser.fs" />
+    <Compile Include="CombEval.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
