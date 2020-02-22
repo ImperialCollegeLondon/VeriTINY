@@ -1,4 +1,4 @@
-module NetHelper
+module EvalNetHelper
 open SharedTypes
 open EvalTypes
 
