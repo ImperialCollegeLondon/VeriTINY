@@ -41,15 +41,15 @@ let updateBus bus sliceIndices newLogicLevels =
 
 let updateWire wire newLogicLevel = Map.add 0 (Some newLogicLevel) wire
 
-let rec uintToLogicLevelList uint logicLvlLst =
+let rec intToLogicLevelList uint logicLvlLst =
     if uint = 0
     then logicLvlLst
     else
         if (uint % 2) = 1
-        then uintToLogicLevelList (uint / 2) (logicLvlLst @ [High])
-        else uintToLogicLevelList (uint / 2) (logicLvlLst @ [Low])
+        then intToLogicLevelList (uint / 2) (logicLvlLst @ [High])
+        else intToLogicLevelList (uint / 2) (logicLvlLst @ [Low])
 
-let logicLevelsToUint logicLvlLst = 
+let logicLevelsToint logicLvlLst = 
     let getDecimalValue bitPos bit = 
         if bit = High
         then int ((float 2) ** (float bitPos))

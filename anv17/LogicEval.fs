@@ -33,7 +33,7 @@ let assignInputValues (inputMap: Map<NetIdentifier, GraphEndPoint>) (netMap: Map
         |BusInput busInp ->             
             match net with
             |EvalBus busMap ->
-                let paddedLogicLvlLst = padLogicLvlListToLength (uintToLogicLevelList busInp []) (Map.count busMap)
+                let paddedLogicLvlLst = padLogicLvlListToLength (intToLogicLevelList busInp []) (Map.count busMap)
                 EvalBus(updateBus busMap None paddedLogicLvlLst)
             |_ -> failTypeMismatch net input
     
@@ -43,7 +43,7 @@ let assignInputValues (inputMap: Map<NetIdentifier, GraphEndPoint>) (netMap: Map
     |None -> net )
 
 
-let evaluateExprLst (exprToEvaluate: Expression list) (netMap: Map<NetIdentifier, Net>) ((evaluatedNets, netsToEvaluate): NetIdentifier list * NetIdentifier list) =
+let evaluateExprLst (exprToEvaluate: Expression list) (netMap: Map<NetIdentifier, EvalNet>) ((evaluatedNets, netsToEvaluate): NetIdentifier list * NetIdentifier list) =
     let canEvalExpression exprInputs = 
         (true, exprInputs) ||> List.fold (fun expressionEvaluatable inp ->
         if !expressionEvaluatable
@@ -52,5 +52,4 @@ let evaluateExprLst (exprToEvaluate: Expression list) (netMap: Map<NetIdentifier
 
     let expressionsToEvaluate = List.filter (fun (_, inpLst, _) -> canEvalExpression inpLst) exprToEvaluate
 
-    
-       
+    let evaluateExpr (op, inpLst, outLst) =
