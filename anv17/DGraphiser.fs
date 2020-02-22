@@ -80,20 +80,45 @@ let formEdgesAndOpNodes netNodeLst exprLst =
 
 //*********Graph Execution***********
 
-let createNamedNetMap netNodes =
+let netNodeToNet node = 
+    match node.BusIndicies with 
+    |Some busIndices -> createNewBus busIndices
+    |None -> Wire (Map [(0, Low)])
 
-    let netNodeToNet node = 
-        match node.BusIndicies with 
-        |Some busIndices -> createNewBus busIndices
-        |None -> Wire (Map [(0, Low)])
+let createEDGraphNodes dGraphNodes graphEdges =
+    let findEdgeWithNodeAsOutput node = 
+        match List.tryFind (fun edge -> edge.Output = node) graphEdges with //problem here with custom type instances not being unique ***************
+        |Some edge -> edge
+        |None -> failwithf "Couldn't find edge with %A node as ouput in %A" node graphEdges
 
-    let netNodeToNamedNet node = 
-        let net = netNodeToNet node
-        NamedNet(node.NetName, net)
+    let rec getNetSize sliceIndices =
+        match sliceIndices with
+        |Some (_, None)
+        |None -> 1
+        |Some (x, Some y) -> abs(x - y + 1)
 
-    let foldNetNodesToNamedNets namedNetLst netNode = List.append namedNetLst [netNodeToNamedNet netNode]
+    let opNodeToNet opNode = 
+        match opNode with
+        |OpNode Concat -> failwith "Concatenation not implemented yet"
+        |OpNode And
+        |OpNode Or
+        |OpNode Not
+        |OpNode Pass -> 
+            let nodeInpEgde = findEdgeWithNodeAsOutput opNode
+            let nodeNetSize = getNetSize nodeInpEgde.SliceIndices
+            if nodeNetSize = 1
+            then Wire (Map [(0, Low)])
+            else createNewBus (0, nodeNetSize - 1)
 
-    List.fold foldNetNodesToNamedNets [] netNodes |> Map
+        |_ -> failwithf "Something went wrong ,expecting opNode, got %A" opNode
+
+    let dGraphNodeToEDGraphNode node = 
+        match node with
+        |NetNode x -> node, netNodeToNet x
+        |OpNode _ -> node, opNodeToNet node
+
+
+    ([], dGraphNodes) ||>List.fold (fun eDGraphNodes dGraphNode -> List.append eDGraphNodes [dGraphNodeToEDGraphNode dGraphNode])
 
 //graph evaluation steps
 //1. create all nets 
@@ -104,36 +129,41 @@ let createNamedNetMap netNodes =
 // - remove evaluated edges from list 
 //4. Find output nodes and return their values (in order)
 
-type EDraphNode = DGraphNode * Net //EDGraphNode - Evaluation DGraphNode
+// type EDraphNode = DGraphNode * Net //EDGraphNode - Evaluation DGraphNode
 
-let evaluateGraph (graphEdges: DGraphEdge list, graphNodes: DGraphNode list)  (inputMap: Map<string,GraphEndPoint list>) =
-    let nets = 
-        List.filter (fun node ->
-            match node with
-            |DGraphNetNode _ -> true
-            |_ -> false) graphNodes
-        |> createNamedNetMap
+// let evaluateGraph (graphEdges: DGraphEdge list, graphNodes: DGraphNode list)  (inputMap: Map<string,GraphEndPoint list>) =
+//     let evalNodes = createEDGraphNodes graphNodes
 
 
-    let getNetByName netMap name = 
-        match Map.tryFind netMap name with
-        |Some net -> net
-        |None -> failwithf "Could not find net with name %s in list %A" name netLst
+//     let getEDGraphNodeByName name = 
+//         match Map.tryFind netMap name with
+//         |Some net -> net
+//         |None -> failwithf "Could not find net with name %s in list %A" name netLst
 
-    let assignInputValues inputMap = 
-        let assignInputToNet (netName:string) (netValue: GraphEndPoint) =
-            let net = getNetByName nets netName             
-            match net with
-            |Bus busMap -> 
-                let newLogicLevels = padLogicLvlListToLength (uintToLogicLevelList netValue) (Map.count net)
-                updateBus busMap None newLogicLevels
-            |Wire wireMap -> updateWire wireMap netValue
+//     let assignInputValues inputMap = 
+//         let assignInputToNet (netName:string) (netValue: GraphEndPoint) =
+//             let net = getNetByName nets netName             
+//             match net with
+//             |Bus busMap -> 
+//                 let newLogicLevels = padLogicLvlListToLength (uintToLogicLevelList netValue) (Map.count net)
+//                 updateBus busMap None newLogicLevels
+//             |Wire wireMap -> updateWire wireMap netValue
         
-        Map.map (fun netName netValue -> 
-            if Map.containsKey netName inputMap
-            then assignInputToNet netName netValue
-            else netValue) nets
+//         Map.map (fun netName netValue -> 
+//             if Map.containsKey netName inputMap
+//             then assignInputToNet netName netValue
+//             else netValue) nets
 
-    let moduleInputNetNames = 
-        Map.toList inputMap
-        |> List.map (fst)
+//     let moduleInputNetNames = 
+//         Map.toList inputMap
+//         |> List.map (fst)
+
+    
+//     // let rec evaluateNodesWithFilledInputs (evaluatedNets:string list) (remainingEdges: DGraphEdge list) (currentNetState: Map<string, Net>)  =
+
+//     //     let rec evaluateOpEdges (evaluatedNets:string list) (remainingEdges: DGraphEdge list) (currentNetState: Map<string, Net>) = 
+
+
+//     //     if List.isEmpty remainingEdges
+//     //     then currentNetState
+//     //     else
