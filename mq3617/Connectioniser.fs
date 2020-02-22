@@ -29,11 +29,12 @@ let searchOutNets str (conn:Connection)=
     List.contains (str) (List.map (fun x->(fst(snd x))) (third conn))
 
 /// net type helper funcitons
-let netLen (net:GeneralNet): int =
-    match  snd (snd net) with
+let netLen genNet =
+    match  snd (snd genNet) with
     | Wire netMap
     | Bus netMap ->
     netMap |> Map.toList |> List.map fst |> List.length
+
 let makeBusBits int=
     match int with
     |0 -> Map [0,Low]
@@ -53,6 +54,15 @@ let genConnections name blist=
     let mBlock = (List.filter (searchBlocks name) blist).Head
     (Name name,genGenNets mBlock.Inputs,genGenNets mBlock.Outputs)
 
+let getNamefromNet refName (genNet:GeneralNet) =
+    let name = fst (snd genNet)
+    match name with
+    |name when name=refName -> true
+    |_ -> false
+
+let getNetfromName (name:string) (netList:GeneralNet list)=
+    List.find (getNamefromNet name) (netList)
+
 ///// recursive input functions
 let rec addMegaBlock ()=
     match Console.ReadLine() with
@@ -64,26 +74,42 @@ let rec addMegaBlock ()=
 
 let rec refactor (blist: Connection list) =
     match blist.Head with
-    |connection when (blist.Tail).Length=0 -> [connection]
+    |connection when (blist.Tail).Length=0 -> [ ((first connection),(List.map (fun (x:GeneralNet) -> (fst x),(((fst (snd x))+((blist.Length).ToString())),(snd (snd x)))) (second connection)),(List.map (fun (x:GeneralNet) -> (fst x),(((fst (snd x))+((blist.Length).ToString())),(snd (snd x)))) (third connection)))]
     |connection -> ((first connection),(List.map (fun (x:GeneralNet) -> (fst x),(((fst (snd x))+((blist.Length).ToString())),(snd (snd x)))) (second connection)),(List.map (fun (x:GeneralNet) -> (fst x),(((fst (snd x))+((blist.Length).ToString())),(snd (snd x)))) (third connection)))::(refactor blist.Tail)
     |_->[]               
 
-let rec makeLinks ()=
+let checkValidConnection inName outName (conlist:Connection list)=
+    let inNet =getNetfromName inName (List.collect (second) conlist)
+    let outNet =getNetfromName outName (List.collect (third) conlist)
+    match inNet,outNet with
+    |a,b when (netLen a <> netLen b) -> printf "nets cannot be connected as they are of differnet sizes"
+                                        false
+    |a,b when (inName.[inName.Length - 1]=outName.[outName.Length - 1]) && not(fst a) && not(fst b) -> printf "nets cannot be connected as they would form an unclocked loop"
+                                                                                                       false
+    |_ -> printf "connection made between %s %s, if this is impossible tell Mark" inName outName
+          true
+
+let rec makeLinks conlist=
     printf "Enter input node"
     match Console.ReadLine() with
     |"end" ->[]
-    |str -> printf "enter output node"
-            [(str, Console.ReadLine())]::makeLinks()
-
+    |str when List.contains (true) (List.map (searchInNets str)  conlist) -> printf "enter output node"
+                                                                             match Console.ReadLine () with  
+                                                                             |st2 when not(List.contains (true) (List.map (searchOutNets st2)  conlist))-> printf "NANI!? could not find output node: %A" st2    
+                                                                                                                                                           makeLinks conlist
+                                                                             |st2 when (checkValidConnection str st2 conlist)->(str, st2)::makeLinks conlist
+                                                                             |_->makeLinks conlist
+    |str -> printf "NANI!? input node: %A was not found " str
+            makeLinks conlist
+ 
 let finaliseConnections conlist =
-    let conns = makeLinks()
-    []
+    printf"Current list %A" conlist
+    makeLinks conlist
 
 let rec UserIn() =
     addMegaBlock ()
     |> List.sort
     |> refactor
-    |> printf"Current list %A"
     |> finaliseConnections 
     |> printf "final output list%A" 
     
