@@ -1,11 +1,12 @@
 module NetHelper
 open SharedTypes
+open EvalTypes
 
 let createNewBus (a, b) = 
         [a..b]
-        |> List.map (fun x -> (x, Low)) 
+        |> List.map (fun x -> (x, None)) 
         |> Map
-        |> Bus
+        |> EvalBus
 
 let padLogicLvlListToLength logicLvlLst fullLength =
 
@@ -34,11 +35,11 @@ let updateBus bus sliceIndices newLogicLevels =
         bus
         |> Map.map (fun key oldVal ->
             if key >= a && key <= b
-            then newLogicLevels.[key - a]
+            then Some newLogicLevels.[key - a]
             else oldVal
             )
 
-let updateWire wire newLogicLevel = Map.add 0 newLogicLevel wire
+let updateWire wire newLogicLevel = Map.add 0 (Some newLogicLevel) wire
 
 let rec uintToLogicLevelList uint logicLvlLst =
     if uint = 0
