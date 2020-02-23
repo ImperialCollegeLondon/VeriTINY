@@ -19,10 +19,10 @@ let extractLogicLevel logicLvlOpt =
 let apply2OpToBus op (bus1: Map<int,LogicLevel option>, bus1StartIndex: int) (bus2: Map<int,LogicLevel option>, bus2StartIndex : int) = 
     let getCorrespondingNet2Index net1Index = bus2StartIndex + net1Index - bus1StartIndex
     Map.toList bus1
-    |> List.mapi (fun i (mapIndex, logicLvlOpt) ->
+    |> List.map(fun (mapIndex, logicLvlOpt) ->
         let logicLvl1 = extractLogicLevel logicLvlOpt
         let logicLvl2 = extractLogicLevel bus2.[getCorrespondingNet2Index mapIndex]
-        i, Some (op logicLvl1 logicLvl2))
+        mapIndex - bus1StartIndex, Some (op logicLvl1 logicLvl2))
     |> Map
 
 let ANDOpBus (bus1: Map<int,LogicLevel option>, bus1StartIndex: int) (bus2: Map<int,LogicLevel option>, bus2StartIndex : int) =
