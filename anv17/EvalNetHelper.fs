@@ -2,9 +2,9 @@ module EvalNetHelper
 open SharedTypes
 open EvalTypes
 
-let createNewBus (a, b) = 
+let createNewBus (a, b) initVal = 
         [a..b]
-        |> List.map (fun x -> (x, None)) 
+        |> List.map (fun x -> (x, initVal)) 
         |> Map
         |> EvalBus
 
