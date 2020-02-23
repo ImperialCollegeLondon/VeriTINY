@@ -15,7 +15,7 @@ let extractLogicLevel logicLvlOpt =
         |Some logicLvl -> logicLvl
         |None -> failwith "Logic Level has not been assigned yet"
 
-
+//assumes little endian
 let apply2OpToBus op (bus1: Map<int,LogicLevel option>, bus1StartIndex: int) (bus2: Map<int,LogicLevel option>, bus2StartIndex : int) = 
     let getCorrespondingNet2Index net1Index = bus2StartIndex + net1Index - bus1StartIndex
     Map.toList bus1
