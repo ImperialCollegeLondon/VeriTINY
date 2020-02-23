@@ -97,7 +97,7 @@ let rec makeLinks conlist=
                                                                              match Console.ReadLine () with  
                                                                              |st2 when not(List.contains (true) (List.map (searchOutNets st2)  conlist))-> printf "NANI!? could not find output node: %A" st2    
                                                                                                                                                            makeLinks conlist
-                                                                             |st2 when (checkValidConnection str st2 conlist)->(str, st2)::makeLinks conlist
+                                                                             |st2 when (checkValidConnection str st2 conlist)->(str, st2,((fst (getNetfromName str (List.collect (second) conlist)))||(fst (getNetfromName st2 (List.collect (third) conlist))),(snd (getNetfromName str (List.collect (second) conlist)))))::makeLinks conlist
                                                                              |_->makeLinks conlist
     |str -> printf "NANI!? input node: %A was not found " str
             makeLinks conlist
@@ -105,6 +105,7 @@ let rec makeLinks conlist=
 let finaliseConnections conlist =
     printf"Current list %A" conlist
     makeLinks conlist
+
 
 let rec UserIn() =
     addMegaBlock ()
