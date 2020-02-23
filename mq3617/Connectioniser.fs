@@ -103,7 +103,11 @@ let rec makeLinks conlist=
             makeLinks conlist
 
 let updateNets conn links=
-    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->(third (links.Item(1))) |_->x) conn
+    let matchNames name link =
+        match first link,second link with
+        |a,b when a=name || b=name ->true
+        |_->false
+    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->third (List.find (matchNames name) links) |_->x) conn
 
 let finaliseConnections conlist =
     printf"Current list %A" conlist
