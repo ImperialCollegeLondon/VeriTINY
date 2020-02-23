@@ -101,11 +101,16 @@ let rec makeLinks conlist=
                                                                              |_->makeLinks conlist
     |str -> printf "NANI!? input node: %A was not found " str
             makeLinks conlist
- 
+
+let updateNets conn links=
+    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->(third (links.Item(1))) |_->x) conn
+
 let finaliseConnections conlist =
     printf"Current list %A" conlist
-    makeLinks conlist
-
+    let links = makeLinks conlist
+    printf "links: %A" links
+    List.map (fun x -> (first x,updateNets (second x) links,updateNets (third x) links)) conlist
+    
 
 let rec UserIn() =
     addMegaBlock ()
