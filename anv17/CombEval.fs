@@ -54,43 +54,46 @@ let evaluateExprLst (exprToEvaluate: Expression list) (netMap: Map<NetIdentifier
     let expressionsToEvaluate = List.filter (fun (_, inpLst, _) -> canEvalExpression inpLst) exprToEvaluate
     let evaluateExpr (op: Operator , inpLst: NetIdentifier list , outLst: NetIdentifier list) =
 
-        //TODO: implement getting slices and operating on them - replace places where netMap is directly accessed 
-        let isExpressionOnWire = 
-            match netMap.[List.head inpLst] with
-            |EvalBus _ -> false
-            |EvalWire _ -> true
-
+        //TODO: Generate errors when bus sizes don't match
+        //Expressions can only have single output, change TLogic type
         let outputBusSize = 
             let _, busIndices = List.head outLst
             match busIndices with
             |Some (x, Some y) -> abs(x - y + 1)
+            |Some (_, None)
             |None -> 1
             |_ -> failwithf "Expected bus or wire indices, got %A" busIndices
 
         let getStartIndex busNetID = 
             match busNetID.SliceIndices with
             |Some (x, Some y) -> min x y
+            |Some (x, None) -> x
+            |None -> 0
             |_ -> failwithf "Expected bus indices, got %A" busIndices
 
-        let formOutput busOperator initValue =
-            if isExpressionOnWire
-                then
-                    let startNet = (0, Some initValue) |> Map
-                    List.fold (fun result inpNetID -> 
-                        let inpNet = netMap.[inpNetID]
-                        busOperator (result, 0) (inpNet, 0)) startNet inpLst
-                else
-                    let startNet = createNewBus (0, outputBusSize - 1) initValue
-                    List.fold (fun result inpNetID ->
-                        let inpNet = netMap.[inpNetID]
-                        busOperator (result, 0) (inpNet getStartIndex inpNetID)) startNet inpLst
+        let getNetByName name = 
+            match Map.tryFindKey (fun netID -> netID.Name = name) netMap with
+            |Some key -> netMap.[key]
+            |None -> failwithf "Could not find net with name %s in netmap %A" name netMap
 
+        let reduceInpLstWithOp busOperator initValue =
+            let startNet = createNewBus (0, outputBusSize - 1) initValue
+            List.fold (fun result inpNetID ->
+                let inpNet = getNetByName(inpNetID.Name)
+                busOperator (result, 0) (inpNet, getStartIndex inpNetID)) startNet inpLst
 
+        let resultNet = 
+            match op with
+            |And -> reduceInpLstWithOp ANDOpBus High
+            |Or -> reduceInpLstWithOp OROpBus Low
+            |Not ->
+                let inpNetID = List.head inpLst //not operations should only have 1 input
+                NOTOpBus (getNetByName inpNetID.Name) (getStartIndex inpNetID) outputBusSize
+            |Pass -> 
+                let inpNetID = List
+                PassOpBus (getNetByName inpNetID.Name) (getStartIndex inpNetID) outputBusSize
+            |Concat -> failwith "Concatenation not implemented yet"
 
-        match op with
-        |And -> formOutput ANDOpBus High
-        |Or -> formOutput OROpBus Low
-        |Not -> NOTOpBus netMap.[List.head inpLst]
-        |Pass -> netMap.[List.head inpLst]
+        
 
         //TODO: Concat Operator
