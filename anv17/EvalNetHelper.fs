@@ -2,11 +2,23 @@ module EvalNetHelper
 open SharedTypes
 open EvalTypes
 
+let extractLogicLevel logicLvlOpt = 
+     match logicLvlOpt with
+        |Some logicLvl -> logicLvl
+        |None -> failwith "Logic Level has not been assigned yet"
+
+let extractNetMap evalNet =
+    match evalNet with
+    |EvalBus y
+    |EvalWire y -> y
+
+let createNewBusMap (a,b) initVal = 
+    [a..b]
+    |> List.map (fun x -> (x, initVal)) 
+    |> Map
+
 let createNewBus (a, b) initVal = 
-        [a..b]
-        |> List.map (fun x -> (x, initVal)) 
-        |> Map
-        |> EvalBus
+        createNewBusMap (a,b) initVal |> EvalBus
 
 let padLogicLvlListToLength logicLvlLst fullLength =
 
