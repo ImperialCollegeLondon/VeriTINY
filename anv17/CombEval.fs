@@ -44,7 +44,7 @@ let assignInputValues (inputMap: Map<NetIdentifier, GraphEndPoint>) (netMap: Map
     |None -> net )
 
 
-let rec evaluateExprLst (exprToEvaluate: Expression list) (netMap: Map<NetIdentifier, EvalNet>) (evaluatedNets: NetIdentifier list) =
+let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIdentifier list) (netMap: Map<NetIdentifier, EvalNet>) =
     if List.isEmpty exprToEvaluate
     then netMap
     else 
@@ -129,4 +129,30 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (netMap: Map<NetIdenti
                 then List.append evaluatedNets [netID]
                 else evaluatedNetLst) [] netMap
         
-        evaluateExprLst updatedExprToEvaluate updatedEvalNetMap updatedEvaluatedNets
+        evaluateExprLst updatedExprToEvaluate updatedEvaluatedNets updatedEvalNetMap
+
+let formOutputNets (moduleOutputs: NetIdentifier list) (netMap: Map<NetIdentifier, EvalNet>) =
+    let outputNets = 
+        List.fold (fun outputNetMap outputID ->
+            Map.add outputID netMap.[outputID] outputNetMap) (Map []) moduleOutputs
+
+    let evalNetToNet evalNet = 
+        let noOptNetMap = 
+            extractNetMap evalNet
+            |> Map.map (fun _ logicLvlOpt  -> extractLogicLevel logicLvlOpt)
+
+        match evalNet with
+        |EvalWire _ -> Wire noOptNetMap
+        |EvalBus _ -> Bus noOptNetMap
+    
+    Map.fold (fun outputNetMap netID evalNet -> Map.add netID (evalNetToNet evalNet) outputNetMap) (Map []) outputNets
+
+//TODO: fix variable names
+//TOOD: testing
+
+//top level function
+let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
+    formAllNets combModule
+    |> assignInputValues inputMap
+    |> evaluateExprLst combModule.ExpressionList combModule.Inputs
+    |> formOutputNets combModule.Outputs
