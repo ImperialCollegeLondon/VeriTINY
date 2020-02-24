@@ -68,3 +68,13 @@ let logicLevelsToint logicLvlLst =
         else 0
     List.mapi getDecimalValue logicLvlLst
     |> List.reduce (+)
+
+let isNetEvaluated evalNet = 
+    let netMap = extractNetMap evalNet
+    Map.fold (fun netEvaluated _ logicLevelOpt ->
+        if not netEvaluated
+        then false
+        else
+            match logicLevelOpt with
+            |Some logicLvl -> true
+            |None -> false) true netMap
