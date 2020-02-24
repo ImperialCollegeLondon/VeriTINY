@@ -7,6 +7,14 @@ let extractGenNetLsts (cIn: Connection) =
     let _, lstIn, lstOut = cIn
     lstIn, lstOut
 
+let reformatNet (gNet: GeneralNet) =
+    match gNet with
+    | (sync, (str, net)) -> str, (sync, net)
+
+let extractNetName (genNetIn: GeneralNet) =
+    match genNetIn with
+    | (_, (str, _)) -> str
+
 let extractNet (genNetIn: GeneralNet): Net =
     match genNetIn with
     | (_, (_, Wire netMap)) -> 
@@ -41,12 +49,12 @@ let rec groupLogic acc lstOfLog lstOfLengths =
 let updateGenNet (genNetIn: GeneralNet) newMap =
     match genNetIn with
     | (sync, (str, Wire _)) -> 
-        sync, (str, Wire newMap)
-    | (sync, (str, Bus _)) ->
-        sync, (str, Bus newMap)
+        sync, (str, Wire newMap) 
+    | (sync, (str, Bus _)) -> 
+        sync, (str, Bus newMap) 
 
-let updateGenLst genLst newMaps =
-    lstOpParallel [] updateGenNet genLst newMaps    
+let updateGenLst genNetLst newMaps =
+    lstOpParallel [] updateGenNet genNetLst newMaps    
 
 let generateNewMapLst func genNetLstIn genNetLstOut =
     let newLogic = func genNetLstIn 
@@ -74,7 +82,6 @@ let syncCheck (genNet:GeneralNet) =
 
 
 let initializeSync cLst =
-
     let updateIfSync (genNet:GeneralNet) = 
         if syncCheck genNet 
         then
@@ -82,27 +89,45 @@ let initializeSync cLst =
             updateGenNet genNet (createNewMap newMapLen)
         else
             genNet
-
     let setToLow (cIn: Connection) =
         cIn 
-        |> extractGenNetLsts 
+        |> extractGenNetLsts  
         |> opOnTuple (List.map updateIfSync)
-    List.map setToLow cLst
+    List.map setToLow cLst 
+
+let syncGenNets (cIn:Connection) =
+    let pickIf genNet =
+        if syncCheck genNet then extractNetName genNet else "hehe"
+    cIn |> extractGenNetLsts |> opOnTuple (List.map pickIf)
+
+
+let getInitMap currentInputs cLst =
+    let findAllSync (cLst:Connection List) =
+        let rec findSync acc gLst =
+            match gLst with
+            | hd::tl -> 
+                if syncCheck hd then 
+                    findSync (acc @ [hd]) tl
+                else 
+                    findSync acc tl
+            | [] -> List.distinct acc
+        let c (cIn: Connection) =
+            cIn |> extractGenNetLsts |> opOnTuple (findSync []) |> appendTuple
+        List.collect c cLst
+
+    currentInputs @ findAllSync cLst |> List.map reformatNet |> Map
 
 
 
-// how to use memoisation:
-// let memoise fn =
-//     let mutable cache = Map []
-//     fun x -> ...
-// let square x = 
-//     printfn "square called with x = %A" x
-//     x*x
-// let mSquare = memoise square
+// let advanceState (cLst: Connection List) =
+//     let memoise fn initMap =
+//        let mutable cache = initMap
+//        fun x ->
+//           match Map.containsKey x cache with
+//           | true -> cache.[x] // return cached value
+//           | false -> let res = fn x // compute function
+//                      cache <- Map.add x res cache //store result in cache
+//                      res //   
+    
 
 
-
-// netLst = list of Nets   do i need this?
-// cLst = connection List 
-// megaLst = megablock list    type megablock = Name of String   don't need this?
-// let advanceState netLst cLst megaLst =

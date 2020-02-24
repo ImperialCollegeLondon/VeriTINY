@@ -5,13 +5,14 @@ open SharedTypes
 // NamedNet = string * Net
 // Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
 // test purposes
+
 let GenNetListInA : GeneralNet list = 
     [false, ("A0", Wire (Map [0, Low]));
     false, ("A1", Wire (Map [0, Low]))
     ]
 
 let GenNetListOutA : GeneralNet List =
-    [false, ("AOut", Wire (Map [0, Low]))]
+    [false, ("C0", Wire (Map [0, Low]))]
 
 // test purposes
 let GenNetListInB : GeneralNet list = 
@@ -23,7 +24,7 @@ let GenNetListOutB : GeneralNet list =
     [false, ("BOut", Wire (Map [0, Low]))]
 
 let GenNetListInDFF : GeneralNet list = 
-    [false, ("BOut", Wire (Map [1, High]))]
+    [false, ("BOut", Wire (Map [0, High]))]
 
 let GenNetListOutDFF : GeneralNet list =
     [true, ("C1", Wire (Map [0, High]))]
@@ -47,6 +48,11 @@ let connectListEx : Connection list=
     (Name "Module C", GenNetListInC, GenNetListOutC)
     ]
 
+let cLstSimple : Connection list =
+    [(Name "Module A", GenNetListInA, GenNetListOutA);
+    (Name "Module B", GenNetListInB, GenNetListOutB);
+    ]
+
 let connectSyncEx : Connection =
     Name "DFF", GenNetListInDFF, GenNetListOutDFF
 
@@ -60,8 +66,7 @@ let connectMixedEx: Connection =
         true, ("test", Bus (Map [0, High; 1, High; 2, High]));
         false, ("hehe", Bus (Map [0, High; 1, High; 2, High]))
         ]
-    
-    
+   
 
 // to update a genNet need to know:
 // if bus: which wire in a bus (0, 1, 2) 
@@ -89,3 +94,70 @@ let dffMixedOut : GeneralNet list =
     [true, ("Bus D", Bus(Map [0, Low; 1, Low; 2, Low]));
     true, ("Wire E", Wire(Map [0, Low]));
     ]
+
+let overallInputs : GeneralNet list =
+    GenNetListInA @ GenNetListInB
+
+let aIn =  
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("a1", Wire(Map [0, High]));
+    ]
+
+let aOut =  
+    [false, ("c0", Wire(Map [0, High]));
+    ]
+
+let bIn = 
+    [false, ("b0", Wire(Map [0, High]));
+    false, ("b1", Wire(Map [0, High]));
+    ]
+
+let bOut =  
+    [false, ("c2", Wire(Map [0, High]));
+    ]
+
+let dIn1 = 
+    [false, ("d1", Wire(Map [0, High]))]
+
+let dOut1 =
+    [true, ("c1", Wire(Map [0, High]))]
+
+let dIn2 = 
+    [false, ("d2", Wire(Map [0, High]))]
+
+let dOut2 =
+    [true, ("b0", Wire(Map [0, High]))]
+
+let dIn3 = 
+    [false, ("d3", Wire(Map [0, High]))]
+
+let dOut3 =
+    [true, ("e0", Wire(Map [0, High]))]
+
+let cIn = 
+    [false, ("c0", Wire(Map [0, High]));
+    true, ("c1", Wire(Map [0, High]));
+    false, ("c2", Wire(Map [0, High]))
+    ]
+ 
+let cOut =
+    [false, ("d3", Wire(Map [0, High]))]
+
+let eIn = 
+    [true, ("e0", Wire(Map [0, High]));
+    false, ("e1", Wire(Map [0, High]))
+    ]
+
+let eOut =
+    [false, ("out", Wire(Map [0, High]))]
+
+let knownInputs = aIn @ dIn1 @ dIn2 @ [false, ("b1", Wire(Map [0, High]))] @ [false, ("e1", Wire(Map [0, High]))]
+
+let newCLst : Connection List =
+    [Name "A", aIn, aOut;
+    Name "B", bIn, bOut;
+    Name "DFF1", dIn1, dOut1;
+    Name "DFF2", dIn2, dOut2;
+    Name "DFF3", dIn3, dOut3;
+    Name "C", cIn, cOut;
+    Name "E", eIn, eOut]

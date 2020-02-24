@@ -20,3 +20,5 @@ let createNewMap len =
 let generateList n = [0..n-1]
 
 let opOnTuple f (a,b) = f a, f b
+
+let appendTuple (a, b) = a @ b
