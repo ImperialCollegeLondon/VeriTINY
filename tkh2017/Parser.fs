@@ -3,7 +3,7 @@ module Parser
 open Lexer
 
 type GateType = AND | OR | NOT
-type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int
+type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
 type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
@@ -44,7 +44,7 @@ let (|MATCHNUM|_|) (tokList: Result<Token list, Token list>) =
 
 //------------------- Parse rules -------------------------
 
-let (|TERMINAL|_|) tokList = 
+let rec (|TERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -53,9 +53,11 @@ let (|TERMINAL|_|) tokList =
     | MATCHID (Some idname, MATCHSINGLE OpSqBracket (MATCHNUM (Some number1, MATCHSINGLE Colon (MATCHNUM (Some number2, MATCHSINGLE ClSqBracket (Ok tokList')))))) -> 
         Some (Some (TERMIDBus (idname, number1, number2)), Ok tokList')
     | MATCHID (Some idname, Ok tokList') -> Some (Some (TERMID idname), Ok tokList')
+    | MATCHSINGLE OpBrace (LISTTERMINAL (Some termlist, MATCHSINGLE ClBrace (Ok tokList'))) -> 
+        Some (Some (TERMCONCAT termlist), Ok tokList')
     | _ -> None 
 
-let rec (|LISTTERMINAL|_|) tokList = 
+and (|LISTTERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -181,5 +183,5 @@ let parse inpTokList =
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
 
-// let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
-// tokenise sampleCode |> parse
+let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
+tokenise sampleCode |> parse
