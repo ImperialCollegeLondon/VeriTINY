@@ -212,7 +212,7 @@ let netIdLstOut =
     [{ Name = "c"; SliceIndices = Some (2, Some 0) }; 
     { Name = "d"; SliceIndices = None }]
 
-let tLogicEx : TLogic= { 
+let tLogicEx1 : TLogic= { 
     Name = "bus_and"
     ExpressionList =
         [(And, 
@@ -253,3 +253,5 @@ let netIdEx4 = { Name = "d"; SliceIndices = None }
 let netEx4 = Wire (Map [0, Low])
 
 let evaluateOutEx = Map [netIdEx1, netEx1; netIdEx2, netEx2; netIdEx3, netEx3; netIdEx4, netEx4]
+
+let tLogicLstEx = [tLogicEx1; tLogicEx2]

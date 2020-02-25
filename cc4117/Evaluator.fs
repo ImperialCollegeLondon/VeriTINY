@@ -7,10 +7,6 @@ let extractGenNetLsts (cIn: Connection) =
     let _, lstIn, lstOut = cIn
     lstIn, lstOut
 
-let reformatGNet (gNet: GeneralNet) =
-    match gNet with
-    | (sync, (str, net)) -> str, (sync, net)
-
 let extractNetName (gNet: GeneralNet) =
     match gNet with
     | (_, (str, _)) -> str
@@ -56,7 +52,6 @@ let updateGenNet (gNet: GeneralNet) newMap =
 let updateGenLst gNetLst newMaps =
     lstOpParallel [] updateGenNet gNetLst newMaps    
 
-
 let takePrevInputs gNetLstIn gNetLstOut= List.collect (extractNet >> extractLogLevel) gNetLstIn 
 
 let updateOutputs func gNetLstIn gNetLstOut =
@@ -81,64 +76,25 @@ let oddCheck gNetLstIn gNetLstOut =
 let oddUpdate gNetLstIn gNetLstOut =
     updateOutputs oddCheck gNetLstIn gNetLstOut
 
-let syncCheck (gNet:GeneralNet) = 
-    match gNet with
-    | false, _ ->
-        false
-    | true, _ ->
-        true
+
+//let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
+let evaluateModuleWithInputs: Map<NetIdentifier, Net> =
+    evaluateOutEx
+
+let reconstructNet (netIDMap: Map<NetIdentifier, Net>) =
+    Map.toList netIDMap |> List.map (fun ((a:NetIdentifier), b) -> false, (a.Name, b))
+
+let getTLogic (mBlock: Megablock) (tLst: TLogic list) =
+    let (Name str) = mBlock
+    let checker s (tLog: TLogic): bool = 
+        if s = tLog.Name then true else false
+    List.tryFind (checker str) tLst 
 
 
-let initializeSync cLst =
-    let updateIfSync (gNet:GeneralNet) = 
-        if syncCheck gNet 
-        then
-            let newMapLen = gNet |> extractNet |> netSize 
-            updateGenNet gNet (createNewMap newMapLen)
-        else
-            gNet
-    let setToLow (cIn: Connection) =
-        cIn 
-        |> extractGenNetLsts  
-        |> opOnTuple (List.map updateIfSync)
-    List.map setToLow cLst 
-
-let getInitMap currentInputs cLst =
-    let findAllSync (cLst:Connection List) =
-        let rec findSync acc gLst =
-            match gLst with
-            | hd::tl -> 
-                if syncCheck hd then 
-                    findSync (acc @ [hd]) tl
-                else 
-                    findSync acc tl
-            | [] -> List.distinct acc
-        let c (cIn: Connection) =
-            cIn |> extractGenNetLsts |> opOnTuple (findSync []) |> appendTuple
-        List.collect c cLst
-
-    currentInputs @ findAllSync cLst |> List.map reformatGNet |> Map
-
-let getOutputs (cLst: Connection List) = 
-    let output (_,_,c) = c
-    List.map output cLst
-
-// let checkIfKnown lstRef lst =
 
 
-// let advanceState currentInputs (cLst: Connection List) =
-//     let m = getInitMap currentInputs cLst
-//     let outputs = getOutputs cLst
-
-//     let rec op (cLst: Connection List) =
-//         match cLst with 
-//         | hd::tl ->
-            
-//         | [] ->
 
 
     
 
-    
-
-
+  
