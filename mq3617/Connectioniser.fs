@@ -67,6 +67,10 @@ let getNetfromName (name:string) (netList:GeneralNet list)=
 let rec addMegaBlock ()=
     match Console.ReadLine() with
     |"end" ->[]
+    |"DFF" -> printf "specify DFF size"
+              match Int32.TryParse(Console.ReadLine()) with
+                  |(true,int)->((Name "DFF"),[(false,("a",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))],[(true,("out",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))])::(addMegaBlock())
+                  |_-> addMegaBlock()
     |str when List.exists (searchBlocks str) avaliableBlocks ->printf "New Megablock added"
                                                                (genConnections str avaliableBlocks)::(addMegaBlock () )
     |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s" str
