@@ -72,9 +72,15 @@ let convertAST (ast: ModuleType) =
         | WIRE wire -> {record with Wires = record.Wires @ genWireNetList wire}, usedNames
         | GATEINST (gatetype, name, termlist) -> 
             match termlist with 
-            | hd :: tl -> updateTermList ({record with ExpressionList = record.ExpressionList @ [convToOp gatetype, genTermNetList hd, []]}, usedNames) tl
+            | hd :: tl -> 
+                match hd with 
+                | TERMCONCAT outputterms -> 
+                    let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, outputterms |> List.collect genTermNetList] @ record.ExpressionList}
+                    updateTermList ({tmp with ExpressionList = tmp.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
+                | _ ->
+                    updateTermList ({record with ExpressionList = record.ExpressionList @ [convToOp gatetype, genTermNetList hd, []]}, usedNames) tl
             | _ -> failwithf "What?"
 
     match ast with 
     | MODULE (name, portlist, moditems) ->
-        moditems |> List.fold getModItem ({Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}, []) |> fst 
+        moditems |> List.fold getModItem ({Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}, []) |> fst
