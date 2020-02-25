@@ -146,8 +146,6 @@ let formOutputNets (moduleOutputs: NetIdentifier list) (evalNetMap: Map<NetIdent
         |EvalBus _ -> Bus noOptLLMap
     
     Map.fold (fun outputNetMap netID evalNet -> Map.add netID (evalNetToNet evalNet) outputNetMap) (Map []) outputEvalNets
-
-//TODO: fix variable names
 //TOOD: testing
 
 //top level function
