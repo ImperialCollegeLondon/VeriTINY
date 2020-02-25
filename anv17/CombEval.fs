@@ -48,14 +48,23 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
     if List.isEmpty exprToEvaluate
     then evalNetMap
     else 
-        let canEvalExpression exprInputs = 
+
+        let getNetByName name = 
+            match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) evalNetMap with
+            |Some key -> key
+            |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
+        
+        let canEvalExpression (exprInputs: NetIdentifier list) = 
             (true, exprInputs) ||> List.fold (fun expressionEvaluatable inp ->
             if not expressionEvaluatable
             then false
-            else List.contains inp evaluatedNets)
+            else 
+                match List.tryFind (fun (evaluatedNetID: NetIdentifier) -> evaluatedNetID.Name = inp.Name) evaluatedNets with
+                |Some _ -> true
+                |None -> false)
 
-        let evaluatableExpressions = List.filter (fun (_, inpLst, _) -> canEvalExpression inpLst) exprToEvaluate
-        let evaluateExpr (op: Operator , inpLst: NetIdentifier list , outLst: NetIdentifier list) =
+        let evaluatableExpressions = List.filter (fun (_, _, inpLst) -> canEvalExpression inpLst) exprToEvaluate
+        let evaluateExpr (op: Operator , outLst: NetIdentifier list , inpLst: NetIdentifier list) =
 
             //TODO: Generate errors when bus sizes don't match
             //Expressions can only have single output, change TLogic type
@@ -71,11 +80,6 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
                 |Some (x, Some y) -> min x y
                 |Some (x, None) -> x
                 |None -> 0
-
-            let getNetByName name = 
-                match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) evalNetMap with
-                |Some key -> key
-                |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
 
             let reduceInpLstWithOp busOperator initValue =
                 let startNet = createNewBusMap (0, outputBusSize - 1) (Some initValue)
@@ -127,7 +131,7 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
             Map.fold (fun evaluatedNetLst netID evalNet ->
                 if isNetEvaluated evalNet
                 then List.append evaluatedNets [netID]
-                else evaluatedNetLst) [] evalNetMap
+                else evaluatedNetLst) [] updatedEvalNetMap
         
         evaluateExprLst updatedExprToEvaluate updatedEvaluatedNets updatedEvalNetMap
 
