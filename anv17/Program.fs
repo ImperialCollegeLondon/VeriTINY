@@ -3,6 +3,8 @@
 open System
 open SharedTypes
 open CombEval
+open EvalNetHelper
+
 
 let testTLogic = { 
    Name = "bus_and"
@@ -29,9 +31,16 @@ let testTLogic = {
   
   }
 
+let busFromInt num busLength =
+   intToLogicLevelList num [] 
+   |> padLogicLvlListToLength busLength
+   |> List.mapi (fun i el -> (i, el))
+   |> Map
+   |> Bus
+
 let testInputs = Map [
-   ({ Name = "a"; SliceIndices = Some (3, Some 0) }, BusInput 2);
-   ({ Name = "b"; SliceIndices = Some (3, Some 0) }, BusInput 2)
+   ({ Name = "a"; SliceIndices = Some (3, Some 0) }, busFromInt 3 4);
+   ({ Name = "b"; SliceIndices = Some (3, Some 0) }, busFromInt 2 4)
 ]
 
 // let canEvalExpression exprInputs evaluatedNets = 
