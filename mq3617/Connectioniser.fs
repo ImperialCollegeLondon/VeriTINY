@@ -42,8 +42,9 @@ let makeBusBits int=
 
 let interpretNetId netId =
     match netId.SliceIndices with 
-    |Some (0,_)-> Wire (Map [0,Low])
+    |Some (0,_)-> Bus (Map [0,Low])
     |Some (int1,Some int2) -> Bus (makeBusBits (int1-int2))
+    |None -> Wire (Map [0,Low])
     |_->printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough"
         Wire (Map [0,Low])
 
@@ -94,10 +95,10 @@ let checkValidConnection inName outName (conlist:Connection list)=
           true
 
 let rec makeLinks conlist=
-    printf "Enter input node"
+    printf "Enter block input node"
     match Console.ReadLine() with
     |"end" ->[]
-    |str when List.contains (true) (List.map (searchInNets str)  conlist) -> printf "enter output node"
+    |str when List.contains (true) (List.map (searchInNets str)  conlist) -> printf "enter block output node"
                                                                              match Console.ReadLine () with  
                                                                              |st2 when not(List.contains (true) (List.map (searchOutNets st2)  conlist))-> printf "NANI!? could not find output node: %A" st2    
                                                                                                                                                            makeLinks conlist
