@@ -5,28 +5,33 @@ open SharedTypes
 open CombEval
 
 let testTLogic = { 
-   Name = "bus_mux"
+   Name = "bus_and"
    ExpressionList =
-      [(Not, [{ Name = "selb"
-                SliceIndices = None }], [{ Name = "sel"
-                                           SliceIndices = None }]);
-       (And, [{ Name = "out"
-                SliceIndices = None }],
-        [{ Name = "a"
-           SliceIndices = Some (1, None) }; { Name = "sel"
-                                              SliceIndices = None }]);
-       (And, [{ Name = "out"
-                SliceIndices = None }],
-        [{ Name = "a"
-           SliceIndices = Some (0, None) }; { Name = "selb"
-                                              SliceIndices = None }])]
-   Inputs = [{ Name = "a"; SliceIndices = Some (1, Some 0) }; { Name = "sel"; SliceIndices = None }]
-   Outputs = [{ Name = "out"; SliceIndices = None }]
-   Wires = [{ Name = "selb"; SliceIndices = None }] }
+                  [(And, [{ Name = "c"
+                            SliceIndices = None }],
+                    [{ Name = "a"
+                       SliceIndices = Some (3, Some 1) };
+                     { Name = "b"
+                       SliceIndices = Some (3, Some 1) }]);
+                   (And, [{ Name = "d"
+                            SliceIndices = None }],
+                    [{ Name = "a"
+                       SliceIndices = Some (0, None) };
+                     { Name = "b"
+                       SliceIndices = Some (0, None) }])]
+   Inputs =
+          [{ Name = "a"
+             SliceIndices = Some (3, Some 0) };
+           { Name = "b"
+             SliceIndices = Some (3, Some 0) }]
+   Outputs = [{ Name = "c";SliceIndices = Some (2, Some 0) }; { Name = "d"; SliceIndices = None }]
+   Wires = [] 
+  
+  }
 
 let testInputs = Map [
-   ({ Name = "a"; SliceIndices = Some (1, Some 0) }, BusInput 2);
-   ({ Name = "sel"; SliceIndices = None }, SingleInput Low)
+   ({ Name = "a"; SliceIndices = Some (3, Some 0) }, BusInput 2);
+   ({ Name = "b"; SliceIndices = Some (3, Some 0) }, BusInput 2)
 ]
 
 // let canEvalExpression exprInputs evaluatedNets = 
