@@ -17,13 +17,12 @@ let getThird threeTuple =
 
 let convertAST (ast: ModuleType) =
 
-    let genName (usedNames: int list) : NetIdentifier list = 
-        let count = 0
+    let genConcatNetList (usedNames: int list) : NetIdentifier list = 
         let rec increaseCount num = 
-            if List.exists ((=) count) usedNames 
-            then increaseCount (count + 1)
-            else string count
-        [{Name = increaseCount count; SliceIndices = None}]
+            if List.exists ((=) num) usedNames 
+            then increaseCount (num + 1)
+            else string num
+        [{Name = increaseCount 0; SliceIndices = None}]
 
     let genWireNetList (wire: string list) : NetIdentifier list = 
         wire |> List.collect (fun name -> [{Name = name; SliceIndices = None}]) 
@@ -42,14 +41,18 @@ let convertAST (ast: ModuleType) =
         // | TERMCONCAT (termlist) -> termlist |> List.collect genTermNetList
 
     let updateTerm ((record, usedNames): TLogic * int list) (term: TerminalType) : TLogic * int list = 
-        match term with 
+        match term with        
         | TERMCONCAT termlist -> 
-            {record with ExpressionList = record.ExpressionList @ [Concat, genName usedNames, termlist |> List.collect genTermNetList]}, usedNames
+            let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, termlist |> List.collect genTermNetList] @ record.ExpressionList}
+            {tmp with ExpressionList = match List.rev tmp.ExpressionList with 
+                                       | (op, output, termList) :: tl ->
+                                            (op, output, termList @ genConcatNetList usedNames) :: tl |> List.rev
+                                       | _ -> failwithf "What?"}, usedNames @ [List.length usedNames]
         | _ -> 
             {record with ExpressionList = match List.rev record.ExpressionList with 
                                           | (op, output, termList) :: tl -> 
                                                 (op, output, termList @ genTermNetList term) :: tl |> List.rev
-                                          | _ -> failwithf "What?"}, usedNames
+                                          | _ -> failwithf "What?"}, usedNames              
 
     let updateTermList ((record, usedNames): TLogic * int list) (termList: TerminalType list) : TLogic * int list = 
         termList |> List.fold updateTerm (record, usedNames)
@@ -74,4 +77,4 @@ let convertAST (ast: ModuleType) =
 
     match ast with 
     | MODULE (name, portlist, moditems) ->
-        moditems |> List.fold getModItem ({Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}, [])
+        moditems |> List.fold getModItem ({Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}, []) |> fst 
