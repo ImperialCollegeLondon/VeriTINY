@@ -1,29 +1,33 @@
-# Sample Individual Statement for Individual Code Submission
+**Syntax of VeriTINY in BNF**
 
-This sample project contains a single F# sample module with uninspiring name `Module1.fs`.
+1. \<module> ::= "module" \<module_name> "(" \<variable_list> ")" ";" \<module_item_list> "endmodule"
 
-It uses `Dotnet Core 3.1`, with dependency on `Expecto.Fscheck`.
+2. \<module_name> ::= \<identifier>
+  
+3. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> 
 
-It comes with a VS solution file which however is optional (it can be recreated as needed from project file).
+4. \<input_declaration> ::= "input" \<variable_list> ";" | "input" \<range> \<variable_list> ";"
 
-My login is `tomcl` and it is used:
+5. \<output_declaration> ::= "output" \<variable_list> ";" | "output" \<range> \<variable_list> ";"
 
-* In `tomcl` directory under which this project is put
-* As project (and solution) `tomcl.fsproj`, `tomcl.sol`
-* As second part of `README-tomcl` name
+6. \<net_declaration> ::= "wire" \<variable_list> ";" | "wire" \<range> \<variable_list> ";"
 
-To create correct individual code skeleton:
+7. \<variable_list> ::= \<identifier> | \<identifier> "," \<variable_list>
 
-* copy this directory to one with correct name
-* change names of other files with login dependent names to use your login.
-* load `login.fsproj` in VS etc
-* check code will build
-* delete `tomcl.sol` if it causes problems, or overwrite it with VS changed version
-* change `Module1` to appropriate name for your module - keeping file name and module name the same
-   * you need also to change the module name on first line of the file, and the `open Module1` line in `program.fs`. 
-   * In a multi-module FS program use `open ModName` to access function `myFunc` in module `ModName` as `myFunc`.
-   * Without `open Modname` you can access `myFunc` as `modName.myFunc`.
-* replace sample code by your own.
-* change `program.fs code as you wish
-* delete the contents of this readme, the renamed version will be your individual statement for individual code submission.
-* check that you understand all the files (`login.fsproj`, `Program.fs`, `YourModule.fs`) that make up this F# project and how it runs.
+8. \<range> ::= "\[" \<number> ":" \<number> "\]" 
+
+9. \<gate_instantiation> ::= <gate_type> <gate_instance> ";"
+
+10. \<gate_type> ::= "and" | "or" | "not"
+
+11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")"
+
+12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}"
+
+13. \<number> ::= //any sequence of 0..9 
+
+14. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
+
+15. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
+
+16. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
