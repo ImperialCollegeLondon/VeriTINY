@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server"
+  },
+  "dependencies": {
+    "@babel/core": "^7.5.5",
+    "electron": "^8.0.1",
+    "fable-compiler": "^2.3.19",
+    "fable-loader": "^2.1.8",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "devDependencies": {
+    "fable-elmish": "^0.8.1",
+    "fable-elmish-react": "^0.8.2"
+  }
+}
