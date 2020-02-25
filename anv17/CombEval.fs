@@ -68,18 +68,12 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
 
             //TODO: Generate errors when bus sizes don't match
             //Expressions can only have single output, change TLogic type
-            let outputBusSize = 
+            let outputBusSize  = 
                 let outputNetID = List.head outLst
                 match outputNetID.SliceIndices with
                 |Some (x, Some y) ->  (abs (x - y)) + 1
-                |Some (_, None)
-                |None -> 1
-
-            let getStartIndex (netID: NetIdentifier) = 
-                match netID.SliceIndices with
-                |Some (x, Some y) -> min x y
-                |Some (x, None) -> x
-                |None -> 0
+                |Some (_, None) -> 1
+                |None -> getBusSize (getNetByName outputNetID.Name)
 
             let reduceInpLstWithOp busOperator initValue =
                 let startNet = createNewBusMap (0, outputBusSize - 1) (Some initValue)
@@ -105,7 +99,7 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
             let outputNetKey = getNetByName outputID.Name
             let outputEvalNet = evalNetMap.[outputNetKey]
             let updatedOutputEvalNet = 
-                match outputID.SliceIndices with 
+                match outputNetKey.SliceIndices with 
                 |Some (x, Some y) ->
                     resultNet
                     |> Map.toList
@@ -150,7 +144,6 @@ let formOutputNets (moduleOutputs: NetIdentifier list) (evalNetMap: Map<NetIdent
         |EvalBus _ -> Bus noOptLLMap
     
     Map.fold (fun outputNetMap netID evalNet -> Map.add netID (evalNetToNet evalNet) outputNetMap) (Map []) outputEvalNets
-//TOOD: testing
 
 //top level function
 let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
