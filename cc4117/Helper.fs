@@ -22,3 +22,5 @@ let generateList n = [0..n-1]
 let opOnTuple f (a,b) = f a, f b
 
 let appendTuple (a, b) = a @ b
+
+let andOp a b = if a && b then High else Low

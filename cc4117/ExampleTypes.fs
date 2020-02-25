@@ -161,3 +161,43 @@ let newCLst : Connection List =
     Name "DFF3", dIn3, dOut3;
     Name "C", cIn, cOut;
     Name "E", eIn, eOut]
+
+let aSIn =
+    [false, ("a0", Wire(Map [0, High]));
+    true, ("a1", Wire(Map [0, High]))]
+
+let aSOut =
+    [false, ("out", Wire(Map [0, High]))]
+
+let dSIn =
+    [false, ("d1", Wire(Map [0, High]))]
+
+let dSOut =
+    [false, ("a1", Wire(Map [0, High]))]
+
+let kSIn = 
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("d1", Wire(Map [0, High]))]
+
+let simpCLst : Connection List =
+    [Name "A", aSIn, aSOut;
+    Name "DFF", dSIn, dSOut]
+
+let simpSim =
+    [
+    // cycle 1
+    [false, ("a0", Wire(Map [0, Low]));
+    false, ("d1", Wire(Map [0, High]))];
+    // cycle 2
+    [false, ("a0", Wire(Map [0, Low]));
+    false, ("d1", Wire(Map [0, Low]))]
+    // cycle 3
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("d1", Wire(Map [0, High]))];
+    // cycle 4
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("d1", Wire(Map [0, Low]))]
+    // cycle 5
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("d1", Wire(Map [0, Low]))]
+    ]

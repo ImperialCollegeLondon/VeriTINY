@@ -7,16 +7,16 @@ let extractGenNetLsts (cIn: Connection) =
     let _, lstIn, lstOut = cIn
     lstIn, lstOut
 
-let reformatNet (gNet: GeneralNet) =
+let reformatGNet (gNet: GeneralNet) =
     match gNet with
     | (sync, (str, net)) -> str, (sync, net)
 
-let extractNetName (genNetIn: GeneralNet) =
-    match genNetIn with
+let extractNetName (gNet: GeneralNet) =
+    match gNet with
     | (_, (str, _)) -> str
 
-let extractNet (genNetIn: GeneralNet): Net =
-    match genNetIn with
+let extractNet (gNet: GeneralNet): Net =
+    match gNet with
     | (_, (_, Wire netMap)) -> 
         Wire netMap
     | (_, (_, Bus netMap)) ->
@@ -46,35 +46,43 @@ let rec groupLogic acc lstOfLog lstOfLengths =
     | [] -> 
         acc
 
-let updateGenNet (genNetIn: GeneralNet) newMap =
-    match genNetIn with
+let updateGenNet (gNet: GeneralNet) newMap =
+    match gNet with
     | (sync, (str, Wire _)) -> 
         sync, (str, Wire newMap) 
     | (sync, (str, Bus _)) -> 
         sync, (str, Bus newMap) 
 
-let updateGenLst genNetLst newMaps =
-    lstOpParallel [] updateGenNet genNetLst newMaps    
+let updateGenLst gNetLst newMaps =
+    lstOpParallel [] updateGenNet gNetLst newMaps    
 
-let generateNewMapLst func genNetLstIn genNetLstOut =
-    let newLogic = func genNetLstIn 
-    let lstOfLengths = findLengths genNetLstOut
+
+let takePrevInputs gNetLstIn gNetLstOut= List.collect (extractNet >> extractLogLevel) gNetLstIn 
+
+let updateOutputs func gNetLstIn gNetLstOut =
+    let newLogic = func gNetLstIn gNetLstOut
+    let lstOfLengths = findLengths gNetLstOut
 
     let grpsOfLogic = groupLogic [] newLogic lstOfLengths
     let grpsOfNum = List.map generateList lstOfLengths
 
-    (grpsOfNum,grpsOfLogic) ||> lstOpParallel [] List.zip 
-    |> List.map Map.ofList
+    let newMapLst = (grpsOfNum,grpsOfLogic) ||> lstOpParallel [] List.zip |> List.map Map.ofList
+    (gNetLstOut, newMapLst) ||> lstOpParallel [] updateGenNet 
 
-let updateDFF genNetLstIn genNetLstOut =
-    let takePrevInputs genNetLstIn = List.collect (extractNet >> extractLogLevel) genNetLstIn 
+let updateDFF gNetLstIn gNetLstOut =
+    updateOutputs takePrevInputs gNetLstIn gNetLstOut
 
-    let newMapLst = generateNewMapLst takePrevInputs genNetLstIn genNetLstOut
-    (genNetLstOut, newMapLst) ||> lstOpParallel [] updateGenNet 
+let oddCheck gNetLstIn gNetLstOut = 
+    let logic = if List.length gNetLstIn % 2 = 0 then Low else High
+    let lstOfLengths = findLengths gNetLstOut
+    let totalNum = List.sum lstOfLengths
+    [1..totalNum] |> List.map (fun _ -> logic)
 
+let oddUpdate gNetLstIn gNetLstOut =
+    updateOutputs oddCheck gNetLstIn gNetLstOut
 
-let syncCheck (genNet:GeneralNet) = 
-    match genNet with
+let syncCheck (gNet:GeneralNet) = 
+    match gNet with
     | false, _ ->
         false
     | true, _ ->
@@ -82,24 +90,18 @@ let syncCheck (genNet:GeneralNet) =
 
 
 let initializeSync cLst =
-    let updateIfSync (genNet:GeneralNet) = 
-        if syncCheck genNet 
+    let updateIfSync (gNet:GeneralNet) = 
+        if syncCheck gNet 
         then
-            let newMapLen = genNet |> extractNet |> netSize 
-            updateGenNet genNet (createNewMap newMapLen)
+            let newMapLen = gNet |> extractNet |> netSize 
+            updateGenNet gNet (createNewMap newMapLen)
         else
-            genNet
+            gNet
     let setToLow (cIn: Connection) =
         cIn 
         |> extractGenNetLsts  
         |> opOnTuple (List.map updateIfSync)
     List.map setToLow cLst 
-
-let syncGenNets (cIn:Connection) =
-    let pickIf genNet =
-        if syncCheck genNet then extractNetName genNet else "hehe"
-    cIn |> extractGenNetLsts |> opOnTuple (List.map pickIf)
-
 
 let getInitMap currentInputs cLst =
     let findAllSync (cLst:Connection List) =
@@ -115,19 +117,28 @@ let getInitMap currentInputs cLst =
             cIn |> extractGenNetLsts |> opOnTuple (findSync []) |> appendTuple
         List.collect c cLst
 
-    currentInputs @ findAllSync cLst |> List.map reformatNet |> Map
+    currentInputs @ findAllSync cLst |> List.map reformatGNet |> Map
+
+let getOutputs (cLst: Connection List) = 
+    let output (_,_,c) = c
+    List.map output cLst
+
+// let checkIfKnown lstRef lst =
 
 
+// let advanceState currentInputs (cLst: Connection List) =
+//     let m = getInitMap currentInputs cLst
+//     let outputs = getOutputs cLst
 
-// let advanceState (cLst: Connection List) =
-//     let memoise fn initMap =
-//        let mutable cache = initMap
-//        fun x ->
-//           match Map.containsKey x cache with
-//           | true -> cache.[x] // return cached value
-//           | false -> let res = fn x // compute function
-//                      cache <- Map.add x res cache //store result in cache
-//                      res //   
+//     let rec op (cLst: Connection List) =
+//         match cLst with 
+//         | hd::tl ->
+            
+//         | [] ->
+
+
+    
+
     
 
 
