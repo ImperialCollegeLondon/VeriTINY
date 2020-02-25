@@ -12,7 +12,7 @@ let formEvalNets (logicModule: TLogic): Map<NetIdentifier, EvalNet> =
     let formNetsFromLst (netIDLst: NetIdentifier list) =
         let netIDToNet netIDSliceIndices = 
             match netIDSliceIndices with
-            |None -> EvalWire (Map [(0, Some Low)])
+            |None -> EvalWire (Map [(0, None)])
             |Some (x, Some y) -> createNewBus (min x y, max x y) None
             |_ -> failwithf "Expected slices for creation of new net, got %A" netIDSliceIndices
         
