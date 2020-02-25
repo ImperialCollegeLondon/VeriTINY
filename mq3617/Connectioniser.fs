@@ -112,7 +112,7 @@ let updateNets conn links=
         match first link,second link with
         |a,b when a=name || b=name ->true
         |_->false
-    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->third (List.find (matchNames name) links) |_->false,("Unconnected Net",(Wire (Map [0,Low])))) conn
+    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->third (List.find (matchNames name) links) |_->x) conn
 
 let finaliseConnections conlist =
     printf"Current list %A" conlist
@@ -121,11 +121,16 @@ let finaliseConnections conlist =
     List.map (fun x -> (first x,updateNets (second x) links,updateNets (third x) links)) conlist
     
 
-let rec UserIn() =
+let UserIn() =
     addMegaBlock ()
     |> List.sort
     |> refactor
     |> finaliseConnections 
-    |> printf "final output list%A" 
-    
 
+let findUnconnected (connlist: Connection list) =
+    let inlist = List.collect second connlist
+    let totlist = inlist@(List.collect third connlist)
+    List.countBy (id) totlist
+    |> List.filter (fun x-> match (snd x) with |1->true |_->false)
+    |> List.map fst
+    |> List.filter (fun x ->List.contains x inlist) 
