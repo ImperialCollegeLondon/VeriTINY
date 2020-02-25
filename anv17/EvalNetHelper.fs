@@ -7,7 +7,7 @@ let extractLogicLevel logicLvlOpt =
         |Some logicLvl -> logicLvl
         |None -> failwith "Logic Level has not been assigned yet"
 
-let extractNetMap evalNet =
+let extractLLMap evalNet =
     match evalNet with
     |EvalBus y
     |EvalWire y -> y
@@ -70,11 +70,11 @@ let logicLevelsToint logicLvlLst =
     |> List.reduce (+)
 
 let isNetEvaluated evalNet = 
-    let netMap = extractNetMap evalNet
+    let LLMap = extractLLMap evalNet
     Map.fold (fun netEvaluated _ logicLevelOpt ->
         if not netEvaluated
         then false
         else
             match logicLevelOpt with
             |Some logicLvl -> true
-            |None -> false) true netMap
+            |None -> false) true LLMap
