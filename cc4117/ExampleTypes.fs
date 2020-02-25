@@ -201,3 +201,55 @@ let simpSim =
     [false, ("a0", Wire(Map [0, High]));
     false, ("d1", Wire(Map [0, Low]))]
     ]
+
+
+
+let netIdLstIn = 
+    [{ Name = "a"; SliceIndices = Some (3, Some 0) };
+    { Name = "b"; SliceIndices = Some (3, Some 0) }]
+
+let netIdLstOut =
+    [{ Name = "c"; SliceIndices = Some (2, Some 0) }; 
+    { Name = "d"; SliceIndices = None }]
+
+let tLogicEx : TLogic= { 
+    Name = "bus_and"
+    ExpressionList =
+        [(And, 
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = Some (3, Some 1) };
+            { Name = "b"; SliceIndices = Some (3, Some 1) }]);
+        (And, [{ Name = "d"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = Some (0, None) };
+            { Name = "b"; SliceIndices = Some (0, None) }])]
+    Inputs = netIdLstIn
+    Outputs = netIdLstOut
+    Wires = [] }
+
+let tLogicEx2 : TLogic= { 
+    Name = "bus_and2"
+    ExpressionList =
+        [(And, 
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = Some (3, Some 1) };
+            { Name = "b"; SliceIndices = Some (3, Some 1) }]);
+        (And, [{ Name = "d"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = Some (0, None) };
+            { Name = "b"; SliceIndices = Some (0, None) }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = Some (3, Some 0) };
+        { Name = "b"; SliceIndices = Some (3, Some 0) }]
+    Outputs = [{ Name = "c"; SliceIndices = Some (2, Some 0) }; 
+        { Name = "d"; SliceIndices = None }]
+    Wires = [] }
+
+let netIdEx1 = { Name = "a"; SliceIndices = Some (3, Some 0) }
+let netEx1 = Bus (Map [0, High; 1, Low; 2, High; 3, Low ])
+let netIdEx2 = { Name = "b"; SliceIndices = None }
+let netEx2 = Wire (Map [0, High])
+let netIdEx3 = { Name = "c"; SliceIndices = Some (2, Some 0) }
+let netEx3 = Bus (Map [0, Low; 1, Low; 2, High])
+let netIdEx4 = { Name = "d"; SliceIndices = None }
+let netEx4 = Wire (Map [0, Low])
+
+let evaluateOutEx = Map [netIdEx1, netEx1; netIdEx2, netEx2; netIdEx3, netEx3; netIdEx4, netEx4]
