@@ -22,7 +22,7 @@
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")"
 
-12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]"  
+12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}"
 
 13. \<number> ::= //any sequence of 0..9 
 
