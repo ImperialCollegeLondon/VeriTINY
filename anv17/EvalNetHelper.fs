@@ -20,7 +20,7 @@ let createNewBusMap (a,b) initVal =
 let createNewBus (a, b) initVal = 
         createNewBusMap (a,b) initVal |> EvalBus
 
-let padLogicLvlListToLength logicLvlLst fullLength =
+let padLogicLvlListToLength fullLength logicLvlLst =
 
     if List.length logicLvlLst >= fullLength
     then logicLvlLst
