@@ -22,26 +22,28 @@ let formEvalNets (logicModule: TLogic): Map<NetIdentifier, EvalNet> =
     |> Map
 
 
-let assignInputValues (inputMap: Map<NetIdentifier, GraphEndPoint>) (evalNetMap: Map<NetIdentifier, EvalNet>) =
-    let updateNetWithNewInput (net: EvalNet) (input: GraphEndPoint) =
+let assignInputValues (inputMap: Map<NetIdentifier, Net>) (evalNetMap: Map<NetIdentifier, EvalNet>) =
         let failTypeMismatch net input = failwithf "Input and net type mismatch, got input %A, net %A" input net
 
-        match input with
-        |SingleInput logicLvl -> 
-            match net with
-            |EvalWire wireMap -> EvalWire(updateWire wireMap logicLvl)
-            |_ -> failTypeMismatch net input
-        |BusInput busInp ->             
-            match net with
-            |EvalBus busMap ->
-                let paddedLogicLvlLst = padLogicLvlListToLength (intToLogicLevelList busInp []) (Map.count busMap)
-                EvalBus(updateBus busMap None paddedLogicLvlLst)
-            |_ -> failTypeMismatch net input
-    
-    evalNetMap |> Map.map (fun netID net ->
-    match Map.tryFind netID inputMap with
-    |Some input -> updateNetWithNewInput net input
-    |None -> net )
+        let doNetTypesMatch inputNet correspondingEvalNet =
+            match inputNet with
+            |Bus _ ->
+                match correspondingEvalNet with
+                |EvalBus _ -> true
+                |EvalWire _ -> false
+            |Wire _ -> 
+                match correspondingEvalNet with
+                    |EvalBus _ -> false
+                    |EvalWire _ -> true
+
+        
+        Map.map (fun netID net ->
+            match Map.tryFind netID inputMap with
+            |Some inputNet -> 
+                if doNetTypesMatch inputNet net 
+                then netToEvalNet inputNet
+                else failTypeMismatch net inputNet
+            |None -> net ) evalNetMap
 
 
 let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIdentifier list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
@@ -133,20 +135,11 @@ let formOutputNets (moduleOutputs: NetIdentifier list) (evalNetMap: Map<NetIdent
     let outputEvalNets = 
         List.fold (fun outputNetMap outputID ->
             Map.add outputID evalNetMap.[outputID] outputNetMap) (Map []) moduleOutputs
-
-    let evalNetToNet evalNet = 
-        let noOptLLMap = 
-            extractLLMap evalNet
-            |> Map.map (fun _ logicLvlOpt  -> extractLogicLevel logicLvlOpt)
-
-        match evalNet with
-        |EvalWire _ -> Wire noOptLLMap
-        |EvalBus _ -> Bus noOptLLMap
     
     Map.fold (fun outputNetMap netID evalNet -> Map.add netID (evalNetToNet evalNet) outputNetMap) (Map []) outputEvalNets
 
 //top level function
-let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
+let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, Net>) : Map<NetIdentifier, Net> =
     formEvalNets combModule
     |> assignInputValues inputMap
     |> evaluateExprLst combModule.ExpressionList combModule.Inputs

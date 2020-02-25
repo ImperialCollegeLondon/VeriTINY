@@ -90,3 +90,19 @@ let getStartIndex (netID: NetIdentifier) =
     |Some (x, Some y) -> min x y
     |Some (x, None) -> x
     |None -> 0
+
+let evalNetToNet evalNet = 
+    let noOptLLMap = 
+        extractLLMap evalNet
+        |> Map.map (fun _ logicLvlOpt  -> extractLogicLevel logicLvlOpt)
+
+    match evalNet with
+    |EvalWire _ -> Wire noOptLLMap
+    |EvalBus _ -> Bus noOptLLMap
+
+let netToEvalNet net =
+    let LLMapToOptLLMap map =
+        Map.map (fun _ value -> Some value) map
+    match net with
+    |Wire wireMap -> EvalWire (LLMapToOptLLMap wireMap)
+    |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
