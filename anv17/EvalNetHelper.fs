@@ -78,3 +78,15 @@ let isNetEvaluated evalNet =
             match logicLevelOpt with
             |Some logicLvl -> true
             |None -> false) true LLMap
+
+let getBusSize netID = 
+    match netID.SliceIndices with
+    |Some(x, Some y) -> abs (x - y) + 1
+    |Some (_, None)
+    |None -> 1
+
+let getStartIndex (netID: NetIdentifier) = 
+    match netID.SliceIndices with
+    |Some (x, Some y) -> min x y
+    |Some (x, None) -> x
+    |None -> 0
