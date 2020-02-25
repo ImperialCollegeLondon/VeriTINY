@@ -2,7 +2,7 @@ module Lexer
 open NGrams
 open System
 
-//TODO: concatenation
+//TODO: assign
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
@@ -89,3 +89,6 @@ let tokenise inpstring =
         | _ -> failwithf "What?"
 
     replaceWithTokens (fst unwrapped)
+
+// let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
+// lexAndImplode sampleCode
