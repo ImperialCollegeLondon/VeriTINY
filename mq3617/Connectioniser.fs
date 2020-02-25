@@ -111,7 +111,7 @@ let updateNets conn links=
         match first link,second link with
         |a,b when a=name || b=name ->true
         |_->false
-    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->third (List.find (matchNames name) links) |_->x) conn
+    List.map (fun x->match fst (snd x) with |name when List.contains name (List.map first links)||List.contains name (List.map second links)->third (List.find (matchNames name) links) |_->false,("Unconnected Net",(Wire (Map [0,Low])))) conn
 
 let finaliseConnections conlist =
     printf"Current list %A" conlist
