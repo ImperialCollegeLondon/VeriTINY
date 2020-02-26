@@ -47,8 +47,11 @@ let convertAST (ast: ModuleType) =
             //If terminal is a concatenation, add a concat net in ExpressionList
             let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, termlist |> List.collect genTermNetList] @ record.ExpressionList}
 
+            //Also add it as a wire net in Wires
+            let tmp' = {tmp with Wires = genConcatNetList usedNames @ tmp.Wires}
+
             //Update the terminal list of the most recently added expression in ExpressionList 
-            {tmp with ExpressionList = match List.rev tmp.ExpressionList with 
+            {tmp' with ExpressionList = match List.rev tmp'.ExpressionList with 
                                        | (op, output, termList) :: tl ->
                                             (op, output, termList @ genConcatNetList usedNames) :: tl |> List.rev
                                        | _ -> failwithf "What?"}, usedNames @ [List.length usedNames]
@@ -87,8 +90,11 @@ let convertAST (ast: ModuleType) =
                     //If output terminal is a concatenation, add a concat net in ExpressionList
                     let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, outputterms |> List.collect genTermNetList] @ record.ExpressionList}
 
-                    //Add a new expression to ExpressionList then add its terminal list by calling updateTermList
-                    updateTermList ({tmp with ExpressionList = tmp.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
+                    //Also add it as a wire net in Wires
+                    let tmp' = {tmp with Wires = genConcatNetList usedNames @ tmp.Wires}
+
+                    //Add a new gate inst to ExpressionList then add its terminal list by calling updateTermList
+                    updateTermList ({tmp' with ExpressionList = tmp'.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
                 | _ ->
                     updateTermList ({record with ExpressionList = record.ExpressionList @ [convToOp gatetype, genTermNetList hd, []]}, usedNames) tl
             | _ -> failwithf "What?"
