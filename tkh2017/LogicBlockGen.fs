@@ -91,6 +91,8 @@ let convertAST (ast: ModuleType) =
             {record with Outputs = record.Outputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
         | WIRE wire -> 
             {record with Wires = record.Wires @ genWireNetList wire}, usedNames
+        | WIREBus (num1, num2, buslist) -> 
+            {record with Wires = record.Wires @ genThickSliceNetList (num1, num2, buslist)}, usedNames 
         | GATEINST (gatetype, name, termlist) -> 
             match termlist with 
             | hd :: tl -> 

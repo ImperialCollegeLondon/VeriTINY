@@ -10,6 +10,7 @@ type ModuleItemType =
     | INPWire of string list 
     | INPBus of int * int * string list
     | WIRE of string list 
+    | WIREBus of int * int * string list
     | GATEINST of GateType * string * TerminalType list
 type ModuleType = MODULE of string * string list * ModuleItemType list
 
@@ -133,6 +134,8 @@ let (|NETDECLARATION|_|) tokList =
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
+    | MATCHSINGLE Wire (RANGE (Some (num1, num2), LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList')))) -> 
+        Some (Some (WIREBus (num1, num2, varlist)), Ok tokList')
     | MATCHSINGLE Wire (LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (WIRE varlist), Ok tokList')
     | _ -> None
