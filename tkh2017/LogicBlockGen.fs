@@ -17,6 +17,7 @@ let getThird threeTuple =
 
 let convertAST (ast: ModuleType) =
 
+    ///Generates a concat net with a unique name (integers starting from 0)
     let genConcatNetList (usedNames: int list) : NetIdentifier list = 
         let rec increaseCount num = 
             if List.exists ((=) num) usedNames 
@@ -33,17 +34,20 @@ let convertAST (ast: ModuleType) =
     let genThickSliceNetList (bus: int * int * string list) : NetIdentifier list = 
         bus |> getThird |> List.collect (fun name -> [{Name = name; SliceIndices = Some (getFirst bus, Some (getSecond bus))}])
 
+    ///Only one depth of concatenation is allowed, so TERMCONCAT not in match pattern
     let rec genTermNetList (terminal: TerminalType) : NetIdentifier list = 
         match terminal with 
         | TERMID wire -> genWireNetList [wire] 
         | TERMIDWire (wire, num) ->  genThinSliceNetList (num, [wire])
         | TERMIDBus (bus, num1, num2) -> genThickSliceNetList (num1, num2, [bus])
-        // | TERMCONCAT (termlist) -> termlist |> List.collect genTermNetList
 
     let updateTerm ((record, usedNames): TLogic * int list) (term: TerminalType) : TLogic * int list = 
         match term with        
         | TERMCONCAT termlist -> 
+            //If terminal is a concatenation, add a concat net in ExpressionList
             let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, termlist |> List.collect genTermNetList] @ record.ExpressionList}
+
+            //Update the terminal list of the most recently added expression in ExpressionList 
             {tmp with ExpressionList = match List.rev tmp.ExpressionList with 
                                        | (op, output, termList) :: tl ->
                                             (op, output, termList @ genConcatNetList usedNames) :: tl |> List.rev
@@ -65,17 +69,25 @@ let convertAST (ast: ModuleType) =
 
     let getModItem ((record, usedNames): TLogic * int list) modItem : TLogic * int list = 
         match modItem with 
-        | INPWire inpwire -> {record with Inputs = record.Inputs @ genWireNetList inpwire}, usedNames
-        | INPBus (num1, num2, buslist) -> {record with Inputs = record.Inputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
-        | OUTWire outwire -> {record with Outputs = record.Outputs @ genWireNetList outwire}, usedNames
-        | OUTBus (num1, num2, buslist) -> {record with Outputs = record.Outputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
-        | WIRE wire -> {record with Wires = record.Wires @ genWireNetList wire}, usedNames
+        | INPWire inpwire -> 
+            {record with Inputs = record.Inputs @ genWireNetList inpwire}, usedNames
+        | INPBus (num1, num2, buslist) -> 
+            {record with Inputs = record.Inputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
+        | OUTWire outwire -> 
+            {record with Outputs = record.Outputs @ genWireNetList outwire}, usedNames
+        | OUTBus (num1, num2, buslist) -> 
+            {record with Outputs = record.Outputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
+        | WIRE wire -> 
+            {record with Wires = record.Wires @ genWireNetList wire}, usedNames
         | GATEINST (gatetype, name, termlist) -> 
             match termlist with 
             | hd :: tl -> 
-                match hd with 
+                match hd with //Get the output terminal first
                 | TERMCONCAT outputterms -> 
+                    //If output terminal is a concatenation, add a concat net in ExpressionList
                     let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, outputterms |> List.collect genTermNetList] @ record.ExpressionList}
+
+                    //Add a new expression to ExpressionList then add its terminal list by calling updateTermList
                     updateTermList ({tmp with ExpressionList = tmp.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
                 | _ ->
                     updateTermList ({record with ExpressionList = record.ExpressionList @ [convToOp gatetype, genTermNetList hd, []]}, usedNames) tl
