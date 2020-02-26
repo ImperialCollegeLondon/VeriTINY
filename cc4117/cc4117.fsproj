@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../shared/SharedTypes.fs" />
+    <Compile Include="SimulationTypes.fs" />
     <Compile Include="ExampleTypes.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="Evaluator.fs" />

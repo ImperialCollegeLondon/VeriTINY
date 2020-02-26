@@ -22,3 +22,6 @@ let generateList n = [0..n-1]
 let opOnTuple f (a,b) = f a, f b
 
 let andOp a b = if a && b then High else Low
+
+let mapKeys (m: Map<'a,'b>) = m |> Map.toList |> List.map fst
+let mapVals (m: Map<'a,'b>) = m |> Map.toList |> List.map snd

@@ -52,10 +52,8 @@ let updateGenNet (gNet: GeneralNet) newMap =
 let updateGenLst gNetLst newMaps =
     lstOpParallel [] updateGenNet gNetLst newMaps    
 
-let takePrevInputs gNetLstIn gNetLstOut= List.collect (extractNet >> extractLogLevel) gNetLstIn 
-
-let updateOutputs func gNetLstIn gNetLstOut =
-    let newLogic = func gNetLstIn gNetLstOut
+let updateDFF gNetLstIn gNetLstOut =
+    let newLogic = List.collect (extractNet >> extractLogLevel) gNetLstIn 
     let lstOfLengths = findLengths gNetLstOut
 
     let grpsOfLogic = groupLogic [] newLogic lstOfLengths
@@ -64,20 +62,8 @@ let updateOutputs func gNetLstIn gNetLstOut =
     let newMapLst = (grpsOfNum,grpsOfLogic) ||> lstOpParallel [] List.zip |> List.map Map.ofList
     (gNetLstOut, newMapLst) ||> lstOpParallel [] updateGenNet 
 
-let updateDFF gNetLstIn gNetLstOut =
-    updateOutputs takePrevInputs gNetLstIn gNetLstOut
-
-let oddCheck gNetLstIn gNetLstOut = 
-    let logic = if List.length gNetLstIn % 2 = 0 then Low else High
-    let lstOfLengths = findLengths gNetLstOut
-    let totalNum = List.sum lstOfLengths
-    [1..totalNum] |> List.map (fun _ -> logic)
-
-let oddUpdate gNetLstIn gNetLstOut =
-    updateOutputs oddCheck gNetLstIn gNetLstOut
-
 
 //let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
-let evaluateModuleWithInputs: Map<NetIdentifier, Net> =
+let evaluateModuleWithInputs tLog inMap : Map<NetIdentifier, Net> =
     evaluateOutEx
   

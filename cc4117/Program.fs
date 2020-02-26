@@ -3,6 +3,7 @@
 open System
 
 open SharedTypes
+open SimulationTypes
 open ExampleTypes
 open Evaluator
 open Helper
