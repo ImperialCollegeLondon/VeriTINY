@@ -49,3 +49,31 @@ let PassOpNet (net:EvalNet) (netStartIndex: int) (outputBusLength: int) =
     [0..(outputBusLength-1)]
     |> List.map (fun x -> x, LLMap.[netStartIndex + x])
     |> Map
+
+
+let getConcatOutputSize concatNetIDLst inputNetIDLst =
+    List.fold (fun totalSize netID -> 
+    let currNetSize = 
+        match netID.SliceIndices with
+        |Some (x, Some y) -> abs (x-y) + 1
+        |Some (x, None) -> 1
+        |None -> getBusSize (List.find ((=) netID) inputNetIDLst)
+    
+    totalSize + currNetSize) 0 concatNetIDLst
+
+
+let concatOp (evalNetMap: Map<NetIdentifier, EvalNet>) (inpIDLst: NetIdentifier list) = 
+    inpIDLst
+    |> List.rev
+    |> List.fold (fun (concatenatedLLLst: LogicLevel list) (concatInpID : NetIdentifier)-> 
+        let fullNet = evalNetMap.[getNetByName concatInpID.Name evalNetMap]
+        let sliceLst = 
+           match concatInpID.SliceIndices with
+            |Some (x, Some y) -> getNetSliceAsList (Some(min x y, max x y)) fullNet
+            |Some (x, None) -> getNetSliceAsList (Some(x, x)) fullNet
+            |None -> getNetSliceAsList None fullNet
+        List.append concatenatedLLLst sliceLst
+        ) [] 
+    |> List.map (fun logicLvl -> Some logicLvl)
+    |> List.mapi (fun i logicLvlOpt -> (i,logicLvlOpt))
+    |> Map

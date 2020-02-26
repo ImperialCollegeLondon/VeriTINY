@@ -30,6 +30,12 @@ let padLogicLvlListToLength fullLength logicLvlLst =
         |> List.append logicLvlLst
 
 
+let getBusEdgeIndices netMap = 
+    let wireIndices = 
+            Map.toList netMap
+            |> List.map (fst)   
+    (List.min wireIndices, List.max wireIndices)
+
 //caller can supply None for slice indicies to update whole bus
 let updateBus bus sliceIndices newLogicLevels = 
     let (a,b) = 
@@ -106,3 +112,24 @@ let netToEvalNet net =
     match net with
     |Wire wireMap -> EvalWire (LLMapToOptLLMap wireMap)
     |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
+
+let getNetSliceAsList sliceIndicesOpt evalNet =
+    let LLMap = extractLLMap evalNet
+
+    let (a,b) = 
+        match sliceIndicesOpt with
+        |Some (x, y) -> x,y
+        |None -> getBusEdgeIndices LLMap
+
+    LLMap
+    |> Map.filter (fun index _ -> index >= a && index <= b)
+    |> Map.map (fun _ logicLevelOpt -> extractLogicLevel logicLevelOpt)
+    |> Map.toList
+    |> List.sortBy fst 
+    |> List.map snd
+
+
+let getNetByName name evalNetMap  = 
+    match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) evalNetMap with
+    |Some key -> key
+    |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
