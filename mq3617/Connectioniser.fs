@@ -2,6 +2,7 @@ module Connectioniser
 
 open System
 open SharedTypes
+
 ////////////////////////////////////////////////testing,get rid of it l8r
 let a1 = {
     Name="Test1"
@@ -11,7 +12,8 @@ let a1 = {
     Wires =[] //also dont matter 4 me
 }
 let avaliableBlocks =[a1]
-//////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
 /// 3-tuple helper functions
 let first (a, _, _) = a
 let second (_, b, _) = b
@@ -120,7 +122,7 @@ let finaliseConnections conlist =
     printf "links: %A" links
     List.map (fun x -> (first x,updateNets (second x) links,updateNets (third x) links)) conlist
     
-
+// outward functions
 let UserIn() =
     addMegaBlock ()
     |> List.sort
