@@ -80,15 +80,15 @@ let (|GATEINSTANCE|_|) tokList =
 let (|GATEINSTANTIATION|_|) tokList = 
     let convertToGateType token = 
         match token with 
-        | And -> AND
-        | Or -> OR
-        | Not -> NOT
+        | AndTok -> AND
+        | OrTok -> OR
+        | NotTok -> NOT
         | _ -> failwithf "What?"
 
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
-    | MATCHMULT [And; Or; Not] (Some gatetype, GATEINSTANCE (Some (gateid,termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
+    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid,termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (GATEINST (convertToGateType gatetype, gateid, termlist)), Ok tokList')
     | _ -> None
 
