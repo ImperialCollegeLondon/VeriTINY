@@ -2,22 +2,17 @@ module LogicBlockGen
 
 open Parser
 open SharedTypes
+open EvalNetHelper
 
-let getFirst threeTuple = 
-    match threeTuple with 
-    | (a, b, c) -> a
+let getFirst (a, _, _) = a
 
-let getSecond threeTuple = 
-    match threeTuple with 
-    | (a, b, c) -> b
-    
-let getThird threeTuple = 
-    match threeTuple with 
-    | (a, b, c) -> c
+let getSecond (_, b, _) = b
+
+let getThird (_, _, c) = c 
 
 let convertAST (ast: ModuleType) =
 
-    ///Generates a concat net with a unique name (integers starting from 0)
+    ///Generates a skeleton concat net with size and a unique name (integers starting from 0)
     let genConcatNetList (usedNames: int list) : NetIdentifier list = 
         let rec increaseCount num = 
             if List.exists ((=) num) usedNames 
@@ -41,13 +36,27 @@ let convertAST (ast: ModuleType) =
         | TERMIDWire (wire, num) ->  genThinSliceNetList (num, [wire])
         | TERMIDBus (bus, num1, num2) -> genThickSliceNetList (num1, num2, [bus])
 
+    let correctConcatExp (allNets: NetIdentifier list) (concatExp: Expression) : Expression = 
+        
+        let getConcatSize concatNetTerms allNets =
+            let folder totalSize netID = 
+                let currNetSize = 
+                    match netID.SliceIndices with
+                    | Some (x, Some y) -> abs (x - y) + 1
+                    | Some (x, None) -> 1
+                    | None -> getBusSize (List.find ((=) netID) allNets)
+                totalSize + currNetSize
+            List.fold folder 0 concatNetTerms
+
+        (getFirst concatExp, [{(getSecond concatExp).Head with SliceIndices = Some (0, Some (getConcatSize (getThird concatExp) allNets))}], getThird concatExp)
+
     let updateTerm ((record, usedNames): TLogic * int list) (term: TerminalType) : TLogic * int list = 
         match term with        
         | TERMCONCAT termlist -> 
-            //If terminal is a concatenation, add a concat net in ExpressionList
-            let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, termlist |> List.collect genTermNetList] @ record.ExpressionList}
+            //If terminal is a concatenation, add a concat exp in ExpressionList but corrected to include bus size
+            let tmp = {record with ExpressionList = [(Concat, genConcatNetList usedNames, termlist |> List.collect genTermNetList) |> correctConcatExp (record.Inputs @ record.Outputs @ record.Wires)] @ record.ExpressionList}
 
-            //Also add it as a wire net in Wires
+            //Also add it in Wires
             let tmp' = {tmp with Wires = genConcatNetList usedNames @ tmp.Wires}
 
             //Update the terminal list of the most recently added expression in ExpressionList 
@@ -87,10 +96,10 @@ let convertAST (ast: ModuleType) =
             | hd :: tl -> 
                 match hd with //Get the output terminal first
                 | TERMCONCAT outputterms -> 
-                    //If output terminal is a concatenation, add a concat net in ExpressionList
-                    let tmp = {record with ExpressionList = [Concat, genConcatNetList usedNames, outputterms |> List.collect genTermNetList] @ record.ExpressionList}
+                    //If output terminal is a concatenation, add a concat exp in ExpressionList but corrected to include bus size
+                    let tmp = {record with ExpressionList = [(Concat, genConcatNetList usedNames, outputterms |> List.collect genTermNetList) |> correctConcatExp (record.Inputs @ record.Outputs @ record.Wires)] @ record.ExpressionList}
 
-                    //Also add it as a wire net in Wires
+                    //Also add it in Wires
                     let tmp' = {tmp with Wires = genConcatNetList usedNames @ tmp.Wires}
 
                     //Add a new gate inst to ExpressionList then add its terminal list by calling updateTermList
