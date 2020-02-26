@@ -20,7 +20,7 @@
 
 10. \<gate_type> ::= "and" | "or" | "not"
 
-11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")"
+11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
 12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}"
 
