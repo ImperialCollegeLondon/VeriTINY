@@ -10,7 +10,7 @@ let getSecond (_, b, _) = b
 
 let getThird (_, _, c) = c 
 
-let convertAST (ast: ModuleType) =
+let convertAST (ast: ModuleType) : TLogic =
 
     ///Generates a skeleton concat net with size and a unique name (integers starting from 0)
     let genConcatNetList (usedNames: int list) : NetIdentifier list = 
