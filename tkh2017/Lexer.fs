@@ -89,6 +89,3 @@ let tokenise inpstring =
         | _ -> failwithf "What?"
 
     replaceWithTokens (fst unwrapped)
-
-// let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
-// lexAndImplode sampleCode
