@@ -115,13 +115,32 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
             outputNetKey, updatedOutputEvalNet 
 
         let updatedEvalNetMap = 
+            let exprOutputConcatenation (_, exprOutputLst, _) =
+                let exprOutput = List.head exprOutputLst
+                List.fold (fun concatLst (op, outLst, inpLst) ->
+                    match concatLst with
+                    |Some _ -> concatLst
+                    |None ->
+                        match op with
+                        |Concat -> if ((List.head outLst) = exprOutput) then Some inpLst else None
+                        |_ -> None) None exprToEvaluate              
+
+
             List.fold (fun (currNetMap: Map<NetIdentifier,EvalNet>) expr ->
-                let updateKey, newEvalNet = evaluateExpr expr
+                let exprOutKey, exprOutEvalNet = evaluateExpr expr
                 let updatedEvalNet = 
-                    match currNetMap.[updateKey] with
-                    |EvalBus _ -> EvalBus newEvalNet
-                    |EvalWire _ -> EvalWire newEvalNet        
-                Map.add updateKey updatedEvalNet currNetMap) evalNetMap evaluatableExpressions
+                    match currNetMap.[exprOutKey] with
+                    |EvalBus _ -> EvalBus exprOutEvalNet
+                    |EvalWire _ -> EvalWire exprOutEvalNet        
+                
+                let evalNetMapConcatApplied =
+                    match exprOutputConcatenation expr with
+                    |Some concatLst -> reverseConcat updatedEvalNet concatLst evalNetMap
+                    |None -> evalNetMap
+                    
+                Map.add exprOutKey updatedEvalNet evalNetMapConcatApplied) evalNetMap evaluatableExpressions    
+
+            
 
         let updatedExprToEvaluate = List.filter (fun expr -> not (List.contains expr evaluatableExpressions)) exprToEvaluate
         let updatedEvaluatedNets = 
@@ -144,4 +163,4 @@ let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, 
     formEvalNets combModule
     |> assignInputValues inputMap combModule.Inputs
     |> evaluateExprLst combModule.ExpressionList combModule.Inputs 
-    |> formOutputNets combModule.Outputs
+    |> formOutputNets combModule.Outputs     

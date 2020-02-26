@@ -77,3 +77,34 @@ let concatOp (evalNetMap: Map<NetIdentifier, EvalNet>) (inpIDLst: NetIdentifier 
     |> List.map (fun logicLvl -> Some logicLvl)
     |> List.mapi (fun i logicLvlOpt -> (i,logicLvlOpt))
     |> Map
+
+
+let reverseConcat (concatenatedNet: EvalNet) (concatenationInputs: NetIdentifier list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
+    let concatenatedLLLst = 
+        extractLLMap concatenatedNet
+        |> Map.toList
+        |> List.sortBy fst
+        |> List.map (snd >> extractLogicLevel)
+
+    let revConcatInputs = List.rev concatenationInputs 
+
+    let _, updatedEvalNetMap = 
+        List.fold (fun (remainingLLLst, modifiedEvalNetMap) (concatInpID: NetIdentifier) ->
+            let inpNetID = getNetByName concatInpID.Name evalNetMap
+            let inpLLMap = extractLLMap evalNetMap.[inpNetID]
+            let updatedInpLLMap, remainder =
+                match concatInpID.SliceIndices with
+                |Some (x, Some y) -> updateBus inpLLMap (Some(min x y, max x y)) (List.take (getBusSize concatInpID) remainingLLLst), List.skip (getBusSize concatInpID) remainingLLLst
+                |Some (x, None) -> updateBus inpLLMap (Some (x,x)) [List.head remainingLLLst], List.tail remainingLLLst 
+                |None -> updateBus inpLLMap None (List.take (getBusSize inpNetID) remainingLLLst), List.skip (getBusSize inpNetID) remainingLLLst
+            
+            let updatedEvalNet = 
+                match evalNetMap.[inpNetID] with
+                |EvalBus _ -> EvalBus updatedInpLLMap
+                |EvalWire _ -> EvalWire updatedInpLLMap
+
+            remainder, Map.add inpNetID updatedEvalNet modifiedEvalNetMap   
+            ) (concatenatedLLLst, evalNetMap) revConcatInputs
+
+    updatedEvalNetMap
+        
