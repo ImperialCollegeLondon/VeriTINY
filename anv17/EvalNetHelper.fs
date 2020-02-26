@@ -20,7 +20,7 @@ let createNewBusMap (a,b) initVal =
 let createNewBus (a, b) initVal = 
         createNewBusMap (a,b) initVal |> EvalBus
 
-let padLogicLvlListToLength logicLvlLst fullLength =
+let padLogicLvlListToLength fullLength logicLvlLst =
 
     if List.length logicLvlLst >= fullLength
     then logicLvlLst
@@ -29,6 +29,12 @@ let padLogicLvlListToLength logicLvlLst fullLength =
         |> List.map (fun _ -> Low)
         |> List.append logicLvlLst
 
+
+let getBusEdgeIndices netMap = 
+    let wireIndices = 
+            Map.toList netMap
+            |> List.map (fst)   
+    (List.min wireIndices, List.max wireIndices)
 
 //caller can supply None for slice indicies to update whole bus
 let updateBus bus sliceIndices newLogicLevels = 
@@ -78,3 +84,52 @@ let isNetEvaluated evalNet =
             match logicLevelOpt with
             |Some logicLvl -> true
             |None -> false) true LLMap
+
+let getBusSize netID = 
+    match netID.SliceIndices with
+    |Some(x, Some y) -> abs (x - y) + 1
+    |Some (_, None)
+    |None -> 1
+
+let getStartIndex (netID: NetIdentifier) = 
+    match netID.SliceIndices with
+    |Some (x, Some y) -> min x y
+    |Some (x, None) -> x
+    |None -> 0
+
+let evalNetToNet evalNet = 
+    let noOptLLMap = 
+        extractLLMap evalNet
+        |> Map.map (fun _ logicLvlOpt  -> extractLogicLevel logicLvlOpt)
+
+    match evalNet with
+    |EvalWire _ -> Wire noOptLLMap
+    |EvalBus _ -> Bus noOptLLMap
+
+let netToEvalNet net =
+    let LLMapToOptLLMap map =
+        Map.map (fun _ value -> Some value) map
+    match net with
+    |Wire wireMap -> EvalWire (LLMapToOptLLMap wireMap)
+    |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
+
+let getNetSliceAsList sliceIndicesOpt evalNet =
+    let LLMap = extractLLMap evalNet
+
+    let (a,b) = 
+        match sliceIndicesOpt with
+        |Some (x, y) -> x,y
+        |None -> getBusEdgeIndices LLMap
+
+    LLMap
+    |> Map.filter (fun index _ -> index >= a && index <= b)
+    |> Map.map (fun _ logicLevelOpt -> extractLogicLevel logicLevelOpt)
+    |> Map.toList
+    |> List.sortBy fst 
+    |> List.map snd
+
+
+let getNetByName name evalNetMap  = 
+    match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) evalNetMap with
+    |Some key -> key
+    |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
