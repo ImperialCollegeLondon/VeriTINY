@@ -55,6 +55,11 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
     if List.isEmpty exprToEvaluate
     then evalNetMap
     else 
+
+        let getNetByName name = 
+            match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) evalNetMap with
+            |Some key -> key
+            |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
         
         let canEvalExpression (exprInputs: NetIdentifier list) = 
             (true, exprInputs) ||> List.fold (fun expressionEvaluatable inp ->
@@ -75,14 +80,13 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
                 match outputNetID.SliceIndices with
                 |Some (x, Some y) ->  (abs (x - y)) + 1
                 |Some (_, None) -> 1
-                |None -> getBusSize (getNetByName outputNetID.Name evalNetMap)
+                |None -> getBusSize (getNetByName outputNetID.Name)
 
             let reduceInpLstWithOp busOperator initValue =
                 let startNet = createNewBusMap (0, outputBusSize - 1) (Some initValue)
                 List.fold (fun result (inpNetID: NetIdentifier) ->
-                    let inpNet = evalNetMap.[getNetByName inpNetID.Name evalNetMap]                 
+                    let inpNet = evalNetMap.[getNetByName inpNetID.Name]                 
                     busOperator (EvalBus result, 0) (inpNet, getStartIndex inpNetID)) startNet inpLst
-
 
             let resultNet = 
                 match op with
@@ -90,16 +94,16 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIde
                 |Or -> reduceInpLstWithOp OROpNet Low
                 |Not ->
                     let inpNetID = List.head inpLst //not operations should only have 1 input
-                    NOTOpNet evalNetMap.[getNetByName inpNetID.Name evalNetMap] (getStartIndex inpNetID) outputBusSize
+                    NOTOpNet evalNetMap.[getNetByName inpNetID.Name] (getStartIndex inpNetID) outputBusSize
                 |Pass -> 
                     let inpNetID = List.head inpLst
-                    PassOpNet evalNetMap.[getNetByName inpNetID.Name evalNetMap] (getStartIndex inpNetID) outputBusSize
-                |Concat -> concatOp evalNetMap inpLst
+                    PassOpNet evalNetMap.[getNetByName inpNetID.Name] (getStartIndex inpNetID) outputBusSize
+                |Concat -> failwith "Concatenation not implemented yet"
                 
             //TODO: Concat Operator
 
             let outputID = List.head outLst
-            let outputNetKey = getNetByName outputID.Name evalNetMap
+            let outputNetKey = getNetByName outputID.Name
             let outputEvalNet = evalNetMap.[outputNetKey]
             let updatedOutputEvalNet = 
                 match outputNetKey.SliceIndices with 
