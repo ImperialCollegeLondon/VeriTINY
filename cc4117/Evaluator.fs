@@ -64,6 +64,6 @@ let updateDFF gNetLstIn gNetLstOut =
 
 
 //let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
-let evaluateModuleWithInputs tLog inMap : Map<NetIdentifier, Net> =
-    evaluateOutEx
+// let evaluateModuleWithInputs tLog inMap : Map<NetIdentifier, Net> =
+//     evaluateOutEx
   

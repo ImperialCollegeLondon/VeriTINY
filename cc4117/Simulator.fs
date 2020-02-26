@@ -4,36 +4,7 @@ open SharedTypes
 open SimulationTypes
 open ExampleTypes
 open Helper
-
-
-
-
-// let initializeSync cLst =
-//         let updateIfSync (gNet:GeneralNet) = 
-//             if fst gNet 
-//             then
-//                 let newMapLen = gNet |> extractNet |> netSize 
-//                 updateGenNet gNet (createNewMap newMapLen)
-//             else
-//                 gNet
-//         let setToLow (cIn: Connection) =
-//             cIn 
-//             |> extractGenNetLsts  
-//             |> opOnTuple (List.map updateIfSync)
-//         List.map setToLow cLst 
-
-// let findAllSync (cLst:Connection List) =
-//         let rec findSync acc gLst =
-//             match gLst with
-//             | hd::tl -> 
-//                 if fst hd then 
-//                     findSync (acc @ [hd]) tl
-//                 else 
-//                     findSync acc tl
-//             | [] -> List.distinct acc
-//         let c (cIn: Connection) =
-//             cIn |> extractGenNetLsts |> opOnTuple (findSync []) |> (fun (a, b) -> a @ b)
-//         List.collect c cLst
+open CombEval
 
 
 // needed when users define inputs with Map<NetIdentifier, Net>
@@ -145,11 +116,15 @@ let advanceState (currentInputs: GeneralNet list) (syncNets: GeneralNet List) (b
         | (n, mapIn, _)::tl when checkIfInMap acc mapIn ->
             let outputMap = n |> getTLogic |> evaluateModuleWithInputs mapIn
             let acc' = updateMap acc outputMap
+            printfn "yeaaah i found it man, what's next"
             simulateAsync acc' tl
         | hd::tl ->             
             // if not known, simulate tl @ [hd] else if known simulate tl
+            printfn "huh? not here brah"
             simulateAsync acc (tl @ [hd])
-        | [] -> acc
+        | [] -> 
+            printfn "omg... it worked im so emotional"
+            acc
         | _ -> failwithf "nani? how did that happen"
 
     let mapOfVals = simulateAsync knownNets bLst
@@ -160,4 +135,5 @@ let advanceState (currentInputs: GeneralNet list) (syncNets: GeneralNet List) (b
             let acc' = updateDFF (mapToGLst mapIn) (mapToGLst mapOut) |> gLstToMap
             simulateSync acc' tl
         | [] -> acc 
-    simulateSync mapOfVals bLst
+    //simulateSync mapOfVals bLst
+    mapOfVals
