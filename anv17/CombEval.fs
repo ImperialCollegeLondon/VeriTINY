@@ -22,8 +22,11 @@ let formEvalNets (logicModule: TLogic): Map<NetIdentifier, EvalNet> =
     |> Map
 
 
-let assignInputValues (inputMap: Map<NetIdentifier, Net>) (evalNetMap: Map<NetIdentifier, EvalNet>) =
+let assignInputValues (inputMap: Map<NetIdentifier, Net>)  (moduleInputIDs: NetIdentifier list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
         let failTypeMismatch net input = failwithf "Input and net type mismatch, got input %A, net %A" input net
+
+        let isInputMapComplete = 
+            List.fold (fun inputMapComplete inpNetID -> if inputMapComplete then Map.containsKey inpNetID inputMap else false) true moduleInputIDs
 
         let doNetTypesMatch inputNet correspondingEvalNet =
             match inputNet with
@@ -36,14 +39,16 @@ let assignInputValues (inputMap: Map<NetIdentifier, Net>) (evalNetMap: Map<NetId
                     |EvalBus _ -> false
                     |EvalWire _ -> true
 
-        
-        Map.map (fun netID net ->
-            match Map.tryFind netID inputMap with
-            |Some inputNet -> 
-                if doNetTypesMatch inputNet net 
-                then netToEvalNet inputNet
-                else failTypeMismatch net inputNet
-            |None -> net ) evalNetMap
+        if isInputMapComplete
+        then
+            Map.map (fun netID net ->
+                match Map.tryFind netID inputMap with
+                |Some inputNet -> 
+                    if doNetTypesMatch inputNet net 
+                    then netToEvalNet inputNet
+                    else failTypeMismatch net inputNet
+                |None -> net ) evalNetMap
+        else failwithf "Input mapping incomplete, expecting Nets for %A, got mapping %A" moduleInputIDs inputMap
 
 
 let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIdentifier list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
@@ -137,6 +142,6 @@ let formOutputNets (moduleOutputs: NetIdentifier list) (evalNetMap: Map<NetIdent
 //top level function
 let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, Net>) : Map<NetIdentifier, Net> =
     formEvalNets combModule
-    |> assignInputValues inputMap
-    |> evaluateExprLst combModule.ExpressionList combModule.Inputs
+    |> assignInputValues inputMap combModule.Inputs
+    |> evaluateExprLst combModule.ExpressionList combModule.Inputs 
     |> formOutputNets combModule.Outputs
