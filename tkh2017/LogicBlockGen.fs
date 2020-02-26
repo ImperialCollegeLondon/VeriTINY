@@ -48,7 +48,7 @@ let convertAST (ast: ModuleType) =
                 totalSize + currNetSize
             List.fold folder 0 concatNetTerms
 
-        (getFirst concatExp, [{(getSecond concatExp).Head with SliceIndices = Some (0, Some (getConcatSize (getThird concatExp) allNets))}], getThird concatExp)
+        (getFirst concatExp, [{(getSecond concatExp).Head with SliceIndices = Some (0, Some (getConcatSize (getThird concatExp) allNets - 1))}], getThird concatExp)
 
     let updateTerm ((record, usedNames): TLogic * int list) (term: TerminalType) : TLogic * int list = 
         match term with        
@@ -57,7 +57,7 @@ let convertAST (ast: ModuleType) =
             let tmp = {record with ExpressionList = [(Concat, genConcatNetList usedNames, termlist |> List.collect genTermNetList) |> correctConcatExp (record.Inputs @ record.Outputs @ record.Wires)] @ record.ExpressionList}
 
             //Also add it in Wires
-            let tmp' = {tmp with Wires = genConcatNetList usedNames @ tmp.Wires}
+            let tmp' = {tmp with Wires = [(getSecond (tmp.ExpressionList.Head)).Head] @ tmp.Wires}
 
             //Update the terminal list of the most recently added expression in ExpressionList 
             {tmp' with ExpressionList = match List.rev tmp'.ExpressionList with 
@@ -100,7 +100,7 @@ let convertAST (ast: ModuleType) =
                     let tmp = {record with ExpressionList = [(Concat, genConcatNetList usedNames, outputterms |> List.collect genTermNetList) |> correctConcatExp (record.Inputs @ record.Outputs @ record.Wires)] @ record.ExpressionList}
 
                     //Also add it in Wires
-                    let tmp' = {tmp with Wires = genConcatNetList usedNames @ tmp.Wires}
+                    let tmp' = {tmp with Wires = [(getSecond (tmp.ExpressionList.Head)).Head] @ tmp.Wires}
 
                     //Add a new gate inst to ExpressionList then add its terminal list by calling updateTermList
                     updateTermList ({tmp' with ExpressionList = tmp'.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
