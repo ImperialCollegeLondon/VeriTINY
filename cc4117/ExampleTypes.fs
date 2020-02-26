@@ -156,9 +156,9 @@ let knownInputs = aIn @ dIn1 @ dIn2 @ [false, ("b1", Wire(Map [0, High]))] @ [fa
 let newCLst : Connection List =
     [Name "A", aIn, aOut;
     Name "B", bIn, bOut;
-    Name "DFF1", dIn1, dOut1;
-    Name "DFF2", dIn2, dOut2;
-    Name "DFF3", dIn3, dOut3;
+    Name "DFF", dIn1, dOut1;
+    Name "DFF", dIn2, dOut2;
+    Name "DFF", dIn3, dOut3;
     Name "C", cIn, cOut;
     Name "E", eIn, eOut]
 

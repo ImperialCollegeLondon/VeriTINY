@@ -80,21 +80,4 @@ let oddUpdate gNetLstIn gNetLstOut =
 //let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, GraphEndPoint>) : Map<NetIdentifier, Net> =
 let evaluateModuleWithInputs: Map<NetIdentifier, Net> =
     evaluateOutEx
-
-let reconstructNet (netIDMap: Map<NetIdentifier, Net>) =
-    Map.toList netIDMap |> List.map (fun ((a:NetIdentifier), b) -> false, (a.Name, b))
-
-let getTLogic (mBlock: Megablock) (tLst: TLogic list) =
-    let (Name str) = mBlock
-    let checker s (tLog: TLogic): bool = 
-        if s = tLog.Name then true else false
-    List.tryFind (checker str) tLst 
-
-
-
-
-
-
-    
-
   
