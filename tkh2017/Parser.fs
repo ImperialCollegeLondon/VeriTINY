@@ -72,6 +72,8 @@ let (|GATEINSTANCE|_|) tokList =
         Some (None, Error tokList')
     | MATCHID (Some gateid, MATCHSINGLE OpRoundBracket (LISTTERMINAL (Some termlist, MATCHSINGLE ClRoundBracket (Ok tokList')))) -> 
         Some (Some (gateid, termlist), Ok tokList')
+    | MATCHSINGLE OpRoundBracket (LISTTERMINAL (Some termlist, MATCHSINGLE ClRoundBracket (Ok tokList'))) -> 
+        Some (Some ( "", termlist), Ok tokList')
     | _ -> None
 
 let (|GATEINSTANTIATION|_|) tokList = 
@@ -182,6 +184,3 @@ let parse inpTokList =
     | MATCHMODULE (_, Error lst) //?
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
-
-let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
-tokenise sampleCode |> parse
