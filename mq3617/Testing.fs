@@ -6,7 +6,6 @@ open ConnectionTools
 open Expecto
 open SharedTypes
 
-printf "%A" (synchNetInit (UserIn()) High)
 
 [<Tests>]
 let refactor1 =
@@ -82,6 +81,73 @@ let netUpdate2=
                            [(true, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))])]
     Expect.equal (List.map (fun x -> (first x,updateNets (second x) inpLinks,updateNets (third x) inpLinks)) inpBlocklst) expected "megablocks with connections, clocked"
 
+[<Tests>]
+let connValidation1=
+    testCase "verify valid connection" <| fun ()->
+    let inp = [(Name "Test",      //// Two megablocks, Test and DFF
+                [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low); (2, Low)])))], 
+                    [(true, ("out1", Bus (Map [(0, Low); (1, Low); (2, Low)])))])]  
+    let inInName = "a2"
+    let inOutName = "out1"
+    let expected = true
+    Expect.equal (checkValidConnection inInName inOutName inp) expected "verify valid connection"
+
+[<Tests>]
+let connValidation2=
+    testCase "verify invalid, net sizes do not match" <| fun ()->
+    let inp = [(Name "Test",      //// Two megablocks, Test and DFF
+                [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low)])))], 
+                    [(true, ("out1", Bus (Map [(0, Low); (1, Low)])))])]  
+    let inInName = "a2"
+    let inOutName = "out1"
+    let expected = false
+    Expect.equal (checkValidConnection inInName inOutName inp) expected "verify invalid, net sizes do not match"
+
+
+[<Tests>]
+let connValidation3=
+    testCase "verify invalid, nets blong to the same block" <| fun ()->
+    let inp = [(Name "Test",      //// Two megablocks, Test and DFF
+                [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low); (2, Low)])))], 
+                    [(true, ("out1", Bus (Map [(0, Low); (1, Low); (2, Low)])))])]  
+    let inInName = "a2"
+    let inOutName = "out2"
+    let expected = false
+    Expect.equal (checkValidConnection inInName inOutName inp) expected "verify invalid, nets blong to the same block" 
+
+[<Tests>]
+let setHigh=
+    testCase "Connection List , clocked input initialised to high" <| fun () ->
+    let inpBlocklst = [(Name "Test", [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                        [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                        (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                           [(true, ("out1", Bus (Map [(0, High); (1, Low); (2, Low)])))])]
+
+    let expected = [(Name "Test", [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                       [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                       (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                           [(true, ("out1", Bus (Map [(0, High); (1, High); (2, High)])))])]
+    Expect.equal (synchNetInit inpBlocklst High) expected "Connection List , clocked input initialised to high"
+
+[<Tests>]
+let setLow=
+    testCase "Connection List , clocked input initialised to low" <| fun () ->
+    let inpBlocklst = [(Name "Test", [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                        [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                        (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                           [(true, ("out1", Bus (Map [(0, High); (1, Low); (2, Low)])))])]
+
+    let expected = [(Name "Test", [(false, ("a2", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                       [(false, ("out2", Bus (Map [(0, Low); (1, Low); (2, Low)])))]);
+                       (Name "DFF", [(false, ("a1", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
+                           [(true, ("out1", Bus (Map [(0, Low); (1, Low); (2, Low)])))])]
+    Expect.equal (synchNetInit inpBlocklst Low) expected "Connection List , clocked input initialised to low"
 
 let testListWithExpecto =
   testList "A test group" [
@@ -89,8 +155,13 @@ let testListWithExpecto =
     refactor2
     uncon1
     uncon2
+    connValidation1
+    connValidation2
+    connValidation3
     netUpdate1
     netUpdate2
+    setHigh
+    setLow
   ]
 
 let testsWithExpecto() =
