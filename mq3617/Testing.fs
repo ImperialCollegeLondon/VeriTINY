@@ -1,6 +1,7 @@
 ﻿open System
 open Connectioniser
 
+UserIn()
 
 ///for testing
 open Expecto
