@@ -1,29 +1,23 @@
-# Sample Individual Statement for Individual Code Submission
+# Individual Statement for Individual Code Submission - ANV17
 
-This sample project contains a single F# sample module with uninspiring name `Module1.fs`.
+This folder contains the following modules in order of compilation (all modules have dependencies on every module above them): 
+* `EvalTypes.fs` - Contains the EvalNet type definition and has a dependency on the `SharedTypes.fs` module in the `shared` folder, which contains types need to be shared by all people on the team.
+* `EvalNetHelper.fs` - Contains functions used to analyse and manipulate nets of the `EvalNet` type which encapsulates `Map<int, LogicLevel>`. The `getBusSize` function in this module is used in the `LogicBlockGen.fs` module (tkh2017) to precalculate the bus indices for temporary nets created for concatenation.
+* `LogicOperations` - Contains functions to apply each `Operator` (excluding Concat for now) to EvalNets.
+* `CombEval.fs` - Contains functions used to evaluate purely combinational Verilog modules, represented using the `TLogic` type. This module contains the top level function `evaluateModuleWithInputs` which is to be used in the `Simulation.fs` module (cc4117) to evaluate TLogic modules in the overall simulation. 
 
-It uses `Dotnet Core 3.1`, with dependency on `Expecto.Fscheck`.
+`evaluateModuleWithInputs` has 2 parameters: 
+* `(combModule: TLogic)` - The combinational module to be evaluated. This will be an output of the `LogicBlockGen.fs` module.
+* `(inputMap: Map<NetIdentifier, Net>)` - The inputs to the combinational module represented as a map from the input net identifier to the input net's value encapsulated by the `Net` type. The Map must contain all NetIdentifiers from the `Inputs` NetIdentifer list in `combModule`.
 
-It comes with a VS solution file which however is optional (it can be recreated as needed from project file).
+and gives one output of the type `Map<NetIdentifier, Net>` representing the outputs of the combinational module for the given inputs. This map will contain all NetIdentifiers from the `Outputs` NetIdentifier list in `combModule`.
 
-My login is `tomcl` and it is used:
+My code is fairly self contained, with the only types used in the interface being `TLogic`, `NetIdentifier` and `Net`. 
 
-* In `tomcl` directory under which this project is put
-* As project (and solution) `tomcl.fsproj`, `tomcl.sol`
-* As second part of `README-tomcl` name
+`NetIdentifier` was initially created by me to allow for clearer representation of net definitions and accesses (slices/individual elements/whole nets). It was later adopted by the rest of the team and added to the `TLogic` module. 
 
-To create correct individual code skeleton:
+The `NetIdentifier` is a Record type containing the fields:
+* `Name: string` - The name of the net.
+* `SliceIndices: (int * int option)` - This field can be used to represent wire definitions `None`, bus defintions `input[3:0] bus-> Some(3, Some 0)`, bus slices `bus[2:1] -> Some(2, Some 0)`, single wire access in busses `bus[1] -> Some(1, None)`, and full bus/wire access `bus -> None`. 
 
-* copy this directory to one with correct name
-* change names of other files with login dependent names to use your login.
-* load `login.fsproj` in VS etc
-* check code will build
-* delete `tomcl.sol` if it causes problems, or overwrite it with VS changed version
-* change `Module1` to appropriate name for your module - keeping file name and module name the same
-   * you need also to change the module name on first line of the file, and the `open Module1` line in `program.fs`. 
-   * In a multi-module FS program use `open ModName` to access function `myFunc` in module `ModName` as `myFunc`.
-   * Without `open Modname` you can access `myFunc` as `modName.myFunc`.
-* replace sample code by your own.
-* change `program.fs code as you wish
-* delete the contents of this readme, the renamed version will be your individual statement for individual code submission.
-* check that you understand all the files (`login.fsproj`, `Program.fs`, `YourModule.fs`) that make up this F# project and how it runs.
+The `TLogic` and `Net` types are explained in the README in the shared folder linked here.
