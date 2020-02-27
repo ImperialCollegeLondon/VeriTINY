@@ -6,9 +6,9 @@ open Lexer
 open Parser
 open LogicBlockGen
 
-let sampleCode1 = Seq.toList (System.IO.File.ReadAllText "tkh2017/samples/sampleverilog1.v")    
-let sampleCode2 = Seq.toList (System.IO.File.ReadAllText "tkh2017/samples/sampleverilog2.v")    
-let sampleCode3 = Seq.toList (System.IO.File.ReadAllText "tkh2017/samples/sampleverilog3.v")    
+let sampleCode1 = System.IO.File.ReadAllText "tkh2017/samples/sampleverilog1.v"
+let sampleCode2 = System.IO.File.ReadAllText "tkh2017/samples/sampleverilog2.v"   
+let sampleCode3 = System.IO.File.ReadAllText "tkh2017/samples/sampleverilog3.v"   
 
 let lexerTest1Ans = [Module; Identifier "mux_2x1"; OpRoundBracket; Identifier "a"; Comma;
                      Identifier "b"; Comma; Identifier "sel"; Comma; Identifier "out";

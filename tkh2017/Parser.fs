@@ -1,6 +1,7 @@
 module Parser 
-
 open Lexer
+
+//TODO: Error messages
 
 type GateType = AND | OR | NOT
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
@@ -180,7 +181,6 @@ let (|MATCHMODULE|_|) tokList  =
         Some (Some (MODULE (modname, varlist, moditemlist)), Ok tokList')
     | _ -> None
 
-//TODO: Final parse function
 let parse inpTokList =
     match Ok inpTokList with
     | MATCHMODULE (Some ast, Ok []) -> Ok ast

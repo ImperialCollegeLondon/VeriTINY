@@ -1,6 +1,5 @@
 module Lexer
 open NGrams
-open System
 
 //TODO: assign
 
@@ -78,7 +77,7 @@ let (|MultValTok|_|) inpstring =
     else Some (Identifier inpstring)
 
 let tokenise inpstring = 
-    let unwrapped =  lexAndImplode inpstring |> Option.defaultValue ([],[])
+    let unwrapped = inpstring |> Seq.toList |> lexAndImplode |> Option.defaultValue ([],[])
 
     let rec replaceWithTokens stringList = 
         match stringList with 
