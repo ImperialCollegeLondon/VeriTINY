@@ -1,14 +1,47 @@
 module Tests
 
-open System 
 open SharedTypes
 open Lexer
 open Parser
 open LogicBlockGen
 
-let sampleCode1 = System.IO.File.ReadAllText "tkh2017/samples/sampleverilog1.v"
-let sampleCode2 = System.IO.File.ReadAllText "tkh2017/samples/sampleverilog2.v"   
-let sampleCode3 = System.IO.File.ReadAllText "tkh2017/samples/sampleverilog3.v"   
+let sampleCode1 = "module mux_2x1 (a, b, sel, out);
+
+                      input a, b, sel;
+                      output out;
+                      wire sel_n;
+                      wire out_0;
+
+                      not (sel_n, sel);
+                      and(out_0, a, sel);
+                      and (out_1, b, sel_n);
+                      or (out, out_0, out_1);
+
+                  endmodule"
+
+let sampleCode2 = "module testblock(a, b, out);
+
+                      input[1:0]a, b;
+                      output[1:0] out;
+                      wire c;
+
+                      and (c, a[1], b[0]);
+                      or (out, {a[0], b[1]}, {c, a[0]});
+
+                  endmodule"   
+
+let sampleCode3 = "module testblock(a, b, c, out);
+
+                      input[2:0] a, b;
+                      input c;
+                      output[2:0] out;
+                      wire d;
+                      wire[1:0] e;
+
+                      and (d, a[1], b[0]);
+                      and ({e[1], out[1:0]}, a, {b[1:0], d});
+
+                  endmodule"
 
 let lexerTest1Ans = [Module; Identifier "mux_2x1"; OpRoundBracket; Identifier "a"; Comma;
                      Identifier "b"; Comma; Identifier "sel"; Comma; Identifier "out";
