@@ -9,6 +9,7 @@ type TopLevelTestRec= {
     TestName: string
     Module:TLogic
     Inputs: Map<NetIdentifier, Net>
+    CurrOutputs: Map<NetIdentifier, Net>
     ExpectedOutputs: Map<NetIdentifier, Net>
 }
 
@@ -69,7 +70,7 @@ let testModules = [
                             SliceIndices = None }],
                     [{ Name = "notCurrstate"
                        SliceIndices = Some (0, None) };
-                     { Name = "currstate"
+                     { Name = "currState"
                        SliceIndices = Some (1, None) };
                      { Name = "notCurrstate"
                        SliceIndices = Some (2, None) }])]
@@ -99,6 +100,10 @@ let testCases = [
             ({Name = "b"; SliceIndices =None}, [0,High] |> Map |> Wire);
         ]
 
+        CurrOutputs = Map [
+            ({Name = "c"; SliceIndices =None}, [0,Low] |> Map |> Wire)
+        ]
+
         ExpectedOutputs = Map [
             ({Name = "c"; SliceIndices =None}, [0,Low] |> Map |> Wire)
         ]
@@ -112,6 +117,10 @@ let testCases = [
         Inputs = Map [
             ({Name = "a"; SliceIndices =None}, [0,High] |> Map |> Wire);
             ({Name = "b"; SliceIndices =None}, [0,High] |> Map |> Wire);
+        ]
+
+        CurrOutputs = Map [
+            ({Name = "c"; SliceIndices =None}, [0,Low] |> Map |> Wire)
         ]
 
         ExpectedOutputs = Map [
@@ -128,6 +137,10 @@ let testCases = [
             ({Name = "b"; SliceIndices =None}, [0,High] |> Map |> Wire);
         ]
 
+        CurrOutputs = Map [
+            ({Name = "c"; SliceIndices =None}, [0,Low] |> Map |> Wire)
+        ]
+
         ExpectedOutputs = Map [
             ({Name = "c"; SliceIndices =None}, [0,High] |> Map |> Wire)
         ]
@@ -140,6 +153,10 @@ let testCases = [
         Inputs = Map [
             ({Name = "a"; SliceIndices =None}, [0,Low] |> Map |> Wire);
             ({Name = "b"; SliceIndices =None}, [0,Low] |> Map |> Wire);
+        ]
+
+        CurrOutputs = Map [
+            ({Name = "c"; SliceIndices =None}, [0,Low] |> Map |> Wire)
         ]
 
         ExpectedOutputs = Map [
@@ -155,10 +172,18 @@ let testCases = [
             ({Name = "currState"; SliceIndices = Some(2, Some 0)}, [(0,Low); (1, Low); (2, Low)] |> Map |> Bus);
         ]
 
+        CurrOutputs = Map [
+            ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0,Low); (1, Low); (2, Low)] |> Map |> Bus);
+            ({Name = "exec1"; SliceIndices = None}, [(0,Low)] |> Map |> Wire);
+            ({Name = "exec2"; SliceIndices = None}, [(0,Low)] |> Map |> Wire);
+            ({Name = "fetch"; SliceIndices = None }, [(0,Low)] |> Map |> Wire);
+        ]
+
         ExpectedOutputs = Map [
             ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0,High); (1, Low); (2, Low)] |> Map |> Bus);
-            ({Name = "exec"; SliceIndices = None}, [(0,High)] |> Map |> Wire);
+            ({Name = "exec1"; SliceIndices = None}, [(0, Low)] |> Map |> Wire);
             ({Name = "exec2"; SliceIndices = None}, [(0,Low)] |> Map |> Wire);
+            ({Name = "fetch"; SliceIndices = None }, [(0,High)] |> Map |> Wire);
         ]
     }
 ]
@@ -168,7 +193,7 @@ let testCases = [
 let formEvalExprTest (testCaseRec:TopLevelTestRec)  =
     testCase (sprintf "Testing evalModuleWithInputs, test case %s" testCaseRec.TestName) <| (fun () ->
         let testDescriptor = sprintf "Testing EvalExprLst with Module %A and Inputs %A. Expecting outputs %A" testCaseRec.Module testCaseRec.Inputs testCaseRec.ExpectedOutputs
-        Expect.equal (evaluateModuleWithInputs testCaseRec.Module testCaseRec.Inputs) testCaseRec.ExpectedOutputs testDescriptor)
+        Expect.equal (evaluateModuleWithInputs testCaseRec.Module testCaseRec.Inputs testCaseRec.CurrOutputs) testCaseRec.ExpectedOutputs testDescriptor)
 
 let evalExprTestLst = testList "evalExpr Tests" (List.map formEvalExprTest testCases)
 
