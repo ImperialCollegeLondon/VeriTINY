@@ -258,41 +258,71 @@ let simpCLst : Connection List =
     [Name "A", aSIn, aSOut;
     Name "DFF", dSIn, dSOut]
 
+let notIn = 
+    [false, ("n", Wire(Map [0, Low]))]
+
+let notOut = 
+    [false, ("a0", Wire(Map [0, Low]))]
 
 let and1In = 
-    [false, ("a0", Wire(Map [0, High]));
+    [false, ("a0", Wire(Map [0, Low]));
     false, ("a1", Wire(Map [0, High]))]
 
 let and1Out =
     [false, ("b0", Wire(Map [0, High]))]
 
-let and2In =
+let or1In =
     [false, ("b0", Wire(Map [0, High]));
     false, ("b1", Wire(Map [0, High]))]
 
-let and2Out =
+let or1Out =
     [false, ("out", Wire(Map [0, High]))]
 
 let testCLst1 : Connection List =
     [Name "simpAND", and1In, and1Out;
-    Name "simpAND", and2In, and2Out]
+    Name "simpOR", or1In, or1Out;
+    Name "simpNOT", notIn, notOut]
 
 let tLogicEx3 : TLogic= { 
     Name = "simpAND"
     ExpressionList =
         [(And, 
-            [{ Name = "a"; SliceIndices = None }],
-            [{ Name = "b"; SliceIndices = None };
-            { Name = "c"; SliceIndices = None }])]
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None };
+            { Name = "b"; SliceIndices = None }])]
     Inputs =
         [{ Name = "a"; SliceIndices = None };
         { Name = "b"; SliceIndices = None }]
     Outputs = [{ Name = "c"; SliceIndices = None }]
     Wires = [] }
 
-let tLst1 = [tLogicEx3]
+let tLogicEx4 : TLogic= { 
+    Name = "simpOR"
+    ExpressionList =
+        [(Or, 
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None };
+            { Name = "b"; SliceIndices = None }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = None };
+        { Name = "b"; SliceIndices = None }]
+    Outputs = [{ Name = "c"; SliceIndices = None }]
+    Wires = [] }
+
+let tLogicEx5 : TLogic= { 
+    Name = "simpNOT"
+    ExpressionList =
+        [(Not, 
+            [{ Name = "b"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = None }]
+    Outputs = [{ Name = "b"; SliceIndices = None }]
+    Wires = [] }
+
+let tLst1 = [tLogicEx3; tLogicEx4; tLogicEx5]
 
 let testInputs1 : GeneralNet list =
-    [false, ("a0", Wire(Map [0, High]));
+    [false, ("n", Wire(Map [0, Low]));
     false, ("a1", Wire(Map [0, High]));
-    false, ("b1", Wire(Map [0, High]))]
+    false, ("b1", Wire(Map [0, Low]))]
