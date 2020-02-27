@@ -6,7 +6,7 @@ open SharedTypes
 open SimulationTypes
 open ExampleTypes
 open Helper
-open Evaluator
+open SynchronousBlocks
 open Simulator
 open CombEval
 

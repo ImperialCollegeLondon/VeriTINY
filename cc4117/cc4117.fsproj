@@ -12,7 +12,7 @@
     <Compile Include="SimulationTypes.fs" />
     <Compile Include="ExampleTypes.fs" />
     <Compile Include="Helper.fs" />
-    <Compile Include="Evaluator.fs" />
+    <Compile Include="SynchronousBlocks.fs" />
     <Compile Include="Simulator.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -1,4 +1,4 @@
-module Evaluator
+module SynchronousBlocks
 open SharedTypes
 open Helper
 

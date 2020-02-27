@@ -2,11 +2,11 @@ module Simulator
 open SharedTypes
 open SimulationTypes
 open Helper
-open Evaluator
+open SynchronousBlocks
 open CombEval
 
 
-// first take cLst and extract all syncNets as a list and initialize them to Low
+/// Extract synchronous nets from cLst and initialize them to Low
 let returnSyncNets (cLst: Connection List) = 
     
     let findAllSync (cLst:Connection List) =
@@ -40,12 +40,12 @@ let getInitMap (currentInputs:Map<NetIdentifier,Net>) (syncNetMap:Map<NetIdentif
     updateMap currentInputs syncNetMap
 
 
+/// Convert to Block list for evaluation 
 let cLstToBlockLst (cLst: Connection List) : Block list =
     List.map (fun (megaBlock, a, b) -> (megaBlock, gLstToMap a, gLstToMap b)) cLst
 
 
-// seperate sync/async megablocks (DFFCLst, asyncClst)
-// all DFFS can be updated by my function, the rest use evaluateWithOutputs
+// Seperate sync/async megablocks 
 let seperateMegaBlocks (bLst: Block list) =
     let checkIfSyncBlock (bIn: Block) =
         let (megaBlock), _, _ = bIn
@@ -60,11 +60,11 @@ let seperateMegaBlocks (bLst: Block list) =
         | [] -> lstA, lstB
     seperate [] [] bLst // -> (syncBLst, asyncBLst)
 
- 
+/// Advance to next clock cycle, return synchronous states
 let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (syncBLst: Block list) (tLst: TLogic List) = // map<NetIdentifier, Net> -> all info of sync or not is removed
 
-    // check if otherMap is a subset of reference map
-    let checkIfInMap (refMap: Map<'T,'b>) (otherMap: Map<'T,'b>) =
+    // Check if otherMap is a subset of reference map
+    let checkIfInMap (refMap: Map<'a,'b>) (otherMap: Map<'a,'b>) =
         let rec listCompare m lst =
             match lst with 
             | hd::tl when Map.containsKey hd m->
@@ -76,6 +76,7 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         |> List.map fst 
         |> listCompare refMap
 
+    // Take values from acc given keys of mapIn
     let takeFromMap (acc:Map<NetIdentifier,Net>) (mapIn:Map<NetIdentifier,Net>) =
         let netIds = mapIn |> Map.toList |> List.map fst
         let netList= List.map (fun x -> acc.[x]) netIds
@@ -105,48 +106,47 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
     // output of this function will return "mapOfVals"
     let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncBLst: Block list) =
         match asyncBLst with 
-        | (n, mapIn, mapOut)::tl when checkIfInMap acc mapIn ->
-            let tLog = getTLogic n tLst
+        | (mBlock, mapIn, mapOut)::rest when checkIfInMap acc mapIn ->
+            let tLog = getTLogic mBlock tLst
+            // take values from acc using keys of mapIn
             let mapIn' = takeFromMap acc mapIn
-            let outputMap = getOutput mapIn' mapOut tLog
-            let acc' = updateMap acc outputMap
-            simulateAsync acc' tl
-        | hd::tl ->             
-            simulateAsync acc (tl @ [hd])
+            let acc' = getOutput mapIn' mapOut tLog|> updateMap acc
+            simulateAsync acc' rest
+        | hd::rest ->             
+            simulateAsync acc (rest @ [hd])
         | [] -> 
             acc
         | _ -> failwithf "nani? how did that happen"
 
     let rec simulateSync (acc:Map<NetIdentifier,Net>) (refMap:Map<NetIdentifier,Net>) (syncBLst: Block list) =
         match syncBLst with
-        | (n, mapIn, mapOut)::tl when List.contains n syncMegaLst->
-            //let acc' = updateDFF mapIn mapOut
+        | (mBlock, mapIn, mapOut)::rest when List.contains mBlock syncMegaLst->
+            // takes values from refMap using keys of mapIn
             let mapIn' = takeFromMap refMap mapIn
-            let outputMap = updateDFF mapIn' mapOut
-            let acc' = updateMap acc outputMap
-            simulateSync acc' refMap tl
+            let acc' = updateDFF mapIn' mapOut |> updateMap acc
+            simulateSync acc' refMap rest
         | [] -> acc 
         | _ -> failwithf "other megablocks not supported yet"
 
     let mapOfVals = simulateAsync initMap asyncBLst
     printfn "States after asynchronous evaluation: \n %A" mapOfVals
-    let finalVals = simulateSync (Map []) mapOfVals syncBLst
-    printfn "Synchronous states after synchronous evaluation: \n %A" finalVals
-    finalVals
+    let nextState = simulateSync (Map []) mapOfVals syncBLst
+    printfn "Synchronous states after synchronous evaluation: \n %A" nextState
+    nextState
 
 let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=
-    // initialize/setup
+    // Initialize/setup
     let initialSyncNetMap = returnSyncNets cLst |> gLstToMap
     let bLst = cLstToBlockLst cLst
     let (syncBLst, asyncBLst) = seperateMegaBlocks bLst
 
-    // keep advancing state until the lst of known inputs are exhausted
+    // Keep advancing state until the lst of inputs are exhausted
     let rec advanceMore prevState (lstOfInputs: GeneralNet list list) =
         match lstOfInputs with
-        | currentInputs::tl -> 
+        | currentInputs::rest -> 
             let initMap = getInitMap (gLstToMap currentInputs) prevState
             let nextState = advanceState initMap asyncBLst syncBLst tLst
-            advanceMore nextState tl 
+            advanceMore nextState rest
         | [] -> prevState
 
     advanceMore initialSyncNetMap lstOfInputs
