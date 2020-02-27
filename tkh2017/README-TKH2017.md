@@ -6,7 +6,7 @@ The top level function for this module is `tokenise: string -> Token list` which
 
 ## Parser
 
-The top level function for this module is `parse: Token list -> Result<ModuleType, (int * Token list)>`. In the group stage the return type will be modified to `Result<ModuleType, string>` to handle error messages. The AST is the single case `ModuleType` DU derived from BNF definition 1 and is a 3-tuple containing the module name (`string`), list of ports (`string list`) and list of module items (`ModuleItemType`, e.g. declarations, gate instantiations, continuous assigns). `ModuleItemType` is another DU representing BNF definitions 4,5,6,9. 
+The top level function for this module is `parse: Token list -> Result<ModuleType, (int * Token list)>`. In the group stage the return type will be modified to `Result<ModuleType, string>` to handle error messages. The AST is the single case `ModuleType` DU derived from BNF definition 1 and is a 3-tuple containing the module name (`string`), list of ports (`string list`) and list of module items (`ModuleItemType`, e.g. declarations, gate instantiations, continuous assigns). `ModuleItemType` is another DU representing BNF definitions 4, 5, 6, 9. 
 
 ## LogicBlockGen
 
