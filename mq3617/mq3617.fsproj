@@ -5,8 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../shared/SharedTypes.fs" />
-    <Compile Include="Connectioniser.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Blocks.fs" />
+    <Compile Include="Connector.fs" />
+    <Compile Include="Testing.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Expecto.FsCheck" Version="8.13.1" />
