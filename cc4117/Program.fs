@@ -12,20 +12,23 @@ open CombEval
 
 
 
-
-//works
+//workflow!!!
 // all initialized to low
-let syncNets:GeneralNet list = returnSyncNets testCLst1 
-//works -> but redo the gLst to map<NetId,net> function
-//let bLst = cLstToBlockLst testCLst1
-// doesn't work...
-//let dFFList = seperateDFF bLst
+// let syncNets:Map<NetIdentifier,Net> = returnSyncNets withSyncClst |> gLstToMap
+// //works -> but redo the gLst to map<NetId,net> function
+// let bLst = cLstToBlockLst withSyncClst
+// // works -> returns bLst of DFFs
+// let (syncBLst, asyncBLst) = seperateMegaBlocks bLst
 
-// works
-//let initMap = getInitMap testInputs1 syncNets
+// // works
+// let initMap = getInitMap (gLstToMap testInputs2) syncNets
 
-// doesn't work...
-//let nextState = advanceState testInputs1 syncNets bLst tLst1  
+// // works!!
+// let nextState = advanceState initMap asyncBLst syncBLst tLst1 
+
+// let nextInitMap = getInitMap (gLstToMap testInputs3) nextState 
+
+// let nextnextState = advanceState nextInitMap asyncBLst syncBLst tLst1
 
 
 
@@ -33,18 +36,7 @@ let syncNets:GeneralNet list = returnSyncNets testCLst1
 let main argv =
     printfn "Hello World from F#!"
 
-    // all initialized to low
-    let syncNets:GeneralNet list = returnSyncNets withSyncClst
-    //works -> but redo the gLst to map<NetId,net> function
-    let bLst = cLstToBlockLst withSyncClst
-    // works -> returns bLst of DFFs
-    let (syncBLst, asyncBLst) = seperateMegaBlocks bLst
-
-    // works
-    let initMap = getInitMap testInputs2 syncNets
-
-    // doesn't work...
-    let nextState = advanceState initMap asyncBLst syncBLst tLst1 
+    let finalState = simulate testInputsLstofLst withSyncClst tLst1
 
     
     //let test = evaluateModuleWithInputs tLogicEx3 (and1In |> gLstToMap) 

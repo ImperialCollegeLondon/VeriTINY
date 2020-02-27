@@ -353,7 +353,14 @@ let withSyncClst:Connection list =
     Name "DFF", dff1In, dff1Out;
     Name "DFF", dff2In, dff2Out]
 
-let testInputs2 : GeneralNet list =
-    [false, ("a0", Wire(Map [0, High]));
-    false, ("a1", Wire(Map [0, High]))]
+let testInputsLstofLst : GeneralNet list list =
+    [
+        [false, ("a0", Wire(Map [0, High]));
+        false, ("a1", Wire(Map [0, High]))];
+
+        [false, ("a0", Wire(Map [0, Low]));
+        false, ("a1", Wire(Map [0, High]))]
+    ]
+
+
 

@@ -21,6 +21,10 @@ let generateList n = [0..n-1]
 
 let opOnTuple f (a,b) = f a, f b
 
+// update map with "otherMap"
+// takes two maps and merges them (map1 will be overwritten by map2 if there is the same key)
+let updateMap (origMap: Map<NetIdentifier,Net>) (otherMap: Map<NetIdentifier,Net>) =
+        Seq.fold (fun m (KeyValue(k,v)) -> Map.add k v m) origMap otherMap
 
 // needed when users define inputs with Map<NetIdentifier, Net>
 let mapToGLst (netIDMap: Map<NetIdentifier, Net>) : GeneralNet List=

@@ -43,8 +43,8 @@ let returnSyncNets (cLst: Connection List) =
 
 
 // then use the currentInputs and syncNet list to create an initial map of known values
-let getInitMap (currentInputs:GeneralNet list) (syncNets: GeneralNet list) =
-    currentInputs @ syncNets |> gLstToMap
+let getInitMap (currentInputs:Map<NetIdentifier,Net>) (syncNetMap:Map<NetIdentifier,Net>) =
+    updateMap currentInputs syncNetMap
 
 
 let cLstToBlockLst (cLst: Connection List) : Block list =
@@ -90,10 +90,6 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         let netList= List.map (fun x -> acc.[x]) netIds
         List.zip netIds netList |> Map.ofList
 
-    // update map with "otherMap"
-    // takes two maps and merges them (map1 will be overwritten by map2 if there is the same key)
-    let updateMap (origMap: Map<NetIdentifier,Net>) (otherMap: Map<NetIdentifier,Net>) =
-            Seq.fold (fun m (KeyValue(k,v)) -> Map.add k v m) origMap otherMap
 
     // returns option type 
     let getTLogic (mBlock: Megablock) (tLst:TLogic List)=
@@ -151,7 +147,23 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
     let finalVals = simulateSync (Map []) mapOfVals syncBLst
     finalVals
 
+let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=
+    // initialize/setup
+    let initialSyncNetMap = returnSyncNets cLst |> gLstToMap
+    let bLst = cLstToBlockLst cLst
+    let (syncBLst, asyncBLst) = seperateMegaBlocks bLst
 
+    // keep advancing state until the lst of known inputs are exhausted
+    let rec advanceMore prevState (lstOfInputs: GeneralNet list list) =
+        match lstOfInputs with
+        | currentInputs::tl -> 
+            let initMap = getInitMap (gLstToMap currentInputs) prevState
+            let nextState = advanceState initMap asyncBLst syncBLst tLst
+            advanceMore nextState tl 
+        | [] -> prevState
+
+    advanceMore initialSyncNetMap lstOfInputs
     
+        
 
 
