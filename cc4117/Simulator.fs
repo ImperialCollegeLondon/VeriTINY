@@ -1,20 +1,14 @@
 module Simulator
 open SharedTypes
 open SimulationTypes
-open ExampleTypes
 open Helper
 open Evaluator
 open CombEval
 
 
-
-let getOutputs (cLst: Connection List) = 
-    let output (_,_,c) = c
-    List.map output cLst
-
-
 // first take cLst and extract all syncNets as a list and initialize them to Low
 let returnSyncNets (cLst: Connection List) = 
+    
     let findAllSync (cLst:Connection List) =
         let rec findSync acc gLst =
             match gLst with
@@ -42,7 +36,6 @@ let returnSyncNets (cLst: Connection List) =
     |> List.map initializeSync 
 
 
-// then use the currentInputs and syncNet list to create an initial map of known values
 let getInitMap (currentInputs:Map<NetIdentifier,Net>) (syncNetMap:Map<NetIdentifier,Net>) =
     updateMap currentInputs syncNetMap
 
@@ -53,9 +46,9 @@ let cLstToBlockLst (cLst: Connection List) : Block list =
 
 // seperate sync/async megablocks (DFFCLst, asyncClst)
 // all DFFS can be updated by my function, the rest use evaluateWithOutputs
-let seperateMegaBlocks (lst: (Megablock * _ * _) list) =
-    let checkIfSyncBlock (cIn: Megablock * _ * _) =
-        let (megaBlock), _, _ = cIn
+let seperateMegaBlocks (bLst: Block list) =
+    let checkIfSyncBlock (bIn: Block) =
+        let (megaBlock), _, _ = bIn
         List.contains megaBlock syncMegaLst
     let rec seperate lstA lstB lst =
         match lst with
@@ -65,11 +58,9 @@ let seperateMegaBlocks (lst: (Megablock * _ * _) list) =
             else
                 seperate lstA (lstB @ [hd]) tl
         | [] -> lstA, lstB
-    seperate [] [] lst // -> (syncBLst, asyncBLst)
+    seperate [] [] bLst // -> (syncBLst, asyncBLst)
 
-
-// seperateDFF cLst or bLst -> (syncCLst, asyncCLst) or bLSt 
-// plug into advance state... 
+ 
 let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (syncBLst: Block list) (tLst: TLogic List) = // map<NetIdentifier, Net> -> all info of sync or not is removed
 
     // check if otherMap is a subset of reference map
@@ -90,8 +81,6 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         let netList= List.map (fun x -> acc.[x]) netIds
         List.zip netIds netList |> Map.ofList
 
-
-    // returns option type 
     let getTLogic (mBlock: Megablock) (tLst:TLogic List)=
         let (Name str) = mBlock
         let checker s (tLog: TLogic): bool = 
@@ -121,14 +110,10 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
             let mapIn' = takeFromMap acc mapIn
             let outputMap = getOutput mapIn' mapOut tLog
             let acc' = updateMap acc outputMap
-            printfn "yeaaah i found it man, what's next"
             simulateAsync acc' tl
         | hd::tl ->             
-            // if not known, simulate tl @ [hd] else if known simulate tl
-            printfn "huh? not here brahkihgu"
             simulateAsync acc (tl @ [hd])
         | [] -> 
-            printfn "omg... it worked im so emotional"
             acc
         | _ -> failwithf "nani? how did that happen"
 
@@ -144,7 +129,9 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         | _ -> failwithf "other megablocks not supported yet"
 
     let mapOfVals = simulateAsync initMap asyncBLst
+    printfn "States after asynchronous evaluation: \n %A" mapOfVals
     let finalVals = simulateSync (Map []) mapOfVals syncBLst
+    printfn "Synchronous states after synchronous evaluation: \n %A" finalVals
     finalVals
 
 let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=

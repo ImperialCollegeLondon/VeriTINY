@@ -1,6 +1,5 @@
 module Evaluator
 open SharedTypes
-open ExampleTypes
 open Helper
 
 
