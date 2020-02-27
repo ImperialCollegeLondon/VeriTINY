@@ -12,10 +12,6 @@ The top level function for this module is `parse: Token list -> Result<ModuleTyp
 
 The top level function for this module is `convertAST: ModuleType -> TLogic` which deconstructs the AST from the parser into a more useful `record` type. `TLogic` has been revised since the team work plan submission to decouple further AST deconstruction work from other team member's modules. `TLogic` now contains explicit information about slicing/busses.  
 
-**No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
-
-**No code in this directory is written for other team members**
-
 ## Module Ordering & Program Flow
 
 Compilation will be in the following order since all modules have dependencies on modules above them:
@@ -58,3 +54,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 15. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
 
 16. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
+
+**No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
+
+**No code in this directory is written for other team members**
