@@ -36,13 +36,9 @@ let returnSyncNets (cLst: Connection List) =
     |> List.map initializeSync 
 
 
-let getInitMap (currentInputs:Map<NetIdentifier,Net>) (syncNetMap:Map<NetIdentifier,Net>) =
-    updateMap currentInputs syncNetMap
-
-
 /// Convert to Block list for evaluation 
 let cLstToBlockLst (cLst: Connection List) : Block list =
-    List.map (fun (megaBlock, a, b) -> (megaBlock, gLstToMap a, gLstToMap b)) cLst
+    List.map (fun (mBlock, a, b) -> (mBlock, gLstToMap a, gLstToMap b)) cLst
 
 
 // Seperate sync/async megablocks 
@@ -144,7 +140,7 @@ let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: T
     let rec advanceMore prevState (lstOfInputs: GeneralNet list list) =
         match lstOfInputs with
         | currentInputs::rest -> 
-            let initMap = getInitMap (gLstToMap currentInputs) prevState
+            let initMap = updateMap (gLstToMap currentInputs) prevState
             let nextState = advanceState initMap asyncBLst syncBLst tLst
             advanceMore nextState rest
         | [] -> prevState

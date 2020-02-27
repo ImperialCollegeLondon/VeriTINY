@@ -19,7 +19,6 @@ let evaluateSyncBlock (mBlock: Megablock) =
         failwithf "This synchronous megablock is not supported yet"
 
 
-
 // NOT CURRENTLY USED
 // given inputs and outputs, evaluate general function "func"
 let updateGeneral func gNetLstIn gNetLstOut =
