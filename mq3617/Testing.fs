@@ -2,11 +2,11 @@
 open Connector
 open ConnectionTools
 
-UserIn()
-
 ///for testing
 open Expecto
 open SharedTypes
+
+printf "%A" (synchNetInit (UserIn()) High)
 
 [<Tests>]
 let refactor1 =

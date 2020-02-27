@@ -24,8 +24,16 @@ let findUnconnectedOut (connlist: Connection list) =
     |> List.filter (fun x ->List.contains x outlist) 
 
 let synchNetInit (connList:Connection List) (logic:LogicLevel)=
+    let getMap (net:Net)=
+        match net with
+        |Wire x -> x
+        |Bus x -> x
+    let getType (net:Net)=
+        match net with
+        |Wire x -> Wire
+        |Bus x -> Bus
     let replace (net:Net) =
-        Map.map (fun x->(x.key,Logic)) net
-    let unpackGenNet genList=
-        List.map (fun x -> if (fst x) then (fst x,(fst (snd x),snd (replace snd x))) else x) genList
+        (getType net)(Map.map (fun x y -> logic)(getMap net))
+    let unpackGenNet (genList: GeneralNet List)=
+        List.map (fun x -> if (fst x) then (fst x,((fst (snd x)),(replace (snd(snd x))))) else x) genList
     List.map (fun x-> (first x,unpackGenNet (second x),unpackGenNet (third x))) connList
