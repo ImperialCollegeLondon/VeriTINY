@@ -2,13 +2,25 @@ module SynchronousBlocks
 open SharedTypes
 open Helper
 
+// list of Synchronous Megablocks
+let syncMegaLst: Megablock list = [Name "DFF"]
 
-let updateDFF (mapIn: Map<NetIdentifier,Net>) (mapOut: Map<NetIdentifier,Net>): Map<NetIdentifier,Net> =
+let evaluateDFF (mapIn: Map<NetIdentifier,Net>) (mapOut: Map<NetIdentifier,Net>): Map<NetIdentifier,Net> =
     let netID = mapOut |> Map.toList |> List.head |> fst
     let newNet = mapIn |> Map.toList |> List.head |> snd
     Map.add netID newNet mapOut
 
 
+let evaluateSyncBlock (mBlock: Megablock) =
+    match mBlock with
+    | Name "DFF" -> 
+        evaluateDFF
+    | _ -> 
+        failwithf "This synchronous megablock is not supported yet"
+
+
+
+// NOT CURRENTLY USED
 // given inputs and outputs, evaluate general function "func"
 let updateGeneral func gNetLstIn gNetLstOut =
 

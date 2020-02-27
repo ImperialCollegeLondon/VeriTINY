@@ -123,7 +123,7 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         | (mBlock, mapIn, mapOut)::rest when List.contains mBlock syncMegaLst->
             // takes values from refMap using keys of mapIn
             let mapIn' = takeFromMap refMap mapIn
-            let acc' = updateDFF mapIn' mapOut |> updateMap acc
+            let acc' = (mapIn', mapOut) ||> evaluateSyncBlock mBlock  |> updateMap acc
             simulateSync acc' refMap rest
         | [] -> acc 
         | _ -> failwithf "other megablocks not supported yet"
