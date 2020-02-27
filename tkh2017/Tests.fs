@@ -17,7 +17,7 @@ let sampleCode1 = "module mux_2x1 (a, b, sel, out);
                       and (out_1, b, sel_n);
                       or (out, out_0, out_1);
 
-                  endmodule"
+                   endmodule"
 
 let sampleCode2 = "module testblock(a, b, out);
 
@@ -28,7 +28,7 @@ let sampleCode2 = "module testblock(a, b, out);
                       and (c, a[1], b[0]);
                       or (out, {a[0], b[1]}, {c, a[0]});
 
-                  endmodule"   
+                   endmodule"   
 
 let sampleCode3 = "module testblock(a, b, c, out);
 
@@ -41,7 +41,7 @@ let sampleCode3 = "module testblock(a, b, c, out);
                       and (d, a[1], b[0]);
                       and ({e[1], out[1:0]}, a, {b[1:0], d});
 
-                  endmodule"
+                   endmodule"
 
 let lexerTest1Ans = [Module; Identifier "mux_2x1"; OpRoundBracket; Identifier "a"; Comma;
                      Identifier "b"; Comma; Identifier "sel"; Comma; Identifier "out";
@@ -85,21 +85,21 @@ let lexerTest3Ans = [Module; Identifier "testblock"; OpRoundBracket; Identifier 
                      Comma; Identifier "d"; ClBrace; ClRoundBracket; Semicolon; EndModule]       
      
 let parserTest1Ans = Ok (MODULE ("mux_2x1",["a"; "b"; "sel"; "out"],
-                         [INPWire ["a"; "b"; "sel"]; OUTWire ["out"]; WIRE ["sel_n"];
-                          WIRE ["out_0"]; GATEINST (NOT,"",[TERMID "sel_n"; TERMID "sel"]);
-                          GATEINST (AND,"",[TERMID "out_0"; TERMID "a"; TERMID "sel"]);
-                          GATEINST (AND,"",[TERMID "out_1"; TERMID "b"; TERMID "sel_n"]);
-                          GATEINST (OR,"",[TERMID "out"; TERMID "out_0"; TERMID "out_1"])])) 
+                          [INPWire ["a"; "b"; "sel"]; OUTWire ["out"]; WIRE ["sel_n"];
+                           WIRE ["out_0"]; GATEINST (NOT,"",[TERMID "sel_n"; TERMID "sel"]);
+                           GATEINST (AND,"",[TERMID "out_0"; TERMID "a"; TERMID "sel"]);
+                           GATEINST (AND,"",[TERMID "out_1"; TERMID "b"; TERMID "sel_n"]);
+                           GATEINST (OR,"",[TERMID "out"; TERMID "out_0"; TERMID "out_1"])])) 
 
 let parserTest2Ans = Ok (MODULE ("testblock",["a"; "b"; "out"],
-                         [INPBus (1,0,["a"; "b"]); OUTBus (1,0,["out"]); WIRE ["c"];
-                          GATEINST (AND,"",[TERMID "c"; TERMIDWire ("a",1); TERMIDWire ("b",0)]);
-                          GATEINST (OR,"",[TERMID "out"; TERMCONCAT [TERMIDWire ("a",0); TERMIDWire ("b",1)]; TERMCONCAT [TERMID "c"; TERMIDWire ("a",0)]])]))
+                          [INPBus (1,0,["a"; "b"]); OUTBus (1,0,["out"]); WIRE ["c"];
+                           GATEINST (AND,"",[TERMID "c"; TERMIDWire ("a",1); TERMIDWire ("b",0)]);
+                           GATEINST (OR,"",[TERMID "out"; TERMCONCAT [TERMIDWire ("a",0); TERMIDWire ("b",1)]; TERMCONCAT [TERMID "c"; TERMIDWire ("a",0)]])]))
 
 let parserTest3Ans = Ok (MODULE ("testblock",["a"; "b"; "c"; "out"],
-                         [INPBus (2,0,["a"; "b"]); INPWire ["c"]; OUTBus (2,0,["out"]); WIRE ["d"];
-                          WIREBus (1,0,["e"]); GATEINST (AND,"",[TERMID "d"; TERMIDWire ("a",1); TERMIDWire ("b",0)]);
-                          GATEINST (AND,"",[TERMCONCAT [TERMIDWire ("e",1); TERMIDBus ("out",1,0)]; TERMID "a"; TERMCONCAT [TERMIDBus ("b",1,0); TERMID "d"]])]))
+                          [INPBus (2,0,["a"; "b"]); INPWire ["c"]; OUTBus (2,0,["out"]); WIRE ["d"];
+                           WIREBus (1,0,["e"]); GATEINST (AND,"",[TERMID "d"; TERMIDWire ("a",1); TERMIDWire ("b",0)]);
+                           GATEINST (AND,"",[TERMCONCAT [TERMIDWire ("e",1); TERMIDBus ("out",1,0)]; TERMID "a"; TERMCONCAT [TERMIDBus ("b",1,0); TERMID "d"]])]))
 
 let logicBlockGenTest1Ans = {Name = "mux_2x1";
                              ExpressionList = [(Not, [{ Name = "sel_n"; SliceIndices = None }], 
