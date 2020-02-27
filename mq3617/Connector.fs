@@ -1,4 +1,4 @@
-module Connectioniser
+module Connector
 
 open System
 open SharedTypes
@@ -69,7 +69,8 @@ let rec addMegaBlock ()=
                   |(true,int)->((Name "DFF"),
                                             [(false,("a",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))],
                                             [(true,("out",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))])::(addMegaBlock())
-                  |_-> addMegaBlock()
+                  |_->printf "input invalid,number required \n"
+                      addMegaBlock()
     |str when List.exists (searchBlocks str) avaliableTBlocks ->printf "New Megablock added \n"
                                                                 (genConnections str avaliableTBlocks)::(addMegaBlock () )
     |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s \n" str
@@ -132,11 +133,3 @@ let UserIn() =
     |> List.sort
     |> refactor
     |> finaliseConnections 
-
-let findUnconnected (connlist: Connection list) =
-    let inlist = List.collect second connlist
-    let totlist = inlist@(List.collect third connlist)
-    List.countBy (id) totlist
-    |> List.filter (fun x-> match (snd x) with |1->true |_->false)
-    |> List.map fst
-    |> List.filter (fun x ->List.contains x inlist) 

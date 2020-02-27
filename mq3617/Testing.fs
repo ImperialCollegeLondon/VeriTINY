@@ -1,5 +1,6 @@
 ﻿open System
-open Connectioniser
+open Connector
+open ConnectionTools
 
 UserIn()
 
@@ -43,7 +44,7 @@ let uncon1 =
                 [(false, ("a", Bus (Map [(0, Low); (1, Low); (2, Low)])));(false, ("b", Bus (Map [(0, Low); (1, Low); (2, Low)])))],
                 [(false, ("out", Bus (Map [(0, Low); (1, Low); (2, Low)])))])]
     let expected = [(false, ("a", Bus (Map [(0, Low); (1, Low); (2, Low)])));(false, ("b", Bus (Map [(0, Low); (1, Low); (2, Low)])))]
-    Expect.equal (findUnconnected inp) expected "Single Megablock, 2 unconnected input"
+    Expect.equal (findUnconnectedIn inp) expected "Single Megablock, 2 unconnected input"
 
 [<Tests>]
 let uncon2=
@@ -51,7 +52,7 @@ let uncon2=
     let inp = [(Name "DFF", [(true, ("a", Bus (Map [(0, Low); (1, Low)])))],   //// DFF connected like a frequency divider
                     [(true, ("a", Bus (Map [(0, Low); (1, Low)])))])]
     let expected = []
-    Expect.equal (findUnconnected inp) expected "Setup with no unconnected inputs"
+    Expect.equal (findUnconnectedIn inp) expected "Setup with no unconnected inputs"
 
 [<Tests>]
 let netUpdate1=

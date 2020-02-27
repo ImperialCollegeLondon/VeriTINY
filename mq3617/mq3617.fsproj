@@ -7,6 +7,7 @@
     <Compile Include="../shared/SharedTypes.fs" />
     <Compile Include="Blocks.fs" />
     <Compile Include="Connector.fs" />
+    <Compile Include="ConnectionTools.fs" />
     <Compile Include="Testing.fs" />
   </ItemGroup>
   <ItemGroup>
