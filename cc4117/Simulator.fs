@@ -1,16 +1,11 @@
 module Simulator
-open Evaluator
 open SharedTypes
 open SimulationTypes
 open ExampleTypes
 open Helper
+open Evaluator
 open CombEval
 
-
-// needed when users define inputs with Map<NetIdentifier, Net>
-let mapToGLst (netIDMap: Map<NetIdentifier, Net>) : GeneralNet List=
-        Map.toList netIDMap 
-        |> List.map (fun ((netID:NetIdentifier), net) -> false, (netID.Name, net))
 
 
 let getOutputs (cLst: Connection List) = 
@@ -47,26 +42,6 @@ let returnSyncNets (cLst: Connection List) =
     |> List.map initializeSync 
 
 
-let gLstToMap (gLst: GeneralNet List) : Map<NetIdentifier, Net> =
-    let gNetToNetID (gNet: GeneralNet) =
-        let _, (netName, net) = gNet
-    
-        let sliceIndices = 
-            match net with
-            |Bus busMap ->
-                let indexList =
-                    busMap
-                    |> Map.toList
-                    |> List.map fst
-                match List.length indexList with
-                |0 -> failwith "Expecting net logic level map, got empty map"
-                |1 -> Some(List.head indexList, None)
-                |_ -> Some(List.max indexList, Some (List.min indexList))            
-            |Wire _ -> None
-        {Name = netName; SliceIndices = sliceIndices}, net
-    List.map gNetToNetID gLst |> Map.ofList
-
-
 // then use the currentInputs and syncNet list to create an initial map of known values
 let getInitMap (currentInputs:GeneralNet list) (syncNets: GeneralNet list) =
     currentInputs @ syncNets |> gLstToMap
@@ -78,25 +53,24 @@ let cLstToBlockLst (cLst: Connection List) : Block list =
 
 // seperate sync/async megablocks (DFFCLst, asyncClst)
 // all DFFS can be updated by my function, the rest use evaluateWithOutputs
-let seperateDFF (lst: (Megablock * _ * _) list) =
-    let checkIfDFF (cIn: Megablock * _ * _) =
-        let (Name str), _, _ = cIn
-        str = "DFF"
+let seperateMegaBlocks (lst: (Megablock * _ * _) list) =
+    let checkIfSyncBlock (cIn: Megablock * _ * _) =
+        let (megaBlock), _, _ = cIn
+        List.contains megaBlock syncMegaLst
     let rec seperate lstA lstB lst =
         match lst with
         | hd::tl ->
-            if checkIfDFF hd then
+            if checkIfSyncBlock hd then
                 seperate (lstA @ [hd]) lstB tl
             else
                 seperate lstA (lstB @ [hd]) tl
         | [] -> lstA, lstB
-    seperate [] [] lst // -> (syncCLst, asyncCLst)
+    seperate [] [] lst // -> (syncBLst, asyncBLst)
 
 
 // seperateDFF cLst or bLst -> (syncCLst, asyncCLst) or bLSt 
 // plug into advance state... 
-let advanceState (currentInputs: GeneralNet list) (syncNets: GeneralNet List) (bLst: Block list) (tLst: TLogic List)  = 
-    let knownNets = getInitMap currentInputs syncNets // map<NetIdentifier, Net> -> all info of sync or not is removed
+let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (syncBLst: Block list) (tLst: TLogic List) = // map<NetIdentifier, Net> -> all info of sync or not is removed
 
     // check if otherMap is a subset of reference map
     let checkIfInMap (refMap: Map<'T,'b>) (otherMap: Map<'T,'b>) =
@@ -144,8 +118,8 @@ let advanceState (currentInputs: GeneralNet list) (syncNets: GeneralNet List) (b
         mapIn |> renameForEval |> evaluateModuleWithInputs tLog |> renameEvalOut origNames
     
     // output of this function will return "mapOfVals"
-    let rec simulateAsync (acc:Map<NetIdentifier,Net>) (bLst: Block list) =
-        match bLst with 
+    let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncBLst: Block list) =
+        match asyncBLst with 
         | (n, mapIn, mapOut)::tl when checkIfInMap acc mapIn ->
             let tLog = getTLogic n tLst
             let mapIn' = takeFromMap acc mapIn
@@ -162,16 +136,20 @@ let advanceState (currentInputs: GeneralNet list) (syncNets: GeneralNet List) (b
             acc
         | _ -> failwithf "nani? how did that happen"
 
-    // List.map (printfn "%A") syncNets 
-    let rec simulateSync (acc:Map<NetIdentifier,Net>) (bLst: Block list) =
-        match bLst with
-        | (n, mapIn, mapOut)::tl ->
-            let acc' = updateDFF (mapToGLst mapIn) (mapToGLst mapOut) |> gLstToMap
-            simulateSync acc' tl
+    let rec simulateSync (acc:Map<NetIdentifier,Net>) (refMap:Map<NetIdentifier,Net>) (syncBLst: Block list) =
+        match syncBLst with
+        | (n, mapIn, mapOut)::tl when List.contains n syncMegaLst->
+            //let acc' = updateDFF mapIn mapOut
+            let mapIn' = takeFromMap refMap mapIn
+            let outputMap = updateDFF mapIn' mapOut
+            let acc' = updateMap acc outputMap
+            simulateSync acc' refMap tl
         | [] -> acc 
-    //simulateSync mapOfVals bLst
-    let mapOfVals = simulateAsync knownNets bLst
-    mapOfVals
+        | _ -> failwithf "other megablocks not supported yet"
+
+    let mapOfVals = simulateAsync initMap asyncBLst
+    let finalVals = simulateSync (Map []) mapOfVals syncBLst
+    finalVals
 
 
     

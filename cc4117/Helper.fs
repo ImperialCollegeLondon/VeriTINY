@@ -20,3 +20,29 @@ let createNewMap len =
 let generateList n = [0..n-1]
 
 let opOnTuple f (a,b) = f a, f b
+
+
+// needed when users define inputs with Map<NetIdentifier, Net>
+let mapToGLst (netIDMap: Map<NetIdentifier, Net>) : GeneralNet List=
+        Map.toList netIDMap 
+        |> List.map (fun ((netID:NetIdentifier), net) -> false, (netID.Name, net))
+
+// gNetLst to Map<NetID, Net>
+let gLstToMap (gLst: GeneralNet List) : Map<NetIdentifier, Net> =
+    let gNetToNetID (gNet: GeneralNet) =
+        let _, (netName, net) = gNet
+    
+        let sliceIndices = 
+            match net with
+            |Bus busMap ->
+                let indexList =
+                    busMap
+                    |> Map.toList
+                    |> List.map fst
+                match List.length indexList with
+                |0 -> failwith "Expecting net logic level map, got empty map"
+                |1 -> Some(List.head indexList, None)
+                |_ -> Some(List.max indexList, Some (List.min indexList))            
+            |Wire _ -> None
+        {Name = netName; SliceIndices = sliceIndices}, net
+    List.map gNetToNetID gLst |> Map.ofList

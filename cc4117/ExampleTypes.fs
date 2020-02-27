@@ -245,7 +245,7 @@ let aSOut =
     [false, ("out", Wire(Map [0, High]))]
 
 let dSIn =
-    [false, ("d1", Wire(Map [0, High]))]
+    [false, ("d1", Wire(Map [0, Low]))]
 
 let dSOut =
     [false, ("a1", Wire(Map [0, High]))]
@@ -326,3 +326,34 @@ let testInputs1 : GeneralNet list =
     [false, ("n", Wire(Map [0, Low]));
     false, ("a1", Wire(Map [0, High]));
     false, ("b1", Wire(Map [0, Low]))]
+
+
+let withAndIn =
+    [false, ("a0", Wire(Map [0, Low]));
+    false, ("a1", Wire(Map [0, Low]))]
+
+let withAndOut =
+    [false, ("b", Wire(Map [0, Low]))]
+
+let dff1In = 
+    [false, ("b", Wire(Map [0, High]))]
+
+let dff1Out =
+    [true, ("c", Wire(Map [0, Low]))]
+
+let dff2In =
+    [true, ("c", Wire(Map [0, Low]))]
+
+let dff2Out =
+    [true, ("out", Wire(Map [0, Low]))]
+
+   
+let withSyncClst:Connection list =
+    [Name "simpAND", withAndIn, withAndOut;
+    Name "DFF", dff1In, dff1Out;
+    Name "DFF", dff2In, dff2Out]
+
+let testInputs2 : GeneralNet list =
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("a1", Wire(Map [0, High]))]
+
