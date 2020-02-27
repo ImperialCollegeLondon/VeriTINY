@@ -1,12 +1,11 @@
 module Lexer
 open NGrams
-open System
 
-//TODO: concatenation
+//TODO: assign
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
-type Token = | Module | Identifier of string | Number of int | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | And | Or | Not | EndModule  
+type Token = | Module | Identifier of string | Number of int | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | AndTok | OrTok | NotTok | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) =
     let takeIfInChars chars (acc,lst) isOpt = 
@@ -66,7 +65,7 @@ let lexAndImplode inpstring =
     | _ -> None  
 
 let tokenMap = Map ["module", Module; "(", OpRoundBracket; ")", ClRoundBracket; "[", OpSqBracket; "]", ClSqBracket; 
-                    "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", And; "or", Or; "not", Not;
+                    "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", AndTok; "or", OrTok; "not", NotTok;
                     "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire]
 
 let (|SingleValTok|_|) inpstring =
@@ -78,7 +77,7 @@ let (|MultValTok|_|) inpstring =
     else Some (Identifier inpstring)
 
 let tokenise inpstring = 
-    let unwrapped =  lexAndImplode inpstring |> Option.defaultValue ([],[])
+    let unwrapped = inpstring |> Seq.toList |> lexAndImplode |> Option.defaultValue ([],[])
 
     let rec replaceWithTokens stringList = 
         match stringList with 
