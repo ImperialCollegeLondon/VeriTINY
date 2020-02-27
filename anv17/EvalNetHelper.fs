@@ -69,15 +69,22 @@ let logicLevelsToint logicLvlLst =
     List.mapi getDecimalValue logicLvlLst
     |> List.reduce (+)
 
-let isNetEvaluated evalNet = 
+let isNetEvaluatedAtIndices evalNet sliceIndices = 
     let LLMap = extractLLMap evalNet
+
+    let slicedLLMap =
+        match sliceIndices with
+        |Some (x, Some y) -> Map.filter (fun key _ -> key >= (min x y) && key <= (max x y)) LLMap
+        |Some (x, None) -> Map.filter (fun key _ -> key = x) LLMap
+        |None -> LLMap
+       
     Map.fold (fun netEvaluated _ logicLevelOpt ->
         if not netEvaluated
         then false
         else
             match logicLevelOpt with
             |Some logicLvl -> true
-            |None -> false) true LLMap
+            |None -> false) true slicedLLMap
 
 let getBusSize netID = 
     match netID.SliceIndices with
@@ -91,10 +98,16 @@ let getStartIndex (netID: NetIdentifier) =
     |Some (x, None) -> x
     |None -> 0
 
-let evalNetToNet evalNet = 
+let evalNetToNet evalNet (defaults:Net) = 
+
+    let defaultMapping =
+        match defaults with
+        |Bus x
+        |Wire x -> x
+
     let noOptLLMap = 
         extractLLMap evalNet
-        |> Map.map (fun _ logicLvlOpt  -> extractLogicLevel logicLvlOpt)
+        |> Map.map (fun i logicLvlOpt  -> Option.defaultValue defaultMapping.[i] logicLvlOpt)
 
     match evalNet with
     |EvalWire _ -> Wire noOptLLMap
@@ -106,3 +119,9 @@ let netToEvalNet net =
     match net with
     |Wire wireMap -> EvalWire (LLMapToOptLLMap wireMap)
     |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
+
+let LLOptMapToLLList logicLvlOptMap =
+    logicLvlOptMap
+    |> Map.toList
+    |> List.sortBy fst
+    |> List.map (snd >> extractLogicLevel)
