@@ -15,7 +15,8 @@ let concatenationTests =
             ({Name = "exec2"; SliceIndices = None}, [(0, Some Low)] |> Map |> EvalWire);
             ({Name = "fetch"; SliceIndices = None }, [(0,Some High)] |> Map |> EvalWire);
     ]
-    let testDescriptor = "Testing concatenation opertator in LogicOperations.fs"
+    let concatTestDescriptor = "Testing concatenation opertator in LogicOperations.fs"
+    let revConcatTestDescriptor = "Testing reverse concatenation opertator in LogicOperations.fs"
 
     testList "Concatenation Tests" [
     testCase "Concatenation operator test 1" <| (fun () ->
@@ -27,7 +28,7 @@ let concatenationTests =
         { Name = "exec2"; SliceIndices = None }]
 
     let expected = [Low; Low; High; High; Low; Low] |> List.mapi (fun i el -> (i, Some el)) |> Map
-    Expect.equal (ConcatOpNet concatInputs allNets) expected testDescriptor ); 
+    Expect.equal (ConcatOpNet concatInputs allNets) expected concatTestDescriptor ); 
 
     testCase "Concatenation operator test 2" <| (fun () ->
     let concatInputs = 
@@ -37,7 +38,39 @@ let concatenationTests =
         { Name = "exec2"; SliceIndices = None }]
 
     let expected = [Low; Low; High; Low; Low; High] |> List.mapi (fun i el -> (i, Some el)) |> Map
-    Expect.equal (ConcatOpNet concatInputs allNets) expected testDescriptor ); 
+    Expect.equal (ConcatOpNet concatInputs allNets) expected concatTestDescriptor ); 
+
+    testCase "Reverse Concatenation operator test 1" <| (fun () ->
+    let concatInputs = 
+        [{ Name = "fetch"; SliceIndices = None };   
+        { Name = "nextState"; SliceIndices = Some (2, Some 0) };
+        { Name = "exec1"; SliceIndices = None }; 
+        { Name = "exec2"; SliceIndices = None }]
+
+    let concatenatedNet = [Low; Low; High; Low; Low; High] |> List.mapi (fun i el -> (i, Some el)) |> Map |> EvalBus
+    let expected = Map [
+            ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0, Some High); (1, Some Low); (2, Some Low)] |> Map |> EvalBus);
+            ({Name = "exec1"; SliceIndices = None}, [(0, Some Low)] |> Map |> EvalWire);
+            ({Name = "exec2"; SliceIndices = None}, [(0, Some Low)] |> Map |> EvalWire);
+            ({Name = "fetch"; SliceIndices = None }, [(0,Some High)] |> Map |> EvalWire);
+    ]
+    Expect.equal (reverseConcat concatenatedNet concatInputs allNets) expected revConcatTestDescriptor); 
+
+    testCase "Reverse Concatenation operator test 2" <| (fun () ->
+    let concatInputs = 
+        [{ Name = "nextState"; SliceIndices = Some (2, Some 0) };
+        { Name = "exec1"; SliceIndices = None }; 
+        { Name = "fetch"; SliceIndices = None };           
+        { Name = "exec2"; SliceIndices = None }]
+
+    let concatenatedNet = [High; Low; High; Low; High; High] |> List.mapi (fun i el -> (i, Some el)) |> Map |> EvalBus
+    let expected = Map [
+            ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0, Some Low); (1, Some High); (2, Some High)] |> Map |> EvalBus);
+            ({Name = "exec1"; SliceIndices = None}, [(0, Some High)] |> Map |> EvalWire);
+            ({Name = "exec2"; SliceIndices = None}, [(0, Some High)] |> Map |> EvalWire);
+            ({Name = "fetch"; SliceIndices = None }, [(0,Some Low)] |> Map |> EvalWire);
+    ]
+    Expect.equal (reverseConcat concatenatedNet concatInputs allNets) expected revConcatTestDescriptor); 
 
 ]
 
