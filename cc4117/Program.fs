@@ -58,15 +58,15 @@ let expectoFSCheckTest7 =
 
 [<Tests>]
 let expectoFSCheckTest8 = 
-    testCase "advanceState Asynchronous Test (2 AND Gates)" <| fun () ->
+    testCase "advanceState Asynchronous Test (2 AND Gates - Circuit 1)" <| fun () ->
         let expected = c1mapOfVals 
-        Expect.equal (evaluateAsyncTest c1initMap testCircuit1 tLogicLstEx) expected "Asynchronous simulation unsuccesful"
+        Expect.equal (evaluateAsyncTest c1initMap testCircuit1 tLogicLstEx) expected "Asynchronous simulation unsuccessful"
 
 [<Tests>]
 let expectoFSCheckTest9 = 
-    testCase "advanceState Asynchronous Test (1 OR feeding into 1 AND)" <| fun () ->
+    testCase "advanceState Asynchronous Test (1 OR feeding into 1 AND - Circuit 2)" <| fun () ->
         let expected = c2mapOfVals 
-        Expect.equal (evaluateAsyncTest c2initMap testCircuit2 tLogicLstEx) expected "Asynchronous simulation unsuccesful"
+        Expect.equal (evaluateAsyncTest c2initMap testCircuit2 tLogicLstEx) expected "Asynchronous simulation unsuccessful"
 
 [<Tests>]
 let expectoFSCheckTest10 = 

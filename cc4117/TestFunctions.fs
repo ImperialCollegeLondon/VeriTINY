@@ -7,6 +7,9 @@ open CombEval
 open Simulator
 open SynchronousBlocks
 
+// this module contains key functions in the simulation workflow
+
+
 let evaluateTLogicTest (mapIn:Map<NetIdentifier,Net>) (origNames:Map<NetIdentifier,Net>) (tLog:TLogic) =
     // temporary names of nets for evaluation as they appear in tLogic
     let renameForEval (mapIn:Map<NetIdentifier,Net>)  =

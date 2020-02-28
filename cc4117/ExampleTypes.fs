@@ -158,8 +158,9 @@ let tLogicLstEx = [tLogicEx1; tLogicEx2; tLogicEx3; tLogicEx4]
 
 // test circuits (bLsts)
 
+// Circuit 1
 // two AND blocks 
-// note that the values of nets in block lists don't matter
+// Logic levels in block lists don't matter
 let c1initMap =
     Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
     { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
@@ -192,6 +193,7 @@ let c1mapOfVals =
     { Name = "out"; SliceIndices = None}, Wire (Map [0, High]);
     ] 
 
+// Circuit 2
 // 1 OR gate feeding into 1 AND gate
 // note that the values of nets in block lists don't matter
 let c2initMap =
@@ -248,6 +250,7 @@ let dffOutputBus =
 
 // synchronous evaluation test (to make sure everything evaluated in parallel)
 
+// DFF cascade circuit
 // 3 dff in cascade 
 let cascadeInitMap =
     Map [{ Name = "d1"; SliceIndices = None}, Wire (Map [0, Low]);
@@ -288,7 +291,8 @@ let cascadeOutput =
         
 // both asynchronous and synchronous blocks test
 
-/// example with output of AND gate feeding into 2 DFFs
+// Circuit 3
+// example with output of AND gate feeding into 2 DFFs
 let c3InitMap =
     Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
         { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
@@ -378,6 +382,7 @@ let c3SyncBLst: Block list =
 
 /// mixed example with asynchronous and synchronous
 
+// Circuit 4
 /// example with output of AND gate feeding into 2 DFFs
 let c4InitMap =
     Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, Low]);
@@ -406,7 +411,7 @@ let c4Output =
     c4MapOfVals, c4NextState
 
 
-// values in bLst/cLst don't actually matter
+// Logic levels in bLst/cLst don't actually matter
 let c4or1In =
     [false, ("a0", Wire(Map [0, High]));
     false, ("a1", Wire(Map [0, Low]))];
