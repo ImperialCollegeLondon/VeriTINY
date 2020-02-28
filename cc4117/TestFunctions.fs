@@ -37,7 +37,7 @@ let seperateMegaBlocksTest (bLst: Block list) =
 
 
 /// evaluate asynchronous circuit
-let evaluateAsyncTest (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (syncBLst: Block list) (tLst: TLogic List) = // map<NetIdentifier, Net> -> all info of sync or not is removed
+let evaluateAsyncTest (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (tLst: TLogic List) = // map<NetIdentifier, Net> -> all info of sync or not is removed
 
     // Check if otherMap is a subset of reference map
     let checkIfInMap (refMap: Map<'a,'b>) (otherMap: Map<'a,'b>) =
@@ -95,5 +95,8 @@ let evaluateAsyncTest (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) 
 
 
     let mapOfVals = simulateAsync initMap asyncBLst
-    printfn "States after asynchronous evaluation: \n %A" mapOfVals
+    //printfn "States after asynchronous evaluation: \n %A" mapOfVals
     mapOfVals
+
+
+    

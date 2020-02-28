@@ -56,6 +56,31 @@ let expectoFSCheckTest7 =
         let expected = notOutput 
         Expect.equal (evaluateTLogicTest notIn notOut tLogicEx4) expected "Expected Low output"
 
+[<Tests>]
+let expectoFSCheckTest8 = 
+    testCase "advanceState Asynchronous Test (2 AND Gates)" <| fun () ->
+        let expected = c1mapOfVals 
+        Expect.equal (evaluateAsyncTest c1initMap testCircuit1 tLogicLstEx) expected "Asynchronous simulation unsuccesful"
+
+[<Tests>]
+let expectoFSCheckTest9 = 
+    testCase "advanceState Asynchronous Test (1 OR feeding into 1 AND)" <| fun () ->
+        let expected = c2mapOfVals 
+        Expect.equal (evaluateAsyncTest c2initMap testCircuit2 tLogicLstEx) expected "Asynchronous simulation unsuccesful"
+
+[<Tests>]
+let expectoFSCheckTest10 = 
+    testCase "Synchronous DFF update Test (Wire)" <| fun () ->
+        let expected = dffOutputWire
+        Expect.equal (evaluateDFF dffInWire dffOutWire) expected "Expected High output"
+
+[<Tests>]
+let expectoFSCheckTest11 = 
+    testCase "Synchronous DFF update Test (Wire)" <| fun () ->
+        let expected = dffOutputBus
+        Expect.equal (evaluateDFF dffInBus dffOutBus) expected "Expected Low Low High output"
+
+
         
 let testListWithExpecto =
     testList "A test group" [
@@ -66,6 +91,10 @@ let testListWithExpecto =
         expectoFSCheckTest5
         expectoFSCheckTest6
         expectoFSCheckTest7
+        expectoFSCheckTest8
+        expectoFSCheckTest9
+        expectoFSCheckTest10
+        expectoFSCheckTest11
     ]
 
 let testsWithExpecto() =

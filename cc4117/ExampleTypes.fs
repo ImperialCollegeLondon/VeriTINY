@@ -69,8 +69,6 @@ let bLstSeperated: Block list * Block list =
     [Name "A", mapA, mapA; Name "B", mapA, mapA] 
     
 
-
-
 let andIn: Map<NetIdentifier,Net> = 
     Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
     { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]) ] 
@@ -157,7 +155,97 @@ let tLogicEx4 : TLogic= {
 let tLogicLstEx = [tLogicEx1; tLogicEx2; tLogicEx3; tLogicEx4]
 
 
+// test circuits (bLsts)
 
+// two AND blocks 
+// note that the values of nets in block lists don't matter
+let c1initMap =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b1"; SliceIndices = None}, Wire (Map [0, High])] 
+
+let c1and1In = 
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]) ] 
+
+let c1and1Out =
+    Map [{ Name = "b0"; SliceIndices = None}, Wire (Map [0, High])] 
+
+let c1and2In = 
+    Map [{ Name = "b0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b1"; SliceIndices = None}, Wire (Map [0, High]) ] 
+
+let c1and2Out =
+    Map [{ Name = "out"; SliceIndices = None}, Wire (Map [0, High])] 
+
+
+let testCircuit1 : Block list =
+    [Name "simpAND", c1and1In, c1and1Out;
+    Name "simpAND", c1and2In, c1and2Out]
+
+let c1mapOfVals =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b1"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "out"; SliceIndices = None}, Wire (Map [0, High]);
+    ] 
+
+// 1 OR gate feeding into 1 AND gate
+// note that the values of nets in block lists don't matter
+let c2initMap =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, Low]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b1"; SliceIndices = None}, Wire (Map [0, High])] 
+
+let c2or1In = 
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]) ] 
+
+let c2or1Out =
+    Map [{ Name = "b0"; SliceIndices = None}, Wire (Map [0, High])] 
+
+let c2and1In = 
+    Map [{ Name = "b0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b1"; SliceIndices = None}, Wire (Map [0, High]) ] 
+
+let c2and1Out =
+    Map [{ Name = "out"; SliceIndices = None}, Wire (Map [0, High])] 
+
+
+// 1 OR gate feeding into 1 AND gate
+let testCircuit2 : Block list =
+    [Name "simpAND", c2and1In, c2and1Out;
+    Name "simpOR", c2or1In, c2or1Out]
+
+let c2mapOfVals =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, Low]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "b1"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "out"; SliceIndices = None}, Wire (Map [0, High]);
+    ] 
+
+// dffUpdate test
+let dffInWire =
+    Map [{ Name = "dffIn"; SliceIndices = None}, Wire (Map [0, High])]
+
+let dffOutWire =
+    Map [{ Name = "dffOut"; SliceIndices = None}, Wire (Map [0, Low])]
+
+let dffOutputWire = 
+    Map [{ Name = "dffOut"; SliceIndices = None}, Wire (Map [0, High])]
+
+let dffInBus =
+    Map [{ Name = "dffIn"; SliceIndices = Some(2, Some 0)}, Bus (Map [0, Low; 1, Low; 2, High])]
+
+let dffOutBus =
+    Map [{ Name = "dffIn"; SliceIndices = Some(2, Some 0)}, Bus (Map [0, High; 1, High; 2, High])]
+
+let dffOutputBus = 
+    Map [{ Name = "dffIn"; SliceIndices = Some(2, Some 0)}, Bus (Map [0, Low; 1, Low; 2, High])]
+
+// synchronous evaluation test (to make sure everything evaluated in parallel)
 
 
 
