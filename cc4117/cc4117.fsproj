@@ -14,6 +14,7 @@
     <Compile Include="Helper.fs" />
     <Compile Include="SynchronousBlocks.fs" />
     <Compile Include="Simulator.fs" />
+    <Compile Include="TestFunctions.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

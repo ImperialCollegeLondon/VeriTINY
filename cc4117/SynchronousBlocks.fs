@@ -10,7 +10,7 @@ let evaluateDFF (mapIn: Map<NetIdentifier,Net>) (mapOut: Map<NetIdentifier,Net>)
     let newNet = mapIn |> Map.toList |> List.head |> snd
     Map.add netID newNet mapOut
 
-
+// given megablock name, return the appropriate function for synchronous evaluation
 let evaluateSyncBlock (mBlock: Megablock) =
     match mBlock with
     | Name "DFF" -> 

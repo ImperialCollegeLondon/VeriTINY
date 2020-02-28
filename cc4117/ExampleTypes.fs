@@ -6,97 +6,32 @@ open SharedTypes
 // Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
 // test purposes
 
-let GenNetListInA : GeneralNet list = 
+
+
+let gNetLstA : GeneralNet list =
     [false, ("A0", Wire (Map [0, Low]));
     false, ("A1", Wire (Map [0, Low]))
     ]
 
-let GenNetListOutA : GeneralNet List =
-    [false, ("C0", Wire (Map [0, Low]))]
-
-// test purposes
-let GenNetListInB : GeneralNet list = 
-    [false, ("B0", Wire (Map [0, Low]));
-    false, ("B1", Wire (Map [0, Low]))
+let mapA : Map<NetIdentifier,Net> =
+    Map [
+        { Name = "A0"; SliceIndices = None }, Wire (Map [0, Low]);
+        { Name = "A1"; SliceIndices = None }, Wire (Map [0, Low]);
     ]
 
-let GenNetListOutB : GeneralNet list =
-    [false, ("BOut", Wire (Map [0, Low]))]
-
-let GenNetListInDFF : GeneralNet list = 
-    [false, ("BOut", Wire (Map [0, High]))]
-
-let GenNetListOutDFF : GeneralNet list =
-    [true, ("C1", Wire (Map [0, High]))]
-    
-
-let GenNetListInC : GeneralNet list =
-    [false, ("C0", Wire (Map [0, Low]));
-     true, ("C1", Wire (Map [0, Low]))
+let gNetLstB : GeneralNet list = 
+    [false, ("B0", Bus (Map [0, Low; 1, Low; 2, High; 3,High]));
+    false, ("B1", Bus (Map [3, Low; 4, High; 5, Low]));
+    false, ("B2", Bus (Map [5, High]));
     ]
 
-let GenNetListOutC : GeneralNet list = 
-    [false, ("COut", Wire (Map [0, Low]))]
-
-// type Megablock = Name of string
-// type connection = Megablock, GenNet list , GenNet list
-/// example connection list
-let connectListEx : Connection list= 
-    [(Name "Module A", GenNetListInA, GenNetListOutA);
-    (Name "Module B", GenNetListInB, GenNetListOutB);
-    (Name "DFF", GenNetListInDFF, GenNetListOutDFF);
-    (Name "Module C", GenNetListInC, GenNetListOutC)
+let mapB : Map<NetIdentifier,Net> =
+    Map [
+        { Name = "B0"; SliceIndices = Some(3, Some 0) }, Bus (Map [0, Low; 1, Low; 2, High; 3,High]);
+        { Name = "B1"; SliceIndices = Some(5, Some 3) }, Bus (Map [3, Low; 4, High; 5, Low]);
+        { Name = "B2"; SliceIndices = Some(5, None) }, Bus (Map [5, High]);
     ]
 
-let cLstSimple : Connection list =
-    [(Name "Module A", GenNetListInA, GenNetListOutA);
-    (Name "Module B", GenNetListInB, GenNetListOutB);
-    ]
-
-let connectSyncEx : Connection =
-    Name "DFF", GenNetListInDFF, GenNetListOutDFF
-
-let connectMixedEx: Connection =
-    Name "DFF", 
-        [true, ("test", Bus (Map [0, High; 1, High; 2, High]));
-        true, ("C1", Wire (Map [0, High]));
-        false, ("hehe", Bus (Map [0, High; 1, High; 2, High]))
-        ],
-        [true, ("C1", Wire (Map [0, High]));
-        true, ("test", Bus (Map [0, High; 1, High; 2, High]));
-        false, ("hehe", Bus (Map [0, High; 1, High; 2, High]))
-        ]
-   
-
-// to update a genNet need to know:
-// if bus: which wire in a bus (0, 1, 2) 
-// if wire: just change the wire (0) to new logicLevel
-// can't update a map, so need to rewrite the whole map...
-// GenNet type example: false, ("BOut", Wire (Map [1, Low]))
-let BusEx : GeneralNet =
-    false, ("BusA", Bus(Map [0, Low; 1, High; 2, Low; 3, High]))
-let wireEx : GeneralNet =
-    false, ("WireA", Wire(Map [0, Low]))
-let mixedEx : GeneralNet list =
-    [false, ("BusA", Bus(Map [0, Low; 1, High; 2, Low; 3, High]));
-    false, ("WireA", Wire(Map [0, Low]));
-    false, ("WireB", Wire(Map [0, High]));
-    false, ("WireC", Wire(Map [0, High]))
-    ]
-
-let dffMixedIn : GeneralNet list =
-    [false, ("Wire A", Wire(Map [0, High]));
-    false, ("Bus B", Wire(Map [0, High; 1, High]));
-    false, ("Wire C", Wire(Map [0, Low]));
-    ]
-
-let dffMixedOut : GeneralNet list =
-    [true, ("Bus D", Bus(Map [0, Low; 1, Low; 2, Low]));
-    true, ("Wire E", Wire(Map [0, Low]));
-    ]
-
-let overallInputs : GeneralNet list =
-    GenNetListInA @ GenNetListInB
 
 let aIn =  
     [false, ("a0", Wire(Map [0, High]));
@@ -192,6 +127,7 @@ let netIdLstOut =
     [{ Name = "c"; SliceIndices = Some (2, Some 0) }; 
     { Name = "d"; SliceIndices = None }]
 
+
 let tLogicEx1 : TLogic= { 
     Name = "bus_and"
     ExpressionList =
@@ -223,6 +159,46 @@ let tLogicEx2 : TLogic= {
         { Name = "d"; SliceIndices = None }]
     Wires = [] }
 
+let tLogicEx3 : TLogic= { 
+    Name = "simpAND"
+    ExpressionList =
+        [(And, 
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None };
+            { Name = "b"; SliceIndices = None }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = None };
+        { Name = "b"; SliceIndices = None }]
+    Outputs = [{ Name = "c"; SliceIndices = None }]
+    Wires = [] }
+
+let tLogicEx4 : TLogic= { 
+    Name = "simpOR"
+    ExpressionList =
+        [(Or, 
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None };
+            { Name = "b"; SliceIndices = None }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = None };
+        { Name = "b"; SliceIndices = None }]
+    Outputs = [{ Name = "c"; SliceIndices = None }]
+    Wires = [] }
+
+let tLogicEx5 : TLogic= { 
+    Name = "simpNOT"
+    ExpressionList =
+        [(Not, 
+            [{ Name = "b"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = None }]
+    Outputs = [{ Name = "b"; SliceIndices = None }]
+    Wires = [] }
+
+let tLogicLstEx = [tLogicEx1; tLogicEx2]
+let tLst1 = [tLogicEx3; tLogicEx4; tLogicEx5]
+
 
 let netIdEx1 = { Name = "a"; SliceIndices = Some (3, Some 0) }
 let netEx1 = Bus (Map [0, High; 1, Low; 2, High; 3, Low ])
@@ -235,7 +211,7 @@ let netEx4 = Wire (Map [0, Low])
 
 let evaluateOutEx = Map [netIdEx1, netEx1; netIdEx2, netEx2; netIdEx3, netEx3; netIdEx4, netEx4]
 
-let tLogicLstEx = [tLogicEx1; tLogicEx2]
+
 
 let aSIn =
     [false, ("a0", Wire(Map [0, High]));
@@ -283,44 +259,9 @@ let testCLst1 : Connection List =
     Name "simpOR", or1In, or1Out;
     Name "simpNOT", notIn, notOut]
 
-let tLogicEx3 : TLogic= { 
-    Name = "simpAND"
-    ExpressionList =
-        [(And, 
-            [{ Name = "c"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None };
-            { Name = "b"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None };
-        { Name = "b"; SliceIndices = None }]
-    Outputs = [{ Name = "c"; SliceIndices = None }]
-    Wires = [] }
 
-let tLogicEx4 : TLogic= { 
-    Name = "simpOR"
-    ExpressionList =
-        [(Or, 
-            [{ Name = "c"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None };
-            { Name = "b"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None };
-        { Name = "b"; SliceIndices = None }]
-    Outputs = [{ Name = "c"; SliceIndices = None }]
-    Wires = [] }
 
-let tLogicEx5 : TLogic= { 
-    Name = "simpNOT"
-    ExpressionList =
-        [(Not, 
-            [{ Name = "b"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None }]
-    Outputs = [{ Name = "b"; SliceIndices = None }]
-    Wires = [] }
 
-let tLst1 = [tLogicEx3; tLogicEx4; tLogicEx5]
 
 let testInputs1 : GeneralNet list =
     [false, ("n", Wire(Map [0, Low]));
@@ -348,7 +289,7 @@ let dff2Out =
     [true, ("out", Wire(Map [0, Low]))]
 
    
-let withSyncClst:Connection list =
+let syncCLst :Connection list =
     [Name "simpAND", withAndIn, withAndOut;
     Name "DFF", dff1In, dff1Out;
     Name "DFF", dff2In, dff2Out]

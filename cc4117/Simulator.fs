@@ -81,7 +81,7 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
 
 
 let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=
-    // Initialize/setup
+    
     /// Convert to Block list for evaluation 
     let cLstToBlockLst (cLst: Connection List) : Block list =
         List.map (fun (mBlock, a, b) -> (mBlock, gLstToMap a, gLstToMap b)) cLst
@@ -130,6 +130,7 @@ let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: T
             | [] -> lstA, lstB
         seperate [] [] bLst // -> (syncBLst, asyncBLst)
 
+    // Initialize/setup 
     let initialSyncNetMap = returnSyncNets cLst |> gLstToMap
     let bLst = cLstToBlockLst cLst
     let (syncBLst, asyncBLst) = seperateMegaBlocks bLst

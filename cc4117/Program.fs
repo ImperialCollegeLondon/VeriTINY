@@ -11,35 +11,30 @@ open Simulator
 open CombEval
 
 open Expecto
-    
-// [<Tests>]
-// let expectoFSCheckTest1 = 
-//     testCase "ParseT3 Test1" <| fun () ->
-//         let expected = Error(1, "Unmatched Tokens")
-//         Expect.equal (parseT3 tList1) expected "Expected Error 1, Unmatched Tokens"
 
-// [<Tests>]
-// let expectoFSCheckTest2 = 
-//     testCase "ParseT3 Test2" <| fun () ->
-//         let expected = Error(3, "Unmatched Tokens")
-//         Expect.equal (parseT3 tList2) expected "Expected Error 3, Unmatched Tokens"
 
-// [<Tests>]
-// let expectoFSCheckTest3 = 
-//     testCase "ParseT3 Test3" <| fun () ->
-//         let expected = Error(0, "Not a valid expression")
-//         Expect.equal (parseT3 tList3) expected "Expected Error 0, Not a valid expression"
+[<Tests>]
+let expectoFSCheckTest1 = 
+    testCase "gLstToMap Test 1 (Wires)" <| fun () ->
+        let expected = mapA
+        Expect.equal (gLstToMap gNetLstA) expected "Wrong map output"
+
+[<Tests>]
+let expectoFSCheckTest2 = 
+    testCase "gLstToMap Test 2 (Busses)" <| fun () ->
+        let expected = mapB
+        Expect.equal (gLstToMap gNetLstB) expected "Wrong map output"
+
 
         
-// let testListWithExpecto =
-//     testList "A test group" [
-//         expectoFSCheckTest1
-//         expectoFSCheckTest2
-//         expectoFSCheckTest3
-//     ]
+let testListWithExpecto =
+    testList "A test group" [
+        expectoFSCheckTest1
+        expectoFSCheckTest2
+    ]
 
-// let testsWithExpecto() =
-//     runTests defaultConfig testListWithExpecto |> ignore
+let testsWithExpecto() =
+    runTests defaultConfig testListWithExpecto |> ignore
 
 
 
@@ -47,9 +42,12 @@ open Expecto
 let main argv =
     printfn "Hello World from F#!"
 
-    let finalState = simulate testInputsLstofLst withSyncClst tLst1
+    //let finalState = simulate testInputsLstofLst syncCLst tLst1
 
+    testsWithExpecto() |> ignore
+    
     Console.ReadKey() |> ignore
+
     
     //let test = evaluateModuleWithInputs tLogicEx3 (and1In |> gLstToMap) 
 
