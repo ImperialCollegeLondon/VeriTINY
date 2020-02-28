@@ -1,11 +1,12 @@
 module TestFunctions
 open SharedTypes
 open SimulationTypes
-open ExampleTypes
 open Helper
+open ExampleTypes
 open CombEval
-open Simulator
 open SynchronousBlocks
+open Simulator
+
 
 // this module contains key functions in the simulation workflow
 
