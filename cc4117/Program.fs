@@ -10,6 +10,36 @@ open SynchronousBlocks
 open Simulator
 open CombEval
 
+open Expecto
+    
+// [<Tests>]
+// let expectoFSCheckTest1 = 
+//     testCase "ParseT3 Test1" <| fun () ->
+//         let expected = Error(1, "Unmatched Tokens")
+//         Expect.equal (parseT3 tList1) expected "Expected Error 1, Unmatched Tokens"
+
+// [<Tests>]
+// let expectoFSCheckTest2 = 
+//     testCase "ParseT3 Test2" <| fun () ->
+//         let expected = Error(3, "Unmatched Tokens")
+//         Expect.equal (parseT3 tList2) expected "Expected Error 3, Unmatched Tokens"
+
+// [<Tests>]
+// let expectoFSCheckTest3 = 
+//     testCase "ParseT3 Test3" <| fun () ->
+//         let expected = Error(0, "Not a valid expression")
+//         Expect.equal (parseT3 tList3) expected "Expected Error 0, Not a valid expression"
+
+        
+// let testListWithExpecto =
+//     testList "A test group" [
+//         expectoFSCheckTest1
+//         expectoFSCheckTest2
+//         expectoFSCheckTest3
+//     ]
+
+// let testsWithExpecto() =
+//     runTests defaultConfig testListWithExpecto |> ignore
 
 
 

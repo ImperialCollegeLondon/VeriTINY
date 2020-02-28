@@ -6,56 +6,6 @@ open SynchronousBlocks
 open CombEval
 
 
-/// Extract synchronous nets from cLst and initialize them to Low
-let returnSyncNets (cLst: Connection List) = 
-    
-    let findAllSync (cLst:Connection List) =
-        let rec findSync acc gLst =
-            match gLst with
-            | hd::tl -> 
-                if fst hd then 
-                    findSync (acc @ [hd]) tl
-                else 
-                    findSync acc tl
-            | [] -> 
-                acc
-        let getSyncFromConnection (cIn: Connection) =
-            cIn 
-            |> extractGenNetLsts 
-            |> opOnTuple (findSync []) 
-            |> (fun (a, b) -> a @ b)
-        List.collect getSyncFromConnection cLst
-    
-    let initializeSync (gNet: GeneralNet) = 
-        let newMapLen = gNet |> extractNet |> netSize 
-        updateGenNet gNet (createNewMap newMapLen)
-        
-    cLst 
-    |> findAllSync 
-    |> List.distinct 
-    |> List.map initializeSync 
-
-
-/// Convert to Block list for evaluation 
-let cLstToBlockLst (cLst: Connection List) : Block list =
-    List.map (fun (mBlock, a, b) -> (mBlock, gLstToMap a, gLstToMap b)) cLst
-
-
-// Seperate sync/async megablocks 
-let seperateMegaBlocks (bLst: Block list) =
-    let checkIfSyncBlock (bIn: Block) =
-        let (megaBlock), _, _ = bIn
-        List.contains megaBlock syncMegaLst
-    let rec seperate lstA lstB lst =
-        match lst with
-        | hd::tl ->
-            if checkIfSyncBlock hd then
-                seperate (lstA @ [hd]) lstB tl
-            else
-                seperate lstA (lstB @ [hd]) tl
-        | [] -> lstA, lstB
-    seperate [] [] bLst // -> (syncBLst, asyncBLst)
-
 /// Advance to next clock cycle, return synchronous states
 let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (syncBLst: Block list) (tLst: TLogic List) = // map<NetIdentifier, Net> -> all info of sync or not is removed
 
@@ -130,8 +80,57 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
     printfn "Synchronous states after synchronous evaluation: \n %A" nextState
     nextState
 
+
 let simulate (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=
     // Initialize/setup
+    /// Convert to Block list for evaluation 
+    let cLstToBlockLst (cLst: Connection List) : Block list =
+        List.map (fun (mBlock, a, b) -> (mBlock, gLstToMap a, gLstToMap b)) cLst
+
+    /// Extract synchronous nets from cLst and initialize them to Low
+    let returnSyncNets (cLst: Connection List) = 
+        
+        let findAllSync (cLst:Connection List) =
+            let rec findSync acc gLst =
+                match gLst with
+                | hd::tl -> 
+                    if fst hd then 
+                        findSync (acc @ [hd]) tl
+                    else 
+                        findSync acc tl
+                | [] -> 
+                    acc
+            let getSyncFromConnection (cIn: Connection) =
+                cIn 
+                |> extractGenNetLsts 
+                |> opOnTuple (findSync []) 
+                |> (fun (a, b) -> a @ b)
+            List.collect getSyncFromConnection cLst
+        
+        let initializeSync (gNet: GeneralNet) = 
+            let newMapLen = gNet |> extractNet |> netSize 
+            updateGenNet gNet (createNewMap newMapLen)
+            
+        cLst 
+        |> findAllSync 
+        |> List.distinct 
+        |> List.map initializeSync 
+
+    // Seperate sync/async megablocks 
+    let seperateMegaBlocks (bLst: Block list) =
+        let checkIfSyncBlock (bIn: Block) =
+            let (megaBlock), _, _ = bIn
+            List.contains megaBlock syncMegaLst
+        let rec seperate lstA lstB lst =
+            match lst with
+            | hd::tl ->
+                if checkIfSyncBlock hd then
+                    seperate (lstA @ [hd]) lstB tl
+                else
+                    seperate lstA (lstB @ [hd]) tl
+            | [] -> lstA, lstB
+        seperate [] [] bLst // -> (syncBLst, asyncBLst)
+
     let initialSyncNetMap = returnSyncNets cLst |> gLstToMap
     let bLst = cLstToBlockLst cLst
     let (syncBLst, asyncBLst) = seperateMegaBlocks bLst
