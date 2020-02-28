@@ -247,6 +247,46 @@ let dffOutputBus =
 
 // synchronous evaluation test (to make sure everything evaluated in parallel)
 
+// 3 dff in cascade 
+let cascadeInitMap =
+    Map [{ Name = "d1"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "d2"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "d3"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, High]);
+        ] 
+
+// outputs don't actually matter 
+let cascadeDFF1In =
+    Map[{ Name = "d1"; SliceIndices = None}, Wire (Map [0, Low])]
+
+let cascadeDFF1Out =
+    Map[{ Name = "d2"; SliceIndices = None}, Wire (Map [0, Low])]
+
+let cascadeDFF2In =
+    Map[{ Name = "d2"; SliceIndices = None}, Wire (Map [0, High])]
+
+let cascadeDFF2Out =
+    Map[{ Name = "d3"; SliceIndices = None}, Wire (Map [0, Low])]
+
+let cascadeDFF3In =
+    Map[{ Name = "d3"; SliceIndices = None}, Wire (Map [0, Low])]
+
+let cascadeDFF3Out =
+    Map[{ Name = "out"; SliceIndices = None}, Wire (Map [0, Low])]
+
+let cascadeBLst =
+    [Name "DFF", cascadeDFF1In, cascadeDFF1Out;
+    Name "DFF", cascadeDFF2In, cascadeDFF2Out;
+    Name "DFF", cascadeDFF3In, cascadeDFF3Out]
+
+let cascadeOutput =
+    Map [{ Name = "d2"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "d3"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, Low]);
+        ] 
+        
+
+
 
 
 let aSIn =

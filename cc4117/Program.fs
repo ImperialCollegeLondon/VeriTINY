@@ -76,9 +76,15 @@ let expectoFSCheckTest10 =
 
 [<Tests>]
 let expectoFSCheckTest11 = 
-    testCase "Synchronous DFF update Test (Wire)" <| fun () ->
+    testCase "Synchronous DFF update Test (Bus)" <| fun () ->
         let expected = dffOutputBus
         Expect.equal (evaluateDFF dffInBus dffOutBus) expected "Expected Low Low High output"
+
+[<Tests>]
+let expectoFSCheckTest12 = 
+    testCase "cascaded DFF test (evaluation in parallel)" <| fun () ->
+        let expected = cascadeOutput
+        Expect.equal (evaluateSyncTest cascadeInitMap cascadeBLst) expected "Expected Low Low High output"
 
 
         
