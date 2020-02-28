@@ -84,7 +84,15 @@ let expectoFSCheckTest11 =
 let expectoFSCheckTest12 = 
     testCase "cascaded DFF test (evaluation in parallel)" <| fun () ->
         let expected = cascadeOutput
-        Expect.equal (evaluateSyncTest cascadeInitMap cascadeBLst) expected "Expected Low Low High output"
+        Expect.equal (evaluateSyncTest cascadeInitMap cascadeBLst) expected "Expected Low High Low output"
+
+[<Tests>]
+let expectoFSCheckTest13 = 
+    testCase "combined asynchronous and synchronous test" <| fun () ->
+        let expected = c3Output
+        Expect.equal (advanceStateTest c3InitMap c3AsyncBLst c3SyncBLst tLogicLstEx) expected "Output of advance state not as expected"
+
+
 
 
         

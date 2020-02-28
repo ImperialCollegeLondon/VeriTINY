@@ -285,90 +285,72 @@ let cascadeOutput =
         { Name = "out"; SliceIndices = None}, Wire (Map [0, Low]);
         ] 
         
+// both asynchronous and synchronous blocks test
+
+/// example with output of AND gate feeding into 2 DFFs
+let c3InitMap =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "c"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, High])
+        ] 
+
+// expected Map of Vals (after asynchronous evaluation)
+let c3MapOfVals =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "b"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "c"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, High])
+        ] 
+
+// expected Next state
+let c3NextState =
+    Map [{ Name = "c"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, Low])
+        ]
+
+let c3Output =
+    c3MapOfVals, c3NextState
 
 
+// values in bLst don't actually matter
+let c3and1In =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "a1"; SliceIndices = None}, Wire (Map [0, High])
+        ] 
 
 
-let aSIn =
-    [false, ("a0", Wire(Map [0, High]));
-    true, ("a1", Wire(Map [0, High]))]
+let c3and1Out =
+    Map [{ Name = "b"; SliceIndices = None}, Wire (Map [0, High])
+        ] 
 
-let aSOut =
-    [false, ("out", Wire(Map [0, High]))]
+let c3dff1In = 
+    Map [{ Name = "b"; SliceIndices = None}, Wire (Map [0, High])]
 
-let dSIn =
-    [false, ("d1", Wire(Map [0, Low]))]
-
-let dSOut =
-    [false, ("a1", Wire(Map [0, High]))]
-
-let kSIn = 
-    [false, ("a0", Wire(Map [0, High]));
-    false, ("d1", Wire(Map [0, High]))]
-
-let simpCLst : Connection List =
-    [Name "A", aSIn, aSOut;
-    Name "DFF", dSIn, dSOut]
-
-let not1In = 
-    [false, ("n", Wire(Map [0, Low]))]
-
-let not1Out = 
-    [false, ("a0", Wire(Map [0, Low]))]
-
-let and1In = 
-    [false, ("a0", Wire(Map [0, Low]));
-    false, ("a1", Wire(Map [0, High]))]
-
-let and1Out =
-    [false, ("b0", Wire(Map [0, High]))]
-
-let or1In =
-    [false, ("b0", Wire(Map [0, High]));
-    false, ("b1", Wire(Map [0, High]))]
-
-let or1Out =
-    [false, ("out", Wire(Map [0, High]))]
-
-let testCLst1 : Connection List =
-    [Name "simpAND", and1In, and1Out;
-    Name "simpOR", or1In, or1Out;
-    Name "simpNOT", not1In, not1Out]
+let c3dff1Out =
+    Map [{ Name = "c"; SliceIndices = None}, Wire (Map [0, High])]
 
 
+let c3dff2In =
+    Map [{ Name = "c"; SliceIndices = None}, Wire (Map [0, High])]
 
-/// example with AND and DFF 
-
-let testInputs1 : GeneralNet list =
-    [false, ("n", Wire(Map [0, Low]));
-    false, ("a1", Wire(Map [0, High]));
-    false, ("b1", Wire(Map [0, Low]))]
-
-
-let withAndIn =
-    [false, ("a0", Wire(Map [0, Low]));
-    false, ("a1", Wire(Map [0, Low]))]
-
-let withAndOut =
-    [false, ("b", Wire(Map [0, Low]))]
-
-let dff1In = 
-    [false, ("b", Wire(Map [0, High]))]
-
-let dff1Out =
-    [true, ("c", Wire(Map [0, Low]))]
-
-let dff2In =
-    [true, ("c", Wire(Map [0, Low]))]
-
-let dff2Out =
-    [true, ("out", Wire(Map [0, Low]))]
+let c3dff2Out =
+    Map [{ Name = "out"; SliceIndices = None}, Wire (Map [0, High])]
 
    
-let syncCLst :Connection list =
-    [Name "simpAND", withAndIn, withAndOut;
-    Name "DFF", dff1In, dff1Out;
-    Name "DFF", dff2In, dff2Out]
+let c3BLst :Block list =
+    [Name "simpAND", c3and1In, c3and1Out;
+    Name "DFF", c3dff1In, c3dff1Out;
+    Name "DFF", c3dff2In, c3dff2Out]
+
+let c3AsyncBLst =
+    [Name "simpAND", c3and1In, c3and1Out]
+
+let c3SyncBLst = 
+    [Name "DFF", c3dff1In, c3dff1Out;
+    Name "DFF", c3dff2In, c3dff2Out]
+
 
 let testInputsLstofLst : GeneralNet list list =
     [
