@@ -1,15 +1,17 @@
 module Parser 
-
 open Lexer
 
+//TODO: Error messages
+
 type GateType = AND | OR | NOT
-type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int
+type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
 type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
     | INPWire of string list 
     | INPBus of int * int * string list
     | WIRE of string list 
+    | WIREBus of int * int * string list
     | GATEINST of GateType * string * TerminalType list
 type ModuleType = MODULE of string * string list * ModuleItemType list
 
@@ -44,7 +46,7 @@ let (|MATCHNUM|_|) (tokList: Result<Token list, Token list>) =
 
 //------------------- Parse rules -------------------------
 
-let (|TERMINAL|_|) tokList = 
+let rec (|TERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -53,9 +55,11 @@ let (|TERMINAL|_|) tokList =
     | MATCHID (Some idname, MATCHSINGLE OpSqBracket (MATCHNUM (Some number1, MATCHSINGLE Colon (MATCHNUM (Some number2, MATCHSINGLE ClSqBracket (Ok tokList')))))) -> 
         Some (Some (TERMIDBus (idname, number1, number2)), Ok tokList')
     | MATCHID (Some idname, Ok tokList') -> Some (Some (TERMID idname), Ok tokList')
+    | MATCHSINGLE OpBrace (LISTTERMINAL (Some termlist, MATCHSINGLE ClBrace (Ok tokList'))) -> 
+        Some (Some (TERMCONCAT termlist), Ok tokList')
     | _ -> None 
 
-let rec (|LISTTERMINAL|_|) tokList = 
+and (|LISTTERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -70,20 +74,22 @@ let (|GATEINSTANCE|_|) tokList =
         Some (None, Error tokList')
     | MATCHID (Some gateid, MATCHSINGLE OpRoundBracket (LISTTERMINAL (Some termlist, MATCHSINGLE ClRoundBracket (Ok tokList')))) -> 
         Some (Some (gateid, termlist), Ok tokList')
+    | MATCHSINGLE OpRoundBracket (LISTTERMINAL (Some termlist, MATCHSINGLE ClRoundBracket (Ok tokList'))) -> 
+        Some (Some ( "", termlist), Ok tokList')
     | _ -> None
 
 let (|GATEINSTANTIATION|_|) tokList = 
     let convertToGateType token = 
         match token with 
-        | And -> AND
-        | Or -> OR
-        | Not -> NOT
+        | AndTok -> AND
+        | OrTok -> OR
+        | NotTok -> NOT
         | _ -> failwithf "What?"
 
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
-    | MATCHMULT [And; Or; Not] (Some gatetype, GATEINSTANCE (Some (gateid,termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
+    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid,termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (GATEINST (convertToGateType gatetype, gateid, termlist)), Ok tokList')
     | _ -> None
 
@@ -129,6 +135,8 @@ let (|NETDECLARATION|_|) tokList =
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
+    | MATCHSINGLE Wire (RANGE (Some (num1, num2), LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList')))) -> 
+        Some (Some (WIREBus (num1, num2, varlist)), Ok tokList')
     | MATCHSINGLE Wire (LISTVAR (Some varlist, MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (WIRE varlist), Ok tokList')
     | _ -> None
@@ -173,13 +181,9 @@ let (|MATCHMODULE|_|) tokList  =
         Some (Some (MODULE (modname, varlist, moditemlist)), Ok tokList')
     | _ -> None
 
-//TODO: Final parse function
 let parse inpTokList =
     match Ok inpTokList with
     | MATCHMODULE (Some ast, Ok []) -> Ok ast
     | MATCHMODULE (_, Error lst) //?
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
     | _ -> failwithf "What?"
-
-// let sampleCode = Seq.toList (System.IO.File.ReadAllText "tkh2017/sampleverilog.v")
-// tokenise sampleCode |> parse

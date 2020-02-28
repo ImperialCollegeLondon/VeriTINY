@@ -4,11 +4,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../shared/SharedTypes.fs" /> 
+    <Compile Include="../shared/SharedTypes.fs" />
+    <Compile Include="../anv17/EvalTypes.fs" />
+    <Compile Include="../anv17/EvalNetHelper.fs" />
     <Compile Include="NGrams.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="LogicBlockGen.fs" />
+    <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
