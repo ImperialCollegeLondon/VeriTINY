@@ -1,6 +1,7 @@
 module ExampleTypes
 open SharedTypes
 open SimulationTypes
+open Helper
 
 // GeneralNet = bool * NamedNet
 // NamedNet = string * Net
@@ -314,136 +315,134 @@ let c3Output =
     c3MapOfVals, c3NextState
 
 
-// values in bLst don't actually matter
-let c3and1In =
-    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
-        { Name = "a1"; SliceIndices = None}, Wire (Map [0, High])
-        ] 
+let c3and1In: GeneralNet list =
+    [false, ("a0", Wire(Map [0, High]));
+    false, ("a1", Wire(Map [0, Low]))]
+
+let c3and1Out: GeneralNet list =
+    [false, ("b", Wire(Map [0, High]))]
+
+let c3dff1In: GeneralNet list =
+    [false, ("b", Wire(Map [0, High]))]
+
+let c3dff1Out: GeneralNet list =
+    [true, ("c", Wire(Map [0, High]))]
+
+let c3dff2In: GeneralNet list =
+    [true, ("c", Wire(Map [0, High]))]
+
+let c3dff2Out: GeneralNet list =
+    [true, ("out", Wire(Map [0, High]))]
 
 
-let c3and1Out =
-    Map [{ Name = "b"; SliceIndices = None}, Wire (Map [0, High])
-        ] 
-
-let c3dff1In = 
-    Map [{ Name = "b"; SliceIndices = None}, Wire (Map [0, High])]
-
-let c3dff1Out =
-    Map [{ Name = "c"; SliceIndices = None}, Wire (Map [0, High])]
-
-
-let c3dff2In =
-    Map [{ Name = "c"; SliceIndices = None}, Wire (Map [0, High])]
-
-let c3dff2Out =
-    Map [{ Name = "out"; SliceIndices = None}, Wire (Map [0, High])]
-
-   
-let c3BLst :Block list =
+let c3CLst :Connection list =
     [Name "simpAND", c3and1In, c3and1Out;
     Name "DFF", c3dff1In, c3dff1Out;
     Name "DFF", c3dff2In, c3dff2Out]
 
-let c3AsyncBLst =
-    [Name "simpAND", c3and1In, c3and1Out]
+let c3BLst : Block list =
+    [Name "simpAND", gLstToMap c3and1In, gLstToMap c3and1Out;
+    Name "DFF", gLstToMap c3dff1In, gLstToMap c3dff1Out;
+    Name "DFF", gLstToMap c3dff2In, gLstToMap c3dff2Out]
 
-let c3SyncBLst = 
-    [Name "DFF", c3dff1In, c3dff1Out;
-    Name "DFF", c3dff2In, c3dff2Out]
-
-
-let testInputsLstofLst : GeneralNet list list =
+// list of inputs into circuit 3 (multiple cycle simulation)
+let c3InputLstofLst : GeneralNet list list =
     [
         [false, ("a0", Wire(Map [0, High]));
         false, ("a1", Wire(Map [0, High]))];
 
         [false, ("a0", Wire(Map [0, Low]));
         false, ("a1", Wire(Map [0, High]))]
+
+        [false, ("a0", Wire(Map [0, High]));
+        false, ("a1", Wire(Map [0, Low]))]
+
+        [false, ("a0", Wire(Map [0, High]));
+        false, ("a1", Wire(Map [0, High]))]
+
     ]
+
+// expected result from simulating multiple clock cycles (final synchronous states)
+let c3MultipleOutput =
+    Map [{ Name = "c"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, Low])
+        ]
+
+let c3AsyncBLst: Block list =
+    [Name "simpAND", gLstToMap c3and1In, gLstToMap c3and1Out]
+
+let c3SyncBLst: Block list = 
+    [Name "DFF", gLstToMap c3dff1In, gLstToMap c3dff1Out;
+    Name "DFF", gLstToMap c3dff2In, gLstToMap c3dff2Out]
 
 
 /// mixed example with asynchronous and synchronous
 
-let aIn =  
+/// example with output of AND gate feeding into 2 DFFs
+let c4InitMap =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "d"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "b1"; SliceIndices = None}, Wire (Map [0, Low])
+        ] 
+
+// expected Map of Vals (after asynchronous evaluation)
+let c4MapOfVals =
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "a1"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "b0"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "b1"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "d"; SliceIndices = None}, Wire (Map [0, High]);
+        { Name = "out"; SliceIndices = None}, Wire (Map [0, Low])
+        ] 
+
+// expected Next state
+let c4NextState =
+    Map [{ Name = "b1"; SliceIndices = None}, Wire (Map [0, High])
+        ]
+
+//expected output of advanceState Test
+let c4Output =
+    c4MapOfVals, c4NextState
+
+
+// values in bLst/cLst don't actually matter
+let c4or1In =
     [false, ("a0", Wire(Map [0, High]));
-    false, ("a1", Wire(Map [0, High]));
-    ]
+    false, ("a1", Wire(Map [0, Low]))];
 
-let aOut =  
-    [false, ("c0", Wire(Map [0, High]));
-    ]
+let c4or1Out =
+    [false, ("b0", Wire(Map [0, High]))]
 
-let bIn = 
+let c4dff1In = 
+    [false, ("d", Wire(Map [0, High]))]
+
+let c4dff1Out =
+   [true, ("b1", Wire(Map [0, High]))]
+
+
+let c4and1In =
     [false, ("b0", Wire(Map [0, High]));
-    false, ("b1", Wire(Map [0, High]));
-    ]
+    false, ("b1", Wire(Map [0, Low]))];
 
-let bOut =  
-    [false, ("c2", Wire(Map [0, High]));
-    ]
+let c4and1Out =
+   [false, ("out", Wire(Map [0, High]))]
 
-let dIn1 = 
-    [false, ("d1", Wire(Map [0, High]))]
+let c4CLst :Connection list =
+    [Name "simpAND", c4and1In, c4and1Out;
+    Name "DFF", c4dff1In, c4dff1Out;
+    Name "simpOR", c4or1In, c4or1Out]
 
-let dOut1 =
-    [true, ("c1", Wire(Map [0, High]))]
+// does not have to be in order
+let c4BLst :Block list =
+    [Name "simpAND", gLstToMap c4and1In, gLstToMap c4and1Out;
+    Name "DFF", gLstToMap c4dff1In, gLstToMap c4dff1Out;
+    Name "simpOR", gLstToMap c4or1In, gLstToMap c4or1Out]
 
-let dIn2 = 
-    [false, ("d2", Wire(Map [0, High]))]
+let c4AsyncBLst: Block list =
+    [Name "simpAND", gLstToMap c4and1In, gLstToMap c4and1Out;
+    Name "simpOR", gLstToMap c4or1In, gLstToMap c4or1Out]
 
-let dOut2 =
-    [true, ("b0", Wire(Map [0, High]))]
+let c4SyncBLst: Block list = 
+    [Name "DFF", gLstToMap c4dff1In, gLstToMap c4dff1Out]
 
-let dIn3 = 
-    [false, ("d3", Wire(Map [0, High]))]
-
-let dOut3 =
-    [true, ("e0", Wire(Map [0, High]))]
-
-let cIn = 
-    [false, ("c0", Wire(Map [0, High]));
-    true, ("c1", Wire(Map [0, High]));
-    false, ("c2", Wire(Map [0, High]))
-    ]
- 
-let cOut =
-    [false, ("d3", Wire(Map [0, High]))]
-
-let eIn = 
-    [true, ("e0", Wire(Map [0, High]));
-    false, ("e1", Wire(Map [0, High]))
-    ]
-
-let eOut =
-    [false, ("out", Wire(Map [0, High]))]
-
-let knownInputs = aIn @ dIn1 @ dIn2 @ [false, ("b1", Wire(Map [0, High]))] @ [false, ("e1", Wire(Map [0, High]))]
-
-let newCLst : Connection List =
-    [Name "A", aIn, aOut;
-    Name "B", bIn, bOut;
-    Name "DFF", dIn1, dOut1;
-    Name "DFF", dIn2, dOut2;
-    Name "DFF", dIn3, dOut3;
-    Name "C", cIn, cOut;
-    Name "E", eIn, eOut]
-
-
-let simpSim =
-    [
-    // cycle 1
-    [false, ("a0", Wire(Map [0, Low]));
-    false, ("d1", Wire(Map [0, High]))];
-    // cycle 2
-    [false, ("a0", Wire(Map [0, Low]));
-    false, ("d1", Wire(Map [0, Low]))]
-    // cycle 3
-    [false, ("a0", Wire(Map [0, High]));
-    false, ("d1", Wire(Map [0, High]))];
-    // cycle 4
-    [false, ("a0", Wire(Map [0, High]));
-    false, ("d1", Wire(Map [0, Low]))]
-    // cycle 5
-    [false, ("a0", Wire(Map [0, High]));
-    false, ("d1", Wire(Map [0, Low]))]
-    ]
