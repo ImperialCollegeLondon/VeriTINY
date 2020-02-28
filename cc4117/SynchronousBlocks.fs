@@ -1,15 +1,27 @@
-module Evaluator
+module SynchronousBlocks
 open SharedTypes
 open Helper
 
+// list of implemented Synchronous Megablocks
+let syncMegaLst: Megablock list = [Name "DFF"]
 
-let updateDFF (mapIn: Map<NetIdentifier,Net>) (mapOut: Map<NetIdentifier,Net>): Map<NetIdentifier,Net> =
+let evaluateDFF (mapIn: Map<NetIdentifier,Net>) (mapOut: Map<NetIdentifier,Net>): Map<NetIdentifier,Net> =
     let netID = mapOut |> Map.toList |> List.head |> fst
     let newNet = mapIn |> Map.toList |> List.head |> snd
     Map.add netID newNet mapOut
 
+// given megablock name, return the appropriate function for synchronous evaluation
+let evaluateSyncBlock (mBlock: Megablock) =
+    match mBlock with
+    | Name "DFF" -> 
+        evaluateDFF
+    | _ -> 
+        failwithf "This synchronous megablock is not supported yet"
 
-// given inputs and outputs, evaluate general function "func"
+
+
+// given function that evaluates a gNetLst and returns a list of new logic levels, group outputs corresponding to 
+// the sizes of the output bus/wires 
 let updateGeneral func gNetLstIn gNetLstOut =
 
     // generate list of lists of LogicLevel of appropriate size for output
@@ -21,7 +33,7 @@ let updateGeneral func gNetLstIn gNetLstOut =
         | [] -> 
             acc
 
-    let newLogic = func gNetLstIn gNetLstOut
+    let newLogic = func gNetLstIn
     let lstOfLengths = List.map (extractNet >> netSize) gNetLstOut
 
     let grpsOfLogic = groupLogic [] newLogic lstOfLengths
