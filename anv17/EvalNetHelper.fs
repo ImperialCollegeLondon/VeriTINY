@@ -69,6 +69,15 @@ let logicLevelsToint logicLvlLst =
     List.mapi getDecimalValue logicLvlLst
     |> List.reduce (+)
 
+
+let getSlice (net:EvalNet) (a,b) =
+    extractLLMap net
+    |> Map.filter (fun index _ -> index >= a && index <= b)
+    |> Map.toList
+    |> List.sortBy fst
+    |> List.map (snd >> extractLogicLevel) 
+
+
 let isNetEvaluatedAtIndices evalNet sliceIndices = 
     let LLMap = extractLLMap evalNet
 
@@ -125,3 +134,8 @@ let LLOptMapToLLList logicLvlOptMap =
     |> Map.toList
     |> List.sortBy fst
     |> List.map (snd >> extractLogicLevel)
+
+let getNetByName name allNets = 
+        match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) allNets with
+        |Some key -> key
+        |None -> failwithf "Could not find net with name %s in netmap %A" name allNets

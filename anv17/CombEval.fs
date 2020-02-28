@@ -54,13 +54,8 @@ let assignInputValues (inputMap: Map<NetIdentifier, Net>)  (moduleInputIDs: NetI
 let rec evaluateExprLst (exprToEvaluate: Expression list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
     if List.isEmpty exprToEvaluate
     then evalNetMap
-    else 
-
-        let getNetByName name allNets= 
-            match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) allNets with
-            |Some key -> key
-            |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
-        
+    else
+            
         let canEvalExpression (exprInputs: NetIdentifier list) = 
             (true, exprInputs) ||> List.fold (fun expressionEvaluatable exprInp ->
             if not expressionEvaluatable
