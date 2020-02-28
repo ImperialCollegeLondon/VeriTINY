@@ -88,14 +88,24 @@ let expectoFSCheckTest12 =
 
 [<Tests>]
 let expectoFSCheckTest13 = 
-    testCase "combined asynchronous and synchronous test" <| fun () ->
+    testCase "combined asynchronous and synchronous test 1 (Circuit 3)" <| fun () ->
         let expected = c3Output
         Expect.equal (advanceStateTest c3InitMap c3AsyncBLst c3SyncBLst tLogicLstEx) expected "Output of advance state not as expected"
 
+[<Tests>]
+let expectoFSCheckTest14 = 
+    testCase "combined asynchronous and synchronous test 2 (Circuit 4)" <| fun () ->
+        let expected = c4Output
+        Expect.equal (advanceStateTest c4InitMap c4AsyncBLst c4SyncBLst tLogicLstEx) expected "Output of advance state not as expected"
 
-
+[<Tests>]
+let expectoFSCheckTest15 = 
+    testCase "simulating multiple clock cycles test (Circuit 3)" <| fun () ->
+        let expected = c3MultipleOutput
+        Expect.equal (simulate c3InputLstofLst c3CLst tLogicLstEx) expected "Output of advance state not as expected"
 
         
+
 let testListWithExpecto =
     testList "A test group" [
         expectoFSCheckTest1
@@ -109,6 +119,10 @@ let testListWithExpecto =
         expectoFSCheckTest9
         expectoFSCheckTest10
         expectoFSCheckTest11
+        expectoFSCheckTest12
+        expectoFSCheckTest13
+        expectoFSCheckTest14
+        expectoFSCheckTest15
     ]
 
 let testsWithExpecto() =
