@@ -74,5 +74,6 @@ let endModuleTok =
      ['e'], false, false] //' ' not needed due to Lexer implementation
 
 let emptyLine = 
-    [['\n'], false, false;
+    [['\013'], false, true;
+     ['\n'], false, false;
      [' '], true, true]
