@@ -2,9 +2,48 @@ module Tests
 open SharedTypes
 open Expecto
 open CombEval
+open LogicOperations
+open EvalTypes
 
 
 
+let concatenationTests = 
+
+    let allNets = Map [
+            ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0, Some High); (1, Some Low); (2, Some Low)] |> Map |> EvalBus);
+            ({Name = "exec1"; SliceIndices = None}, [(0, Some Low)] |> Map |> EvalWire);
+            ({Name = "exec2"; SliceIndices = None}, [(0, Some Low)] |> Map |> EvalWire);
+            ({Name = "fetch"; SliceIndices = None }, [(0,Some High)] |> Map |> EvalWire);
+    ]
+    let testDescriptor = "Testing concatenation opertator in LogicOperations.fs"
+
+    testList "Concatenation Tests" [
+    testCase "Concatenation operator test 1" <| (fun () ->
+    
+    let concatInputs = 
+        [{ Name = "nextState"; SliceIndices = Some (2, Some 0) }; 
+        { Name = "fetch"; SliceIndices = None };
+        { Name = "exec1"; SliceIndices = None }; 
+        { Name = "exec2"; SliceIndices = None }]
+
+    let expected = [Low; Low; High; High; Low; Low] |> List.mapi (fun i el -> (i, Some el)) |> Map
+    Expect.equal (ConcatOpNet concatInputs allNets) expected testDescriptor ); 
+
+    testCase "Concatenation operator test 2" <| (fun () ->
+    let concatInputs = 
+        [{ Name = "fetch"; SliceIndices = None };   
+        { Name = "nextState"; SliceIndices = Some (2, Some 0) };
+        { Name = "exec1"; SliceIndices = None }; 
+        { Name = "exec2"; SliceIndices = None }]
+
+    let expected = [Low; Low; High; Low; Low; High] |> List.mapi (fun i el -> (i, Some el)) |> Map
+    Expect.equal (ConcatOpNet concatInputs allNets) expected testDescriptor ); 
+
+]
+
+
+
+//****Top Level function Tests*****
 type TopLevelTestRec= {
     TestName: string
     Module:TLogic
@@ -196,6 +235,4 @@ let formEvalExprTest (testCaseRec:TopLevelTestRec)  =
         Expect.equal (evaluateModuleWithInputs testCaseRec.Module testCaseRec.Inputs testCaseRec.CurrOutputs) testCaseRec.ExpectedOutputs testDescriptor)
 
 let evalExprTestLst = testList "evalExpr Tests" (List.map formEvalExprTest testCases)
-
-
 

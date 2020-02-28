@@ -2,6 +2,10 @@ module EvalNetHelper
 open SharedTypes
 open EvalTypes
 
+let getNetEdgeIndices net =
+    let wireIndices = net |> Map.toList |> List.map fst
+    (List.min wireIndices, List.max wireIndices)
+
 let extractLogicLevel logicLvlOpt = 
      match logicLvlOpt with
         |Some logicLvl -> logicLvl
@@ -35,11 +39,7 @@ let updateBus bus sliceIndices newLogicLevels =
     let (a,b) = 
         match sliceIndices with
         |Some (x,y) -> (x,y)
-        |None -> 
-            let wireIndices = 
-                Map.toList bus
-                |> List.map (fst)
-            (List.min wireIndices, List.max wireIndices)
+        |None -> getNetEdgeIndices bus
 
     if abs(b - a + 1) <> (List.length newLogicLevels) || not (Map.containsKey b bus) || not (Map.containsKey a bus)
     then failwith "Cannot update bus, error in given bus slice"
@@ -69,14 +69,16 @@ let logicLevelsToint logicLvlLst =
     List.mapi getDecimalValue logicLvlLst
     |> List.reduce (+)
 
-
-let getSlice (net:EvalNet) (a,b) =
-    extractLLMap net
-    |> Map.filter (fun index _ -> index >= a && index <= b)
+let LLOptMapToLLList logicLvlOptMap =
+    logicLvlOptMap
     |> Map.toList
     |> List.sortBy fst
-    |> List.map (snd >> extractLogicLevel) 
+    |> List.map (snd >> extractLogicLevel)
 
+let getSliceAsLst (net:EvalNet) (a,b) =
+    extractLLMap net
+    |> Map.filter (fun index _ -> index >= a && index <= b)
+    |> LLOptMapToLLList
 
 let isNetEvaluatedAtIndices evalNet sliceIndices = 
     let LLMap = extractLLMap evalNet
@@ -129,11 +131,6 @@ let netToEvalNet net =
     |Wire wireMap -> EvalWire (LLMapToOptLLMap wireMap)
     |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
 
-let LLOptMapToLLList logicLvlOptMap =
-    logicLvlOptMap
-    |> Map.toList
-    |> List.sortBy fst
-    |> List.map (snd >> extractLogicLevel)
 
 let getNetByName name allNets = 
         match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) allNets with

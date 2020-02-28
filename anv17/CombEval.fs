@@ -93,9 +93,7 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) (evalNetMap: Map<NetId
                 |Pass -> 
                     let inpNetID = List.head inpLst
                     PassOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID) outputBusSize
-                |Concat -> failwith "Concatenation not implemented yet"
-                
-            //TODO: Concat Operator
+                |Concat -> ConcatOpNet inpLst allNets
 
             let outputID = List.head outLst
             let outputNetKey = getNetByName outputID.Name allNets
@@ -135,5 +133,3 @@ let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, 
     |> assignInputValues inputMap combModule.Inputs
     |> evaluateExprLst combModule.ExpressionList
     |> formOutputNets combModule.Outputs currOutputMap
-
-//TODO: Add default outputs

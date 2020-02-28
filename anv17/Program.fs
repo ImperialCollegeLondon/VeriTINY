@@ -63,5 +63,6 @@ let main argv =
    //  printfn "%A" outputNets
    printfn "Hello"
    runTests defaultConfig evalExprTestLst |> ignore
+   runTests defaultConfig concatenationTests |> ignore
    Console.ReadKey() |> ignore
    0

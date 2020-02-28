@@ -53,11 +53,15 @@ let PassOpNet (net:EvalNet) (netStartIndex: int) (outputBusLength: int) =
 let ConcatOpNet (inpLst: NetIdentifier list) (allNets: Map<NetIdentifier, EvalNet>) = 
     let revInpLst = List.rev inpLst
 
-    List.fold (fun concatenatedLLs inpNetID ->
-        let fullNet = allNets.[getNetByName inpNetID.Name allNets]
-        let sliceLst = 
-            match inpNetID.SliceIndices with
-            |Some (x, Some y) -> getSlice fullNet (min x y, max x y)
-            |Some (x, None) -> getSlice fullNet (x, x)
-            |None -> extractLLMap fullNet |> Map.toList |> List.sortBy fst |> List.map (snd >> extractLogicLevel)
-            )
+    let concatenatedLst = 
+        List.fold (fun concatenatedLLs (inpNetID: NetIdentifier) ->
+            let fullNet = allNets.[getNetByName inpNetID.Name allNets]
+            let sliceLst = 
+                match inpNetID.SliceIndices with
+                |Some (x, Some y) -> getSliceAsLst fullNet (min x y, max x y)
+                |Some (x, None) -> getSliceAsLst fullNet (x, x)
+                |None -> getSliceAsLst fullNet (getNetEdgeIndices (extractLLMap fullNet))
+            List.append concatenatedLLs sliceLst
+                ) [] revInpLst
+    
+    concatenatedLst |> List.mapi (fun i el -> (i, Some el)) |> Map
