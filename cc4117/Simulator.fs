@@ -22,26 +22,26 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         |> List.map fst 
         |> listCompare refMap
 
-    // Take values from acc given keys of mapIn
-    let takeFromMap (acc:Map<NetIdentifier,Net>) (mapIn:Map<NetIdentifier,Net>) =
+    // Take values from refMap given keys of mapIn
+    let takeFromMap (refMap:Map<NetIdentifier,Net>) (mapIn:Map<NetIdentifier,Net>) =
         let netIds = mapIn |> Map.toList |> List.map fst
-        let netList= List.map (fun x -> acc.[x]) netIds
+        let netList= List.map (fun x -> refMap.[x]) netIds
         List.zip netIds netList |> Map.ofList
-
-    let getTLogic (mBlock: Megablock) (tLst:TLogic List)=
+    
+    let getTLogicByName (tLst:TLogic List) (mBlock: Megablock) =
         let (Name str) = mBlock
         let checker s (tLog: TLogic): bool = 
             s = tLog.Name
         //List.tryFind (checker str) tLst 
         List.find (checker str) tLst
 
-    let getOutput (mapIn:Map<NetIdentifier,Net>) (origNames:Map<NetIdentifier,Net>) (tLog:TLogic) =
+    let evaluateTLogic (mapIn:Map<NetIdentifier,Net>) (origNames:Map<NetIdentifier,Net>) (tLog:TLogic) =
+        // temporary names of nets for evaluation as they appear in tLogic
         let renameForEval (mapIn:Map<NetIdentifier,Net>)  =
-        //type Expression = (Operator * NetIdentifier list * NetIdentifier list)
             let nets = mapIn |> Map.toList |> List.map snd
             let tempKeys = tLog.Inputs 
             List.zip tempKeys nets |> Map.ofList
-
+        // rename output to user-defined name after evaluation
         let renameEvalOut (origNames:Map<NetIdentifier,Net>) (evalMap:Map<NetIdentifier,Net>)   =
             let nets = evalMap |> Map.toList |> List.map snd
             let realKeys = origNames |> Map.toList |> List.map fst
@@ -49,20 +49,19 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
 
         mapIn |> renameForEval |> evaluateModuleWithInputs tLog |> renameEvalOut origNames
     
-    // output of this function will return "mapOfVals"
+
     let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncBLst: Block list) =
         match asyncBLst with 
         | (mBlock, mapIn, mapOut)::rest when checkIfInMap acc mapIn ->
-            let tLog = getTLogic mBlock tLst
             // take values from acc using keys of mapIn
             let mapIn' = takeFromMap acc mapIn
-            let acc' = getOutput mapIn' mapOut tLog|> updateMap acc
+            let acc' = mBlock |> getTLogicByName tLst |> evaluateTLogic mapIn' mapOut |> updateMap acc
             simulateAsync acc' rest
         | hd::rest ->             
             simulateAsync acc (rest @ [hd])
         | [] -> 
             acc
-        | _ -> failwithf "nani? how did that happen"
+        | _ -> failwithf "Shouldn't happen"
 
     let rec simulateSync (acc:Map<NetIdentifier,Net>) (refMap:Map<NetIdentifier,Net>) (syncBLst: Block list) =
         match syncBLst with
