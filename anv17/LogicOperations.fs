@@ -66,8 +66,8 @@ let ConcatOpNet (inpLst: NetIdentifier list) (allNets: Map<NetIdentifier, EvalNe
     
     concatenatedLst |> List.mapi (fun i el -> (i, Some el)) |> Map
 
-let reverseConcat (concatenatedNet: EvalNet) (cocatenationInputs: NetIdentifier list) (allNets: Map<NetIdentifier, EvalNet>) =
-    let concatenatedLLLst = concatenatedNet |> extractLLMap |> LLOptMapToLLList
+let reverseConcat (concatenatedNet: Map<int, LogicLevel option>) (cocatenationInputs: NetIdentifier list) (allNets: Map<NetIdentifier, EvalNet>) =
+    let concatenatedLLLst = concatenatedNet |> LLOptMapToLLList
 
     let revInpLst = List.rev cocatenationInputs
 

@@ -47,7 +47,7 @@ let concatenationTests =
         { Name = "exec1"; SliceIndices = None }; 
         { Name = "exec2"; SliceIndices = None }]
 
-    let concatenatedNet = [Low; Low; High; Low; Low; High] |> List.mapi (fun i el -> (i, Some el)) |> Map |> EvalBus
+    let concatenatedNet = [Low; Low; High; Low; Low; High] |> List.mapi (fun i el -> (i, Some el)) |> Map 
     let expected = Map [
             ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0, Some High); (1, Some Low); (2, Some Low)] |> Map |> EvalBus);
             ({Name = "exec1"; SliceIndices = None}, [(0, Some Low)] |> Map |> EvalWire);
@@ -63,7 +63,7 @@ let concatenationTests =
         { Name = "fetch"; SliceIndices = None };           
         { Name = "exec2"; SliceIndices = None }]
 
-    let concatenatedNet = [High; Low; High; Low; High; High] |> List.mapi (fun i el -> (i, Some el)) |> Map |> EvalBus
+    let concatenatedNet = [High; Low; High; Low; High; High] |> List.mapi (fun i el -> (i, Some el)) |> Map 
     let expected = Map [
             ({Name = "nextState"; SliceIndices = Some(2, Some 0)}, [(0, Some Low); (1, Some High); (2, Some High)] |> Map |> EvalBus);
             ({Name = "exec1"; SliceIndices = None}, [(0, Some High)] |> Map |> EvalWire);
