@@ -5,8 +5,6 @@ open EvalNetHelper
 open EvalTypes
 open LogicOperations
 
-//TODO:Rename GraphEndPoint
-
 
 let formEvalNets (logicModule: TLogic): Map<NetIdentifier, EvalNet> = 
     let formNetsFromLst (netIDLst: NetIdentifier list) =
