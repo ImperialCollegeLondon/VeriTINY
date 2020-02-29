@@ -114,7 +114,9 @@ let rec evaluateExprLst (exprToEvaluate: Expression list) ( allNets: Map<NetIden
 
                     //Output Concatenation Handling
                     let revConcatExprLst =
-                        List.filter (fun (op, outLst, _) -> op = Concat && (List.head outLst) = updateKey) exprToEvaluate
+                        List.filter (fun (op, outLst:NetIdentifier list, _) -> 
+                            let exprOutputID = List.head outLst
+                            op = Concat && exprOutputID.Name = updateKey.Name) exprToEvaluate
 
                     let concatenationsCompleteAllNets =
                         List.fold (fun newAllNets (_, _, inpLst) -> 
