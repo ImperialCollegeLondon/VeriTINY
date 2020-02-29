@@ -158,6 +158,169 @@ let testModules = [
         Wires = [{ Name = "notCurrstate";
              SliceIndices = Some (2, Some 0) }] }
 
+    {
+        Name = "OutputConcatAND"
+        Inputs = [
+            {
+                Name = "a"
+                SliceIndices = Some(3, Some 0)
+            }
+
+            {
+                Name = "b"
+                SliceIndices = Some(3, Some 0)
+            }
+        ]
+
+        Outputs = [
+            {
+                Name = "d"
+                SliceIndices = Some(2, Some 0)
+            }
+
+            {
+                Name = "e"
+                SliceIndices = None
+            }
+        ]
+
+        ExpressionList = [
+            (And,
+                [
+                    {
+                        Name = "Net1"
+                        SliceIndices = None
+                    }
+                ],
+                [
+                    {
+                        Name = "a"
+                        SliceIndices = None
+                    };
+                    {
+                        Name = "b"
+                        SliceIndices = None
+                    }
+                ]
+            );
+            (Concat, 
+                [
+                    {
+                        Name = "Net1"
+                        SliceIndices = None
+                    }
+                ],
+                [
+                    {
+                        Name = "d"
+                        SliceIndices = None
+                    };
+                    {
+                        Name = "e"
+                        SliceIndices = None
+                    }
+                ]
+            )
+        ]
+
+        Wires = [
+            {
+                Name = "Net1"
+                SliceIndices = Some(3, Some 0)
+            }
+        ]
+    }
+
+    {
+        Name = "IOConcatNOT"
+        Inputs = [
+            {
+                Name = "a"
+                SliceIndices = Some(1, Some 0)
+            };
+            {
+                Name = "b"
+                SliceIndices = Some(2, Some 0)
+            }
+        ]
+
+        Outputs = [
+            {
+                Name = "c"
+                SliceIndices = Some(2, Some 0)
+            }
+            {
+                Name = "d"
+                SliceIndices = None
+            }
+        ]
+
+        ExpressionList = [
+            (Not,
+                [
+                    {
+                        Name = "Net1"
+                        SliceIndices = None
+                    }
+                ],
+                [
+                    {
+                        Name = "Net2"
+                        SliceIndices = None
+                    }
+                ]
+            );
+
+            (Concat,
+                [
+                    {
+                        Name = "Net2"
+                        SliceIndices = None
+                    }
+                ],
+                [
+                    {
+                        Name = "a"
+                        SliceIndices = Some(0, None)
+                    };
+                    {
+                        Name = "b"
+                        SliceIndices = Some(2, Some 1)
+                    }
+                ]
+            );
+            (Concat,
+                [
+                    {
+                        Name = "Net1"
+                        SliceIndices = None
+                    }
+                ],
+                [
+                    {
+                        Name = "c"
+                        SliceIndices = Some(1, Some 0)
+                    };
+                    {
+                        Name = "d"
+                        SliceIndices = None
+                    }
+                ]
+            )               
+        ]
+
+        Wires = [
+            {
+                Name = "Net1"
+                SliceIndices = Some(2, Some 0)
+            };
+            {
+                Name = "Net2"
+                SliceIndices = Some(2, Some 0)
+            }
+        ]
+    }     
+
 
 ]
   
@@ -256,6 +419,63 @@ let testCases = [
             ({Name = "exec1"; SliceIndices = None}, [(0, Low)] |> Map |> Wire);
             ({Name = "exec2"; SliceIndices = None}, [(0,Low)] |> Map |> Wire);
             ({Name = "fetch"; SliceIndices = None }, [(0,High)] |> Map |> Wire);
+        ]
+    }
+
+    {
+        TestName = "test6"
+        Module = testModules.[3]
+        Inputs = Map[
+            ({Name = "a"; SliceIndices = Some(3, Some 0)}, [Low;Low;Low;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "b"; SliceIndices = Some(3, Some 0)}, [Low;Low;Low;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus)
+        ]
+
+        ExpectedOutputs = Map [
+            ({Name = "d"; SliceIndices = Some(2, Some 0)}, [Low;Low;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "e"; SliceIndices = None}, [Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
+        ]
+
+        CurrOutputs = Map [
+            ({Name = "d"; SliceIndices = Some(2, Some 0)}, [Low;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "e"; SliceIndices = None}, [Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
+        ]
+    }
+
+    {
+        TestName = "test7"
+        Module = testModules.[3]
+        Inputs = Map[
+            ({Name = "a"; SliceIndices = Some(3, Some 0)}, [High;High;High;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "b"; SliceIndices = Some(3, Some 0)}, [High;Low;Low;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus)
+        ]
+
+        ExpectedOutputs = Map [
+            ({Name = "d"; SliceIndices = Some(2, Some 0)}, [Low;Low;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "e"; SliceIndices = None}, [High] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
+        ]
+
+        CurrOutputs = Map [
+            ({Name = "d"; SliceIndices = Some(2, Some 0)}, [Low;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "e"; SliceIndices = None}, [Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
+        ]
+    }
+
+    {
+        TestName = "test8"
+        Module = testModules.[4]
+        Inputs = Map[
+            ({Name = "a"; SliceIndices = Some(1, Some 0)}, [High;High] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "b"; SliceIndices = Some(2, Some 0)}, [High;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus)
+        ]
+
+        ExpectedOutputs = Map [
+            ({Name = "c"; SliceIndices = Some(2, Some 0)}, [High;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "d"; SliceIndices = None}, [High] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
+        ]
+
+        CurrOutputs = Map [
+            ({Name = "c"; SliceIndices = Some(2, Some 0)}, [Low;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+            ({Name = "d"; SliceIndices = None}, [Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
         ]
     }
 ]
