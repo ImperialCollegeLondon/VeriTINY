@@ -74,9 +74,9 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (sync
         | _ -> failwithf "other megablocks not supported yet"
 
     let mapOfVals = simulateAsync initMap asyncBLst
-    printfn "States after asynchronous evaluation: \n %A" mapOfVals
+    //printfn "States after asynchronous evaluation: \n %A" mapOfVals
     let nextState = simulateSync (Map []) mapOfVals syncBLst
-    printfn "Synchronous states after synchronous evaluation: \n %A" nextState
+    //printfn "Synchronous states after synchronous evaluation: \n %A" nextState
     nextState
 
 

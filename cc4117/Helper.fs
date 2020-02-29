@@ -1,6 +1,7 @@
 module Helper
 open SharedTypes
 
+// module containing helper functions
 
 let rec lstOpParallel acc f lstA lstB =
     match lstA, lstB with

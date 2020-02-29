@@ -3,11 +3,7 @@ open SharedTypes
 open SimulationTypes
 open Helper
 
-// GeneralNet = bool * NamedNet
-// NamedNet = string * Net
-// Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
-// test purposes
-
+// Module which contains all examples used in Expecto Tests
 
 
 let gNetLstA : GeneralNet list =
