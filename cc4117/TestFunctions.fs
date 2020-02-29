@@ -8,7 +8,7 @@ open SynchronousBlocks
 open Simulator
 
 
-// this module contains key functions in the simulation workflow
+// this module contains key functions in the simulation workflow that have been isolated for Expecto Tests
 
 
 let evaluateTLogicTest (mapIn:Map<NetIdentifier,Net>) (origNames:Map<NetIdentifier,Net>) (tLog:TLogic) =
