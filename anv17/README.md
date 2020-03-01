@@ -12,7 +12,7 @@ This folder contains the following modules in order of compilation (all modules 
 
 and gives one output of the type `Map<NetIdentifier, Net>` representing the outputs of the combinational module for the given inputs. This map will contain all NetIdentifiers from the `Outputs` NetIdentifier list in `combModule`.
 
-My code is fairly self contained, with the only types used in the interface being `TLogic`, `NetIdentifier` and `Net`. 
+My code is fairly self contained, with the only types used in the interfaces being `TLogic`, `NetIdentifier` and `Net`. 
 
 `NetIdentifier` was initially created by me to allow for clearer representation of net definitions and accesses (slices/individual elements/whole nets). It was later adopted by the rest of the team and added to the `TLogic` module. 
 
@@ -20,4 +20,7 @@ The `NetIdentifier` is a Record type containing the fields:
 * `Name: string` - The name of the net.
 * `SliceIndices: (int * int option)` - This field can be used to represent wire definitions `None`, bus defintions `input[3:0] bus-> Some(3, Some 0)`, bus slices `bus[2:1] -> Some(2, Some 0)`, single wire access in busses `bus[1] -> Some(1, None)`, and full bus/wire access `bus -> None`. 
 
-The `TLogic` and `Net` types are explained in the README in the shared folder linked here.
+The `TLogic` and `Net` types are explained in the top level README linked [here](https://github.com/ImperialCollegeLondon/hlp2020-verilog2).
+
+
+During code review, my main contribution was helping cc4417 understand how to use my top level function in his module, and also after looking at his code, I changed the input net type of my top level function from `GraphEndPoint` to `Net` (see [commit](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/commit/a664f22d33ddedca0b08cfacf3520d7b49f0e2fc#diff-820df22d0da2a760d2c10896b0be09eb)). 
