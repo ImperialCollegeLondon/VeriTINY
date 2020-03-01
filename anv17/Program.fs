@@ -7,7 +7,8 @@ open Expecto
 [<EntryPoint>]
 let main argv =
    printfn "Hello"
-   runTests defaultConfig evalExprTestLst |> ignore
    runTests defaultConfig concatenationTests |> ignore
+   runTests defaultConfig topLevelModuleTests |> ignore
+   runTests defaultConfig evalModuleLst |> ignore
    Console.ReadKey() |> ignore
    0

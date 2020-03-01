@@ -5,7 +5,7 @@ open CombEval
 open LogicOperations
 open EvalTypes
 
-
+//*****Logic operations Concatenation functions tests*******
 
 let concatenationTests = 
 
@@ -71,6 +71,176 @@ let concatenationTests =
             ({Name = "fetch"; SliceIndices = None }, [(0,Some Low)] |> Map |> EvalWire);
     ]
     Expect.equal (reverseConcat concatenatedNet concatInputs allNets) expected revConcatTestDescriptor); 
+
+]
+
+//*****Top level module pipeline function tests ********
+let topLevelModuleTests = testList "Top Level module pipeline function tests" [
+
+    testCase "formEvalNets test 1" <| (fun () ->
+        let testMod =
+           {
+                Name = "TestMod"
+                ExpressionList = [(And, [{Name= "c"; SliceIndices = None}],[{Name = "a"; SliceIndices = None}; {Name = "b"; SliceIndices = None}] )]
+                Inputs = [{Name = "a"; SliceIndices = Some(2,Some 1)}; {Name = "b"; SliceIndices = Some(3, Some 2)}]
+                Outputs = [{Name= "c"; SliceIndices = Some(1, Some 0)}]
+                Wires = [
+                    {Name = "tempNet"; SliceIndices = Some(1, Some 0)};
+                    {Name = "tempNet1"; SliceIndices = None}
+                ]
+            };
+
+        let expectedAllNetsMap = Map [
+                ({Name = "a"; SliceIndices = Some(2,Some 1)}, [(2,None); (1, None)] |> Map |> EvalBus);
+                ({Name = "b"; SliceIndices = Some(3, Some 2)}, [(3, None); (2, None)] |> Map |> EvalBus);
+                ({Name= "c"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+                ({Name = "tempNet"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+                ({Name = "tempNet1"; SliceIndices = None},  [(0, None)] |> Map |> EvalWire)
+        ]
+        Expect.equal (formEvalNets testMod) expectedAllNetsMap "Testing Normal Case"
+    )
+
+    testCase "formEvalNets test 2" <| (fun () ->
+        let testMod =
+           {
+                Name = "TestMod"
+                ExpressionList = [(And, [{Name= "c"; SliceIndices = None}],[{Name = "a"; SliceIndices = None}; {Name = "b"; SliceIndices = None}] )]
+                Inputs = [{Name = "a"; SliceIndices = Some(0,Some 0)}; {Name = "b"; SliceIndices = None}]
+                Outputs = [{Name= "c"; SliceIndices = Some(0, Some 0)}]
+                Wires = []
+            };
+
+        let expectedAllNetsMap = Map [
+                ({Name = "a"; SliceIndices = Some(0, Some 0)}, [(0,None)] |> Map |> EvalBus);
+                ({Name = "b"; SliceIndices = None}, [(0, None)] |> Map |> EvalWire);
+                ({Name = "c"; SliceIndices = Some(0, Some 0)}, [(0,None)] |> Map |> EvalBus);
+        ]
+        Expect.equal (formEvalNets testMod) expectedAllNetsMap "Testing using multi wire busses to represent single wires"
+    )
+
+    testCase "assignInputValues test 1" <| (fun () ->
+        let allNets = Map [
+            ({Name = "a"; SliceIndices = Some(2,Some 1)}, [(2,None); (1, None)] |> Map |> EvalBus);
+            ({Name = "b"; SliceIndices = Some(3, Some 2)}, [(3, None); (2, None)] |> Map |> EvalBus);
+            ({Name= "c"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+        ]
+
+        let inputIDs = [
+            {Name = "a"; SliceIndices = Some(2,Some 1)};
+            {Name = "b"; SliceIndices = Some(3, Some 2)};
+        ]
+
+        let inputValueMap = Map [
+            (inputIDs.[0], Map [(1, Low); (2,High)] |> Bus);
+            (inputIDs.[1], Map [(2, Low); (3,Low)] |> Bus);
+        ]
+
+        let expected = Map [
+            ({Name = "a"; SliceIndices = Some(2,Some 1)}, [(2,Some High); (1, Some Low)] |> Map |> EvalBus);
+            ({Name = "b"; SliceIndices = Some(3, Some 2)}, [(3, Some Low); (2, Some Low)] |> Map |> EvalBus);
+            ({Name = "c"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+        ]
+
+
+        Expect.equal (assignInputValues inputValueMap inputIDs allNets) expected "Testing Normal Case"
+    )
+
+    testCase "assignInputValues test 2" <| (fun () ->
+        let allNets = Map [
+            ({Name = "a"; SliceIndices = None}, [(0, None)] |> Map |> EvalWire);
+            ({Name = "b"; SliceIndices = Some(2, Some 2)}, [(2, None)] |> Map |> EvalBus);
+            ({Name = "c"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+        ]
+
+        let inputIDs = [
+            {Name = "a"; SliceIndices = None};
+            {Name = "b"; SliceIndices = Some(2, Some 2)};
+        ]
+
+        let inputValueMap = Map [
+            (inputIDs.[0], Map [(0, High)] |> Wire);
+            (inputIDs.[1], Map [(2, High)] |> Bus);
+            ({Name = "randomNet"; SliceIndices = None}, Map [(7, Low); (1,Low)] |> Bus);
+        ]
+
+        let expected = Map [
+            ({Name = "a"; SliceIndices = None}, [(0, Some High)] |> Map |> EvalWire);
+            ({Name = "b"; SliceIndices = Some(2, Some 2)}, [(2, Some High)] |> Map |> EvalBus);
+            ({Name= "c"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+        ]
+
+
+        Expect.equal (assignInputValues inputValueMap inputIDs allNets) expected "Testing using multi wire busses to represent single wires, as well as using EvalWires and with an irrelevant net in the input net value map"
+    )
+
+    testCase "formOutputNets test 1" <| (fun () ->
+        let allNets = Map [
+            ({Name = "a"; SliceIndices = None}, [(0, None)] |> Map |> EvalWire);
+            ({Name = "b"; SliceIndices = Some(2, Some 2)}, [(2, None)] |> Map |> EvalBus);
+            ({Name = "c"; SliceIndices = Some(1, Some 0)}, [(0,None); (1, None)] |> Map |> EvalBus);
+        ]
+
+        let outputIDs = [
+            {Name = "c"; SliceIndices = Some(1, Some 0)};
+        ]
+
+        let oldOutputs = Map [
+            (outputIDs.[0], Map [(0, High); (1, Low)] |> Bus);
+        ]
+
+        let expected = Map [
+            (outputIDs.[0], [(0, High); (1, Low)] |> Map |> Bus);
+        ]
+
+
+        Expect.equal (formOutputNets outputIDs oldOutputs allNets) expected "Testing assignment of default outputs"
+    )
+
+    testCase "formOutputNets test 2" <| (fun () ->
+        let allNets = Map [
+            ({Name = "a"; SliceIndices = None}, [(0, None)] |> Map |> EvalWire);
+            ({Name = "b"; SliceIndices = Some(2, Some 2)}, [(2, None)] |> Map |> EvalBus);
+            ({Name = "c"; SliceIndices = Some(1, Some 0)}, [(0, Some Low); (1, Some High)] |> Map |> EvalBus);
+        ]
+
+        let outputIDs = [
+            {Name = "c"; SliceIndices = Some(1, Some 0)};
+        ]
+
+        let oldOutputs = Map [
+            (outputIDs.[0], Map [(0, High); (1, Low)] |> Bus);
+        ]
+
+        let expected = Map [
+            (outputIDs.[0], [(0, Low); (1, High)] |> Map |> Bus);
+        ]
+
+
+        Expect.equal (formOutputNets outputIDs oldOutputs allNets) expected "Testing normal case"
+    )
+
+    testCase "formOutputNets test 3" <| (fun () ->
+        let allNets = Map [
+            ({Name = "a"; SliceIndices = None}, [(0, None)] |> Map |> EvalWire);
+            ({Name = "b"; SliceIndices = Some(2, Some 2)}, [(2, None)] |> Map |> EvalBus);
+            ({Name = "c"; SliceIndices = Some(0, Some 0)}, [(0, Some High)] |> Map |> EvalBus);
+        ]
+
+        let outputIDs = [
+            {Name = "c"; SliceIndices = Some(0, Some 0)};
+        ]
+
+        let oldOutputs = Map [
+            (outputIDs.[0], Map [(0, High)] |> Bus);
+        ]
+
+        let expected = Map [
+            (outputIDs.[0], [(0, High)] |> Map |> Bus);
+        ]
+
+
+        Expect.equal (formOutputNets outputIDs oldOutputs allNets) expected "Testing using multi wire busses to represent single wires"
+    )
 
 ]
 
@@ -482,10 +652,10 @@ let testCases = [
 
 
 
-let formEvalExprTest (testCaseRec:TopLevelTestRec)  =
+let formEvalModuleTest (testCaseRec:TopLevelTestRec)  =
     testCase (sprintf "Testing evalModuleWithInputs, test case %s" testCaseRec.TestName) <| (fun () ->
         let testDescriptor = sprintf "Testing EvalExprLst with Module %A and Inputs %A. Expecting outputs %A" testCaseRec.Module testCaseRec.Inputs testCaseRec.ExpectedOutputs
         Expect.equal (evaluateModuleWithInputs testCaseRec.Module testCaseRec.Inputs testCaseRec.CurrOutputs) testCaseRec.ExpectedOutputs testDescriptor)
 
-let evalExprTestLst = testList "evalExpr Tests" (List.map formEvalExprTest testCases)
+let evalModuleLst = testList "Top level function Tests" (List.map formEvalModuleTest testCases)
 
