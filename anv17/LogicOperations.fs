@@ -74,23 +74,25 @@ let reverseConcat (concatenatedNet: Map<int, LogicLevel option>) (cocatenationIn
     let applyConcatenationToAllNets (updatedAllNets, remainingConcatenation) (inpID: NetIdentifier) =
         let fullNetID = getNetByName inpID.Name allNets
         let fullNet = extractLLMap allNets.[fullNetID]
-        match inpID.SliceIndices with
-        |Some (x, Some y) -> 
-            let sliceSize = getBusSize inpID
-            let updatedEvalNet = updateBus fullNet (Some(min x y, max x y)) (List.take sliceSize remainingConcatenation) |> EvalBus
-            Map.add fullNetID updatedEvalNet updatedAllNets, List.skip sliceSize remainingConcatenation
-        |Some (x, None) -> 
-            let sliceSize = getBusSize inpID
-            let updatedEvalNet = updateBus fullNet (Some(x, x)) (List.take sliceSize remainingConcatenation) |> EvalBus
-            Map.add fullNetID updatedEvalNet updatedAllNets, List.skip sliceSize remainingConcatenation
-        |None -> 
-            let sliceSize = getBusSize fullNetID
-            let updatedNetMap = updateBus fullNet None (List.take sliceSize remainingConcatenation) 
-            let updatedEvalNet =
-                match fullNetID.SliceIndices with
-                |Some(_, Some _) -> EvalBus updatedNetMap
-                |None -> EvalWire updatedNetMap
-                |_ -> failwithf "Expected bus definition slice indices, got %A" fullNetID.SliceIndices                
-            Map.add fullNetID updatedEvalNet updatedAllNets, (List.skip sliceSize remainingConcatenation)
+        let sliceSize, updatedEvalNet = 
+            match inpID.SliceIndices with
+            |Some (x, Some y) -> 
+                let sliceSize = getBusSize inpID
+                let updatedEvalNet = updateBus fullNet (Some(min x y, max x y)) (List.take sliceSize remainingConcatenation) |> EvalBus
+                sliceSize, updatedEvalNet
+            |Some (x, None) -> 
+                let sliceSize = getBusSize inpID
+                let updatedEvalNet = updateBus fullNet (Some(x, x)) (List.take sliceSize remainingConcatenation) |> EvalBus
+                sliceSize, updatedEvalNet
+            |None -> 
+                let sliceSize = getBusSize fullNetID
+                let updatedNetMap = updateBus fullNet None (List.take sliceSize remainingConcatenation) 
+                let updatedEvalNet =
+                    match fullNetID.SliceIndices with
+                    |Some(_, Some _) -> EvalBus updatedNetMap
+                    |None -> EvalWire updatedNetMap
+                    |_ -> failwithf "Expected bus definition slice indices, got %A" fullNetID.SliceIndices      
+                sliceSize, updatedEvalNet          
+        Map.add fullNetID updatedEvalNet updatedAllNets, List.skip sliceSize remainingConcatenation
 
     fst (List.fold applyConcatenationToAllNets (allNets, concatenatedLLLst) revInpLst)
