@@ -22,7 +22,7 @@ The `NetIdentifier` is a Record type containing the fields:
 * `SliceIndices: (int * int option)` - This field can be used to represent wire definitions `None`, bus defintions `input[3:0] bus-> Some(3, Some 0)`, bus slices `bus[2:1] -> Some(2, Some 0)`, single wire access in busses `bus[1] -> Some(1, None)`, and full bus/wire access `bus -> None`. 
 
 The `TLogic` type encapsulates all of the information to evaluate a purely combinational module written in VeriTINY. Its definition is as follows:
-`
+```
 type Expression = (Operator * NetIdentifier list * NetIdentifier list)
 type TLogic = {
     Name: string
@@ -32,7 +32,7 @@ type TLogic = {
     Wires: NetIdentifier list
 }
 
-`
+```
 
 The Expression type is a tuple consisting of an Operator, a NetIdentifier list identifying the outputs of the operation, and a NetIdentifier list identifying the operands. 
 The Inputs and Outputs fields are self explanatory, they are the inputs and outputs of the module represented by the TLogic record instance. 
