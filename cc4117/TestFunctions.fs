@@ -12,18 +12,25 @@ open Simulator
 
 
 let evaluateTLogicTest (mapIn:Map<NetIdentifier,Net>) (origNames:Map<NetIdentifier,Net>) (tLog:TLogic) =
-    // temporary names of nets for evaluation as they appear in tLogic
-    let renameForEval (mapIn:Map<NetIdentifier,Net>)  =
-        let nets = mapIn |> Map.toList |> List.map snd
-        let tempKeys = tLog.Inputs 
-        List.zip tempKeys nets |> Map.ofList
-    // rename output to user-defined name after evaluation
-    let renameEvalOut (origNames:Map<NetIdentifier,Net>) (evalMap:Map<NetIdentifier,Net>)   =
-        let nets = evalMap |> Map.toList |> List.map snd
-        let realKeys = origNames |> Map.toList |> List.map fst
-        List.zip realKeys nets |> Map.ofList
+        // temporary names of nets for evaluation as they appear in tLogic
+        let renameInputsForEval (mapIn:Map<NetIdentifier,Net>)  =
+            let nets = mapIn |> Map.toList |> List.map snd
+            let tempKeys = tLog.Inputs 
+            List.zip tempKeys nets |> Map.ofList       
+        let renameOutputsForEval (origNames:Map<NetIdentifier,Net>)  =
+            let nets = origNames |> Map.toList |> List.map snd
+            let tempKeys = tLog.Outputs
+            List.zip tempKeys nets |> Map.ofList      
+        // rename output to user-defined name after evaluation
+        let renameEvalOut (origNames:Map<NetIdentifier,Net>) (evalMap:Map<NetIdentifier,Net>)   =
+            let nets = evalMap |> Map.toList |> List.map snd
+            let realKeys = origNames |> Map.toList |> List.map fst
+            List.zip realKeys nets |> Map.ofList
 
-    mapIn |> renameForEval |> evaluateModuleWithInputs tLog |> renameEvalOut origNames
+        (renameInputsForEval mapIn, renameOutputsForEval origNames) 
+        ||> evaluateModuleWithInputs tLog 
+        |> renameEvalOut origNames
+
 
 let seperateMegaBlocksTest (bLst: Block list) =
         let checkIfSyncBlock (bIn: Block) =
@@ -71,17 +78,24 @@ let evaluateAsyncTest (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) 
 
     let evaluateTLogic (mapIn:Map<NetIdentifier,Net>) (origNames:Map<NetIdentifier,Net>) (tLog:TLogic) =
         // temporary names of nets for evaluation as they appear in tLogic
-        let renameForEval (mapIn:Map<NetIdentifier,Net>)  =
+        let renameInputsForEval (mapIn:Map<NetIdentifier,Net>)  =
             let nets = mapIn |> Map.toList |> List.map snd
             let tempKeys = tLog.Inputs 
-            List.zip tempKeys nets |> Map.ofList
+            List.zip tempKeys nets |> Map.ofList       
+        let renameOutputsForEval (origNames:Map<NetIdentifier,Net>)  =
+            let nets = origNames |> Map.toList |> List.map snd
+            let tempKeys = tLog.Outputs
+            List.zip tempKeys nets |> Map.ofList      
         // rename output to user-defined name after evaluation
         let renameEvalOut (origNames:Map<NetIdentifier,Net>) (evalMap:Map<NetIdentifier,Net>)   =
             let nets = evalMap |> Map.toList |> List.map snd
             let realKeys = origNames |> Map.toList |> List.map fst
             List.zip realKeys nets |> Map.ofList
 
-        mapIn |> renameForEval |> evaluateModuleWithInputs tLog |> renameEvalOut origNames
+        (renameInputsForEval mapIn, renameOutputsForEval origNames) 
+        ||> evaluateModuleWithInputs tLog 
+        |> renameEvalOut origNames
+    
     
 
     let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncBLst: Block list) =
@@ -173,14 +187,20 @@ let advanceStateTest (initMap: Map<NetIdentifier,Net>) (asyncBLst: Block list) (
         let renameForEval (mapIn:Map<NetIdentifier,Net>)  =
             let nets = mapIn |> Map.toList |> List.map snd
             let tempKeys = tLog.Inputs 
-            List.zip tempKeys nets |> Map.ofList
+            List.zip tempKeys nets |> Map.ofList       
+        let renameForEvalOutputs (mapIn:Map<NetIdentifier,Net>)  =
+            let nets = mapIn |> Map.toList |> List.map snd
+            let tempKeys = tLog.Outputs
+            List.zip tempKeys nets |> Map.ofList      
         // rename output to user-defined name after evaluation
         let renameEvalOut (origNames:Map<NetIdentifier,Net>) (evalMap:Map<NetIdentifier,Net>)   =
             let nets = evalMap |> Map.toList |> List.map snd
             let realKeys = origNames |> Map.toList |> List.map fst
             List.zip realKeys nets |> Map.ofList
 
-        mapIn |> renameForEval |> evaluateModuleWithInputs tLog |> renameEvalOut origNames
+        //mapIn |> renameForEval |> evaluateModuleWithInputs tLog |> renameEvalOut origNames
+        evaluateModuleWithInputs tLog (renameForEval mapIn) (renameForEvalOutputs origNames) |> renameEvalOut origNames
+    
     
 
     let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncBLst: Block list) =

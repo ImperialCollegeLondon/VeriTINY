@@ -15,134 +15,177 @@ open Expecto
 
 
 [<Tests>]
-let expectoFSCheckTest1 = 
-    testCase "gLstToMap Test 1 (Wires)" <| fun () ->
+let mapTest1 = 
+    testCase "gLstToMap conversion Test 1 (Wires)" <| fun () ->
         let expected = mapA
         Expect.equal (gLstToMap gNetLstA) expected "Wrong map output"
 
 [<Tests>]
-let expectoFSCheckTest2 = 
-    testCase "gLstToMap Test 2 (Busses)" <| fun () ->
+let mapTest2 = 
+    testCase "gLstToMap conversion Test 2 (Busses)" <| fun () ->
         let expected = mapB
         Expect.equal (gLstToMap gNetLstB) expected "Wrong map output"
 
 [<Tests>]
-let expectoFSCheckTest3 = 
-    testCase "updateMap Test" <| fun () ->
+let mapTest3 = 
+    testCase "updateMap Test 1" <| fun () ->
         let expected = mapC3
         Expect.equal (updateMap mapC1 mapC2) expected "Wrong map output"
 
 [<Tests>]
-let expectoFSCheckTest4 = 
-    testCase "seperateMegaBlocks Test" <| fun () ->
-        let expected = bLstSeperated
-        Expect.equal (seperateMegaBlocksTest bLstEx) expected "bLst not seperated properly"
+let mapTest4 = 
+    testCase "updateMap Test 2" <| fun () ->
+        let expected = mapC6
+        Expect.equal (updateMap mapC4 mapC5) expected "Wrong map output"
 
 [<Tests>]
-let expectoFSCheckTest5 = 
+let bLstSeperateTest1 = 
+    testCase "seperateMegaBlocks Test 1" <| fun () ->
+        let expected = bLstSeperated1
+        Expect.equal (seperateMegaBlocksTest bLstEx1) expected "bLst not seperated properly"
+
+[<Tests>]
+let bLstSeperateTest2 = 
+    testCase "seperateMegaBlocks Test 2" <| fun () ->
+        let expected = bLstSeperated2
+        Expect.equal (seperateMegaBlocksTest bLstEx2) expected "bLst not seperated properly"
+
+[<Tests>]
+let bLstSeperateTest3 = 
+    testCase "seperateMegaBlocks Test 3 (no synchronous)" <| fun () ->
+        let expected = bLstSeperated3
+        Expect.equal (seperateMegaBlocksTest bLstEx3) expected "bLst not seperated properly"
+
+[<Tests>]
+let bLstSeperateTest4 = 
+    testCase "seperateMegaBlocks Test 4 (no asynchronous)" <| fun () ->
+        let expected = bLstSeperated4
+        Expect.equal (seperateMegaBlocksTest bLstEx4) expected "bLst not seperated properly"
+
+[<Tests>]
+let tLogicTest1 = 
     testCase "evaluateTLogic Test (AND)" <| fun () ->
         let expected = andOutput 
         Expect.equal (evaluateTLogicTest andIn andOut tLogicEx2) expected "Expected High output"
 
 [<Tests>]
-let expectoFSCheckTest6 = 
+let tLogicTest2= 
     testCase "evaluateTLogic Test (OR)" <| fun () ->
         let expected = orOutput 
         Expect.equal (evaluateTLogicTest orIn orOut tLogicEx3) expected "Expected High output"
 
 [<Tests>]
-let expectoFSCheckTest7 = 
+let tLogicTest3 = 
     testCase "evaluateTLogic Test (NOT)" <| fun () ->
         let expected = notOutput 
         Expect.equal (evaluateTLogicTest notIn notOut tLogicEx4) expected "Expected Low output"
 
 [<Tests>]
-let expectoFSCheckTest8 = 
+let tLogicTest4 = 
+    testCase "AND gate with unmapped output" <| fun () ->
+        let expected = c6Output
+        Expect.equal (evaluateTLogicTest (gLstToMap c5and1In) (gLstToMap c5and1Out) tLogicEx5) expected "Output of advance state not as expected"
+
+
+[<Tests>]
+let simulationTest1 = 
     testCase "advanceState Asynchronous Test (2 AND Gates - Circuit 1)" <| fun () ->
         let expected = c1mapOfVals 
         Expect.equal (evaluateAsyncTest c1initMap testCircuit1 tLogicLstEx) expected "Asynchronous simulation unsuccessful"
 
 [<Tests>]
-let expectoFSCheckTest9 = 
+let simulationTest2 = 
     testCase "advanceState Asynchronous Test (1 OR feeding into 1 AND - Circuit 2)" <| fun () ->
         let expected = c2mapOfVals 
         Expect.equal (evaluateAsyncTest c2initMap testCircuit2 tLogicLstEx) expected "Asynchronous simulation unsuccessful"
 
 [<Tests>]
-let expectoFSCheckTest10 = 
+let simulationTest3 = 
     testCase "Synchronous DFF update Test (Wire)" <| fun () ->
         let expected = dffOutputWire
         Expect.equal (evaluateDFF dffInWire dffOutWire) expected "Expected High output"
 
 [<Tests>]
-let expectoFSCheckTest11 = 
+let simulationTest4 = 
     testCase "Synchronous DFF update Test (Bus)" <| fun () ->
         let expected = dffOutputBus
         Expect.equal (evaluateDFF dffInBus dffOutBus) expected "Expected Low Low High output"
 
 [<Tests>]
-let expectoFSCheckTest12 = 
+let simulationTest5 = 
     testCase "cascaded DFF test (evaluation in parallel)" <| fun () ->
         let expected = cascadeOutput
         Expect.equal (evaluateSyncTest cascadeInitMap cascadeBLst) expected "Expected Low High Low output"
 
 [<Tests>]
-let expectoFSCheckTest13 = 
+let simulationTest6 = 
     testCase "combined asynchronous and synchronous test 1 (Circuit 3)" <| fun () ->
         let expected = c3Output
         Expect.equal (advanceStateTest c3InitMap c3AsyncBLst c3SyncBLst tLogicLstEx) expected "Output of advance state not as expected"
 
 [<Tests>]
-let expectoFSCheckTest14 = 
+let simulationTest7 = 
     testCase "combined asynchronous and synchronous test 2 (Circuit 4)" <| fun () ->
         let expected = c4Output
         Expect.equal (advanceStateTest c4InitMap c4AsyncBLst c4SyncBLst tLogicLstEx) expected "Output of advance state not as expected"
 
 [<Tests>]
-let expectoFSCheckTest15 = 
+let simulationTest8 = 
     testCase "simulating multiple clock cycles test (Circuit 3)" <| fun () ->
         let expected = c3MultipleOutput
         Expect.equal (simulate c3InputLstofLst c3CLst tLogicLstEx) expected "Output of advance state not as expected"
 
-        
 
-let testListWithExpecto =
-    testList "A test group" [
-        expectoFSCheckTest1
-        expectoFSCheckTest2
-        expectoFSCheckTest3
-        expectoFSCheckTest4
-        expectoFSCheckTest5
-        expectoFSCheckTest6
-        expectoFSCheckTest7
-        expectoFSCheckTest8
-        expectoFSCheckTest9
-        expectoFSCheckTest10
-        expectoFSCheckTest11
-        expectoFSCheckTest12
-        expectoFSCheckTest13
-        expectoFSCheckTest14
-        expectoFSCheckTest15
+        
+let mapTests =
+    testList "Map Tests" [
+        mapTest1
+        mapTest2
+        mapTest3
+        mapTest4
+    ]
+
+let bLstSeperateTests =
+    testList "Seperating Block list into synchronous and asynchronous lists" [
+        bLstSeperateTest1
+        bLstSeperateTest2
+        bLstSeperateTest3
+        bLstSeperateTest4
+    ]
+
+let tLogicTests =
+    testList "TLogic Evaluation Tests" [
+        tLogicTest1
+        tLogicTest2
+        tLogicTest3
+        tLogicTest4
+    ]
+
+let simulationTests =
+    testList "Simulation tests (asynchronous, synchronous and both)" [
+        simulationTest1
+        simulationTest2
+        simulationTest3
+        simulationTest4
+        simulationTest5
+        simulationTest6
+        simulationTest7
+        simulationTest8
     ]
 
 let testsWithExpecto() =
-    runTests defaultConfig testListWithExpecto |> ignore
-
+   runTests defaultConfig mapTests |> ignore
+   runTests defaultConfig bLstSeperateTests |> ignore
+   runTests defaultConfig tLogicTests |> ignore
+   runTests defaultConfig simulationTests |> ignore
 
 
 [<EntryPoint>]
 let main argv =
     printfn "Hello World from F#!"
 
-    //let finalState = simulate testInputsLstofLst syncCLst tLst1
-
     testsWithExpecto() |> ignore
 
     Console.ReadKey() |> ignore
 
-    
-    //let test = evaluateModuleWithInputs tLogicEx3 (and1In |> gLstToMap) 
-
-    //let updateDFFTest= updateDFF (gLstToMap dff1In) (gLstToMap dff1Out)
-    
     0 // return an integer exit code

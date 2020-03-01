@@ -55,15 +55,63 @@ let mapC3 =
         { Name = "D0"; SliceIndices = Some(5, None) }, Bus (Map [5, High]);
     ]
 
-let bLstEx: Block list =
+let mapC4 =
+    Map [
+        { Name = "A"; SliceIndices = Some(2, Some 0) }, Bus (Map [0, Low; 1, High; 2, Low]);
+        { Name = "D"; SliceIndices = None}, Wire(Map [0, High]);
+    ]
+
+let mapC5 =
+    Map [
+        { Name = "B"; SliceIndices = Some(2, Some 0) }, Bus (Map [0, Low; 1, High; 2, Low]);
+        { Name = "D"; SliceIndices = None}, Wire(Map [0, Low]);
+    ]
+
+let mapC6 =
+    Map [
+        { Name = "A"; SliceIndices = Some(2, Some 0) }, Bus (Map [0, Low; 1, High; 2, Low]);
+        { Name = "B"; SliceIndices = Some(2, Some 0) }, Bus (Map [0, Low; 1, High; 2, Low]);
+        { Name = "D"; SliceIndices = None}, Wire(Map [0, Low]);
+    ]
+
+
+
+let bLstEx1: Block list =
     [Name "A", mapA, mapA;
     Name "DFF", mapA, mapA;
     Name "DFF", mapA, mapA;
     Name "B", mapA, mapA]
 
-let bLstSeperated: Block list * Block list =
+let bLstSeperated1: Block list * Block list =
     [Name "DFF", mapA, mapA; Name "DFF", mapA, mapA],
     [Name "A", mapA, mapA; Name "B", mapA, mapA] 
+
+let bLstEx2: Block list =
+    [Name "A", mapA, mapA;
+    Name "B", mapA, mapA;
+    Name "DFF", mapA, mapA;
+    Name "DFF", mapA, mapA;
+    Name "C", mapA, mapA]
+
+let bLstSeperated2: Block list * Block list =
+    [Name "DFF", mapA, mapA; Name "DFF", mapA, mapA],
+    [Name "A", mapA, mapA; Name "B", mapA, mapA; Name "C", mapA, mapA]
+
+let bLstEx3: Block list =
+    [Name "A", mapA, mapA;
+    Name "B", mapA, mapA]
+
+let bLstSeperated3: Block list * Block list =
+    [],
+    [Name "A", mapA, mapA; Name "B", mapA, mapA]
+
+let bLstEx4: Block list =
+    [Name "DFF", mapA, mapA;
+    Name "DFF", mapA, mapA]
+
+let bLstSeperated4: Block list * Block list =
+    [Name "DFF", mapA, mapA; Name "DFF", mapA, mapA],
+    []
     
 
 let andIn: Map<NetIdentifier,Net> = 
@@ -149,7 +197,44 @@ let tLogicEx4 : TLogic= {
     Outputs = [{ Name = "b"; SliceIndices = None }]
     Wires = [] }
 
-let tLogicLstEx = [tLogicEx1; tLogicEx2; tLogicEx3; tLogicEx4]
+// D is not mapped (should retain prev value)
+let tLogicEx5 : TLogic= { 
+    Name = "AND"
+    ExpressionList =
+        [(And, 
+            [{ Name = "c"; SliceIndices = None }],
+            [{ Name = "a"; SliceIndices = None };
+            { Name = "b"; SliceIndices = None }])]
+    Inputs =
+        [{ Name = "a"; SliceIndices = None };
+        { Name = "b"; SliceIndices = None }]
+    Outputs = [{ Name = "c"; SliceIndices = None }; { Name = "d"; SliceIndices = None }]
+    Wires = [] }
+
+let tLogicLstEx = [tLogicEx1; tLogicEx2; tLogicEx3; tLogicEx4; tLogicEx5]
+
+
+// single AND gate with an unmapped output (which should retain it's previous value after evaluation)
+let andInitMap =   
+    Map [{ Name = "a0"; SliceIndices = None}, Wire (Map [0, High]);
+    { Name = "a1"; SliceIndices = None}, Wire (Map [0, High])]
+
+let c5and1In: GeneralNet list =
+    [false, ("andIn0", Wire(Map [0, High]));
+    false, ("andIn1", Wire(Map [0, Low]))]
+
+let c5and1Out: GeneralNet list =
+    [false, ("andOut1", Wire(Map [0, Low]));
+    false, ("unMappedOutput", Wire(Map [0, High]))]
+
+let c5CLst = 
+    [Name "AND", gLstToMap c5and1In, gLstToMap c5and1Out]
+
+let c6Output =
+    Map [
+        { Name = "andOut1"; SliceIndices = None}, Wire (Map [0, Low]);
+        { Name = "unMappedOutput"; SliceIndices = None}, Wire (Map [0, High]);
+        ] 
 
 
 // test circuits (bLsts)
