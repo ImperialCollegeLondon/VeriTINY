@@ -35,7 +35,7 @@ type TLogic = {
 ```
 
 The Expression type is a tuple consisting of an Operator, a NetIdentifier list identifying the outputs of the operation, and a NetIdentifier list identifying the operands. 
-The Inputs and Outputs fields are self explanatory, they are the inputs and outputs of the module represented by the TLogic record instance. 
+The Inputs and Outputs fields are self explanatory, they are the inputs and outputs of the module represented by the TLogic record instance. Each expression can only have one output, therefore it is planned to change the output NetIdentifier list to just NetIdentifier in the future.
 The Wires field is a list of all intermediate nets in the module, such as ones explicitly declared by the user via the `wire` keyword, or as a result of temporary net generation for concatenation in `LogicBlockGen`.
 
 The `Net` type encapsulates a mapping from bus indices to to logic levels. Its definition is given below.
