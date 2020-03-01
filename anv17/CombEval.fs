@@ -5,8 +5,6 @@ open EvalNetHelper
 open EvalTypes
 open LogicOperations
 
-//TODO:Rename GraphEndPoint
-
 
 let formEvalNets (logicModule: TLogic): Map<NetIdentifier, EvalNet> = 
     let formNetsFromLst (netIDLst: NetIdentifier list) =
@@ -22,8 +20,10 @@ let formEvalNets (logicModule: TLogic): Map<NetIdentifier, EvalNet> =
     |> Map
 
 
-let assignInputValues (inputMap: Map<NetIdentifier, Net>) (evalNetMap: Map<NetIdentifier, EvalNet>) =
-        let failTypeMismatch net input = failwithf "Input and net type mismatch, got input %A, net %A" input net
+let assignInputValues (inputMap: Map<NetIdentifier, Net>)  (moduleInputIDs: NetIdentifier list) ( allNets: Map<NetIdentifier, EvalNet>) =
+
+        let isInputMapComplete = 
+            List.fold (fun inputMapComplete inpNetID -> if inputMapComplete then Map.containsKey inpNetID inputMap else false) true moduleInputIDs
 
         let doNetTypesMatch inputNet correspondingEvalNet =
             match inputNet with
@@ -36,107 +36,105 @@ let assignInputValues (inputMap: Map<NetIdentifier, Net>) (evalNetMap: Map<NetId
                     |EvalBus _ -> false
                     |EvalWire _ -> true
 
+        let assignInputsToEvalNets evalNetID evalNet =
+            match Map.tryFind evalNetID inputMap with
+                |Some inputNet -> 
+                    if doNetTypesMatch inputNet evalNet 
+                    then netToEvalNet inputNet
+                    else  failwithf "Input and net type mismatch, got input %A, net %A" inputNet evalNet
+                |None -> evalNet
+
+        if isInputMapComplete
+        then Map.map assignInputsToEvalNets allNets
+        else failwithf "Input mapping incomplete, expecting Nets for %A, got mapping %A" moduleInputIDs inputMap
+
+
+let rec evaluateExprLst (exprsToEvaluate: Expression list) ( allNets: Map<NetIdentifier, EvalNet>) =
+    let canEvalExpression (exprInputs: NetIdentifier list) = 
+        (true, exprInputs) ||> List.fold (fun expressionEvaluatable exprInp ->
+        if not expressionEvaluatable
+        then false
+        else 
+            let fullInpMapKey = getNetByName exprInp.Name  allNets
+            isNetEvaluatedAtIndices  allNets.[fullInpMapKey] exprInp.SliceIndices)
+
+    let getEvaluatableExpressions () = List.filter (fun (_, _, inpLst) -> canEvalExpression inpLst) exprsToEvaluate //thunk for delayed execution
+
+    let evaluateExpr (op: Operator , outLst: NetIdentifier list , inpLst: NetIdentifier list) (allNets: Map<NetIdentifier, EvalNet>) =
+        //TODO: Generate errors when bus sizes don't match
+        //Expressions can only have single output, change TLogic type
+        let outputBusSize  = 
+            let outputNetID = List.head outLst
+            match outputNetID.SliceIndices with
+            |Some (x, Some y) ->  (abs (x - y)) + 1
+            |Some (_, None) -> 1
+            |None -> getBusSize (getNetByName outputNetID.Name allNets)
+
+        let reduceInpLstWithOp busOperator initValue =
+            let startNet = createNewBusMap (0, outputBusSize - 1) (Some initValue)
+            List.fold (fun result (inpNetID: NetIdentifier) ->
+                let inpNet = allNets.[getNetByName inpNetID.Name allNets]                 
+                busOperator (EvalBus result, 0) (inpNet, getStartIndex inpNetID)) startNet inpLst
+
+        let resultNet = 
+            match op with
+            |And -> reduceInpLstWithOp ANDOpNet High
+            |Or -> reduceInpLstWithOp OROpNet Low
+            |Not ->
+                let inpNetID = List.head inpLst //not operations should only have 1 input
+                NOTOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID) outputBusSize
+            |Pass -> 
+                let inpNetID = List.head inpLst
+                PassOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID) outputBusSize
+            |Concat -> ConcatOpNet inpLst allNets
+
+        let outputID = List.head outLst
+        let outputNetKey = getNetByName outputID.Name allNets
+        let outputEvalNet = allNets.[outputNetKey]
+        let updatedOutputEvalNet = 
+            match outputID.SliceIndices with 
+            |Some (x, Some y) -> updateBus (extractLLMap outputEvalNet) (Some(min x y, max x y)) (LLOptMapToLLList resultNet)
+            |Some (x, None) -> Map.add x resultNet.[0] (extractLLMap outputEvalNet)
+            |None -> updateBus (extractLLMap outputEvalNet) None (LLOptMapToLLList resultNet)
+
+        outputNetKey, updatedOutputEvalNet 
+
+    let applyEvaluatableExpr (currAllNets: Map<NetIdentifier,EvalNet>, concatOutputExprs) expr =
+        let updateKey, newEvalNet = evaluateExpr expr currAllNets
+
+        //Output Concatenation Handling
+        let revConcatExprLst =
+            List.filter (fun (op, outLst:NetIdentifier list, _) -> 
+                let exprOutputID = List.head outLst
+                op = Concat && exprOutputID.Name = updateKey.Name) exprsToEvaluate
         
-        Map.map (fun netID net ->
-            match Map.tryFind netID inputMap with
-            |Some inputNet -> 
-                if doNetTypesMatch inputNet net 
-                then netToEvalNet inputNet
-                else failTypeMismatch net inputNet
-            |None -> net ) evalNetMap
+        let concatenationsCompleteAllNets = List.fold (fun newAllNets (_, _, inpLst) -> reverseConcat newEvalNet inpLst newAllNets) currAllNets revConcatExprLst
 
-
-let rec evaluateExprLst (exprToEvaluate: Expression list) (evaluatedNets: NetIdentifier list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
-    if List.isEmpty exprToEvaluate
-    then evalNetMap
-    else 
+        let updatedEvalNet = 
+            match currAllNets.[updateKey] with
+            |EvalBus _ -> EvalBus newEvalNet
+            |EvalWire _ -> EvalWire newEvalNet   
         
-        let canEvalExpression (exprInputs: NetIdentifier list) = 
-            (true, exprInputs) ||> List.fold (fun expressionEvaluatable inp ->
-            if not expressionEvaluatable
-            then false
-            else 
-                match List.tryFind (fun (evaluatedNetID: NetIdentifier) -> evaluatedNetID.Name = inp.Name) evaluatedNets with
-                |Some _ -> true
-                |None -> false)
+        Map.add updateKey updatedEvalNet concatenationsCompleteAllNets, List.append concatOutputExprs revConcatExprLst
 
-        let evaluatableExpressions = List.filter (fun (_, _, inpLst) -> canEvalExpression inpLst) exprToEvaluate
-        let evaluateExpr (op: Operator , outLst: NetIdentifier list , inpLst: NetIdentifier list) =
+    if List.isEmpty exprsToEvaluate
+    then allNets
+    else
+        if List.isEmpty (getEvaluatableExpressions ())
+        then failwithf "No evaluatable expressions exprToEvaluate: %A \n  allNets: %A" exprsToEvaluate   allNets
+        else           
+            let updatedAllNets, additionalExprsEvaluated = List.fold applyEvaluatableExpr  (allNets, []) (getEvaluatableExpressions ())
+            let updatedExprsToEvaluate = List.filter (fun expr -> not (List.contains expr ((getEvaluatableExpressions ()) @ additionalExprsEvaluated))) exprsToEvaluate            
+            evaluateExprLst updatedExprsToEvaluate updatedAllNets
 
-            //TODO: Generate errors when bus sizes don't match
-            //Expressions can only have single output, change TLogic type
-            let outputBusSize  = 
-                let outputNetID = List.head outLst
-                match outputNetID.SliceIndices with
-                |Some (x, Some y) ->  (abs (x - y)) + 1
-                |Some (_, None) -> 1
-                |None -> getBusSize (getNetByName outputNetID.Name evalNetMap)
-
-            let reduceInpLstWithOp busOperator initValue =
-                let startNet = createNewBusMap (0, outputBusSize - 1) (Some initValue)
-                List.fold (fun result (inpNetID: NetIdentifier) ->
-                    let inpNet = evalNetMap.[getNetByName inpNetID.Name evalNetMap]                 
-                    busOperator (EvalBus result, 0) (inpNet, getStartIndex inpNetID)) startNet inpLst
-
-
-            let resultNet = 
-                match op with
-                |And -> reduceInpLstWithOp ANDOpNet High
-                |Or -> reduceInpLstWithOp OROpNet Low
-                |Not ->
-                    let inpNetID = List.head inpLst //not operations should only have 1 input
-                    NOTOpNet evalNetMap.[getNetByName inpNetID.Name evalNetMap] (getStartIndex inpNetID) outputBusSize
-                |Pass -> 
-                    let inpNetID = List.head inpLst
-                    PassOpNet evalNetMap.[getNetByName inpNetID.Name evalNetMap] (getStartIndex inpNetID) outputBusSize
-                |Concat -> concatOp evalNetMap inpLst
-                
-            //TODO: Concat Operator
-
-            let outputID = List.head outLst
-            let outputNetKey = getNetByName outputID.Name evalNetMap
-            let outputEvalNet = evalNetMap.[outputNetKey]
-            let updatedOutputEvalNet = 
-                match outputNetKey.SliceIndices with 
-                |Some (x, Some y) ->
-                    resultNet
-                    |> Map.toList
-                    |> List.sortBy fst
-                    |> List.map (snd >> extractLogicLevel)
-                    |> updateBus (extractLLMap outputEvalNet) (Some(min x y, max x y))
-                |Some (x, None) -> Map.add x resultNet.[0] (extractLLMap outputEvalNet)
-                |None -> updateWire (extractLLMap outputEvalNet) (extractLogicLevel resultNet.[0])
-
-            outputNetKey, updatedOutputEvalNet 
-
-        let updatedEvalNetMap = 
-            List.fold (fun (currNetMap: Map<NetIdentifier,EvalNet>) expr ->
-                let updateKey, newEvalNet = evaluateExpr expr
-                let updatedEvalNet = 
-                    match currNetMap.[updateKey] with
-                    |EvalBus _ -> EvalBus newEvalNet
-                    |EvalWire _ -> EvalWire newEvalNet        
-                Map.add updateKey updatedEvalNet currNetMap) evalNetMap evaluatableExpressions
-
-        let updatedExprToEvaluate = List.filter (fun expr -> not (List.contains expr evaluatableExpressions)) exprToEvaluate
-        let updatedEvaluatedNets = 
-            Map.fold (fun evaluatedNetLst netID evalNet ->
-                if isNetEvaluated evalNet
-                then List.append evaluatedNets [netID]
-                else evaluatedNetLst) [] updatedEvalNetMap
-        
-        evaluateExprLst updatedExprToEvaluate updatedEvaluatedNets updatedEvalNetMap
-
-let formOutputNets (moduleOutputs: NetIdentifier list) (evalNetMap: Map<NetIdentifier, EvalNet>) =
-    let outputEvalNets = 
-        List.fold (fun outputNetMap outputID ->
-            Map.add outputID evalNetMap.[outputID] outputNetMap) (Map []) moduleOutputs
+let formOutputNets (moduleOutputs: NetIdentifier list) (oldOutputs: Map<NetIdentifier, Net>) ( allNets: Map<NetIdentifier, EvalNet>) =
+    let outputEvalNets = List.fold (fun outputNetMap outputID -> Map.add outputID  allNets.[outputID] outputNetMap) (Map []) moduleOutputs
     
-    Map.fold (fun outputNetMap netID evalNet -> Map.add netID (evalNetToNet evalNet) outputNetMap) (Map []) outputEvalNets
+    Map.fold (fun outputNetMap netID evalNet -> Map.add netID (evalNetToNet evalNet oldOutputs.[netID]) outputNetMap) (Map []) outputEvalNets
 
 //top level function
-let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, Net>) : Map<NetIdentifier, Net> =
+let evaluateModuleWithInputs (combModule: TLogic) (inputMap: Map<NetIdentifier, Net>) (currOutputMap: Map<NetIdentifier, Net>): Map<NetIdentifier, Net> =
     formEvalNets combModule
-    |> assignInputValues inputMap
-    |> evaluateExprLst combModule.ExpressionList combModule.Inputs
-    |> formOutputNets combModule.Outputs
+    |> assignInputValues inputMap combModule.Inputs
+    |> evaluateExprLst combModule.ExpressionList
+    |> formOutputNets combModule.Outputs currOutputMap

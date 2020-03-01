@@ -2,6 +2,10 @@ module EvalNetHelper
 open SharedTypes
 open EvalTypes
 
+let getNetEdgeIndices net =
+    let wireIndices = net |> Map.toList |> List.map fst
+    (List.min wireIndices, List.max wireIndices)
+
 let extractLogicLevel logicLvlOpt = 
      match logicLvlOpt with
         |Some logicLvl -> logicLvl
@@ -30,22 +34,12 @@ let padLogicLvlListToLength fullLength logicLvlLst =
         |> List.append logicLvlLst
 
 
-let getBusEdgeIndices netMap = 
-    let wireIndices = 
-            Map.toList netMap
-            |> List.map (fst)   
-    (List.min wireIndices, List.max wireIndices)
-
 //caller can supply None for slice indicies to update whole bus
 let updateBus bus sliceIndices newLogicLevels = 
     let (a,b) = 
         match sliceIndices with
         |Some (x,y) -> (x,y)
-        |None -> 
-            let wireIndices = 
-                Map.toList bus
-                |> List.map (fst)
-            (List.min wireIndices, List.max wireIndices)
+        |None -> getNetEdgeIndices bus
 
     if abs(b - a + 1) <> (List.length newLogicLevels) || not (Map.containsKey b bus) || not (Map.containsKey a bus)
     then failwith "Cannot update bus, error in given bus slice"
@@ -56,8 +50,6 @@ let updateBus bus sliceIndices newLogicLevels =
             then Some newLogicLevels.[key - a]
             else oldVal
             )
-
-let updateWire wire newLogicLevel = Map.add 0 (Some newLogicLevel) wire
 
 let rec intToLogicLevelList uint logicLvlLst =
     if uint = 0
@@ -75,15 +67,33 @@ let logicLevelsToint logicLvlLst =
     List.mapi getDecimalValue logicLvlLst
     |> List.reduce (+)
 
-let isNetEvaluated evalNet = 
+let LLOptMapToLLList logicLvlOptMap =
+    logicLvlOptMap
+    |> Map.toList
+    |> List.sortBy fst
+    |> List.map (snd >> extractLogicLevel)
+
+let getSliceAsLst (net:EvalNet) (a,b) =
+    extractLLMap net
+    |> Map.filter (fun index _ -> index >= a && index <= b)
+    |> LLOptMapToLLList
+
+let isNetEvaluatedAtIndices evalNet sliceIndices = 
     let LLMap = extractLLMap evalNet
+
+    let slicedLLMap =
+        match sliceIndices with
+        |Some (x, Some y) -> Map.filter (fun key _ -> key >= (min x y) && key <= (max x y)) LLMap
+        |Some (x, None) -> Map.filter (fun key _ -> key = x) LLMap
+        |None -> LLMap
+       
     Map.fold (fun netEvaluated _ logicLevelOpt ->
         if not netEvaluated
         then false
         else
             match logicLevelOpt with
             |Some logicLvl -> true
-            |None -> false) true LLMap
+            |None -> false) true slicedLLMap
 
 let getBusSize netID = 
     match netID.SliceIndices with
@@ -97,10 +107,16 @@ let getStartIndex (netID: NetIdentifier) =
     |Some (x, None) -> x
     |None -> 0
 
-let evalNetToNet evalNet = 
+let evalNetToNet evalNet (defaults:Net) = 
+
+    let defaultMapping =
+        match defaults with
+        |Bus x
+        |Wire x -> x
+
     let noOptLLMap = 
         extractLLMap evalNet
-        |> Map.map (fun _ logicLvlOpt  -> extractLogicLevel logicLvlOpt)
+        |> Map.map (fun i logicLvlOpt  -> Option.defaultValue defaultMapping.[i] logicLvlOpt)
 
     match evalNet with
     |EvalWire _ -> Wire noOptLLMap
@@ -113,23 +129,8 @@ let netToEvalNet net =
     |Wire wireMap -> EvalWire (LLMapToOptLLMap wireMap)
     |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
 
-let getNetSliceAsList sliceIndicesOpt evalNet =
-    let LLMap = extractLLMap evalNet
 
-    let (a,b) = 
-        match sliceIndicesOpt with
-        |Some (x, y) -> x,y
-        |None -> getBusEdgeIndices LLMap
-
-    LLMap
-    |> Map.filter (fun index _ -> index >= a && index <= b)
-    |> Map.map (fun _ logicLevelOpt -> extractLogicLevel logicLevelOpt)
-    |> Map.toList
-    |> List.sortBy fst 
-    |> List.map snd
-
-
-let getNetByName name evalNetMap  = 
-    match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) evalNetMap with
-    |Some key -> key
-    |None -> failwithf "Could not find net with name %s in netmap %A" name evalNetMap
+let getNetByName name allNets = 
+        match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) allNets with
+        |Some key -> key
+        |None -> failwithf "Could not find net with name %s in netmap %A" name allNets
