@@ -51,8 +51,6 @@ let updateBus bus sliceIndices newLogicLevels =
             else oldVal
             )
 
-let updateWire wire newLogicLevel = Map.add 0 (Some newLogicLevel) wire
-
 let rec intToLogicLevelList uint logicLvlLst =
     if uint = 0
     then logicLvlLst
