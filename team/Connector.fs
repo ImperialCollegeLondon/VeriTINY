@@ -4,11 +4,7 @@ open System
 open SharedTypes
 open Helper
 
-
-/// Placeholder Megqblocks
-
-
-/// 3-tuple helper functions
+// tuple helper function
 let first (a, _, _) = a
 let second (_, b, _) = b
 let third (_, _, c) = c
@@ -21,64 +17,65 @@ let searchBlocks name (block:TLogic)=
     | _ -> 
         false
 
+// extract name from GeneralNet
 let getName (gNet: GeneralNet) =
-    gNet |> snd |> fst
+    gNet 
+    |> snd 
+    |> fst
 
-let getNetfromName (name:string) (netList:GeneralNet list)=
-    let getNamefromNet refName (genNet:GeneralNet) =
-        let name = fst (snd genNet)
+// get Net from netList
+let getGNet (name:string) (gLst:GeneralNet list): GeneralNet=
+    let checkNetName refName (gNet:GeneralNet) =
+        let name = getName gNet
         match name with
             |name when name = refName -> 
                 true
             |_ -> 
                 false
-    List.find (getNamefromNet name) (netList)
+    List.find (checkNetName name) gLst
 
 
+// /// net type helper funcitons
+// let netLen genNet =
+//     match  snd (snd genNet) with
+//     | Wire netMap
+//     | Bus netMap ->
+//     netMap |> Map.toList |> List.map fst |> List.length
 
-
-/// net type helper funcitons
-let netLen genNet =
-    match  snd (snd genNet) with
-    | Wire netMap
-    | Bus netMap ->
-    netMap |> Map.toList |> List.map fst |> List.length
-
-let makeMap (size:int) : Map<int,LogicLevel>=
-    match size with
-    | 0 -> Map [0,Low]
-    | size -> 
-        createNewMap size
 
 
  //only works for unclocked nets
  // previously genConnections
-let addTLogic (name:string) (tLogLst:TLogic list): Connection=
-    let mBlock = (List.filter (searchBlocks name) tLogLst).Head
+let addTLogic (str:string) (tLogLst:TLogic list): Connection=
+    let mBlock = (List.filter (searchBlocks str) tLogLst).Head
 
     let interpretNetId netId =
         match netId.SliceIndices with 
         |Some (0, _)-> 
-            Bus (Map [0,Low])
-        |Some (int1, Some int2) -> 
-            Bus (makeMap(int1-int2))
+            Map [0,Low]
+            |> Bus    
+        |Some (num2, Some num1) -> 
+            num2 - num1
+            |> createNewMap 
+            |> Bus
         |None -> 
-            Wire (Map [0,Low])
+            Map [0,Low]
+            |> Wire 
         | _ -> 
             printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough \n"
-            Wire (Map [0,Low])
+            Map [0,Low]
+            |> Wire 
 
     let createGenNets (netIdLst :NetIdentifier list): GeneralNet list=
-        List.map (fun (x:NetIdentifier) ->false, (x.Name,interpretNetId x )) netIdLst
+        List.map (fun (x:NetIdentifier) -> false, (x.Name,interpretNetId x)) netIdLst
 
-    Name name, createGenNets mBlock.Inputs, createGenNets mBlock.Outputs
-
+    Name str, createGenNets mBlock.Inputs, createGenNets mBlock.Outputs
 
 
 
 let addDFF (size:int): Connection =
     let net = createNewMap size |> Bus
-    Name "DFF", [false, ("a", net )], [true,("out", net)]
+    Name "DFF", [false, ("a", net)], [true,("out", net)]
 
 
 // let rec addMegaBlock (tLogLst: TLogic list)=
@@ -100,7 +97,7 @@ let addDFF (size:int): Connection =
 //             addMegaBlock tLogLst
 
 
-
+// gives nets unique names in Connection list
 let rec refactor (cLst: Connection list) =
     
     let renameGNet (gNet: GeneralNet) =
@@ -114,7 +111,7 @@ let rec refactor (cLst: Connection list) =
 
     match cLst.Head with
     | conn when (cLst.Tail).Length = 0 -> 
-        [ first conn,
+        [first conn,
             List.map renameGNet (second conn),
             List.map renameGNet (third conn)]
     | conn -> 
@@ -125,8 +122,13 @@ let rec refactor (cLst: Connection list) =
 
 
 let checkValidConnection inName outName (cLst:Connection list) : bool=
-    let inNet = getNetfromName inName (List.collect second cLst)
-    let outNet = getNetfromName outName (List.collect third cLst)
+    let inNet = getGNet inName (List.collect second cLst)
+    let outNet = getGNet outName (List.collect third cLst)
+
+    let netLen (gNet: GeneralNet) =
+        gNet
+        |> extractNet
+        |> netSize
 
     match inNet,outNet with
     | a,b when (netLen a <> netLen b) -> 
@@ -140,7 +142,7 @@ let checkValidConnection inName outName (cLst:Connection list) : bool=
         true
 
 
-let rec makeLinks (cLst: Connection list) =
+let rec makeLinks (cLst: Connection list) : (string * string * GeneralNet) list=
 
     let searchGNetLst str (gLst: GeneralNet list) =
         List.contains str (List.map getName gLst)
@@ -162,15 +164,21 @@ let rec makeLinks (cLst: Connection list) =
                 printf "NANI!? could not find output node: %A\n" outName    
                 makeLinks cLst
             | outName when (checkValidConnection inName outName cLst) ->
-                (inName, outName,((fst (getNetfromName inName (List.collect (second) cLst))) || (fst (getNetfromName outName (List.collect (third) cLst))), (snd (getNetfromName inName (List.collect (second) cLst))))) :: makeLinks cLst
+                let gLstIn = List.collect second cLst
+                let gLstOut = List.collect third cLst
+
+                let sync = fst (getGNet inName gLstIn) || fst (getGNet outName gLstOut)
+                let net = getGNet inName gLstIn |> snd
+
+                (inName, outName, (sync, net)) :: makeLinks cLst
             | _ -> makeLinks cLst
     | str -> 
         printf "NANI!? input node: %A was not found \n" str
         makeLinks cLst
 
 
-let finaliseConnections (cLst: Connection list) =
-    printf"Current list %A\n" cLst
+let finaliseConnections (cLst: Connection list): Connection list =
+    printf "Current list %A\n" cLst
     let links = makeLinks cLst
     printf "links: %A\n" links
 
@@ -195,7 +203,7 @@ let finaliseConnections (cLst: Connection list) =
 
         List.map returnNewGNet gLst
 
-    let updateConnection (conn: Connection) =
+    let updateConnection (conn: Connection): Connection =
         let gLstIn = second conn
         let gLstOut = third conn
         first conn, updateNets gLstIn links, updateNets gLstOut links
