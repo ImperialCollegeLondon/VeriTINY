@@ -13,11 +13,10 @@
     <Compile Include="LogicOperations.fs" />
     <Compile Include="LogicBlockGen.fs" />
     <Compile Include="CombEval.fs" />
-    <Compile Include="Blocks.fs" />
+    <Compile Include="Helper.fs" />
     <Compile Include="Connector.fs" />
     <Compile Include="ConnectionTools.fs" />
     <Compile Include="SimulationTypes.fs" />
-    <Compile Include="Helper.fs" />
     <Compile Include="SynchronousBlocks.fs" />
     <Compile Include="Simulator.fs" />
     <Compile Include="Program.fs" />

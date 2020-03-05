@@ -2,10 +2,11 @@ module Connector
 
 open System
 open SharedTypes
+open Helper
 
 
 /// Placeholder Megqblocks
-open Blocks
+
 
 /// 3-tuple helper functions
 let first (a, _, _) = a
@@ -24,6 +25,7 @@ let searchInNets str (conn:Connection)=
 let searchOutNets str (conn:Connection)=
     List.contains (str) (List.map (fun x->(fst(snd x))) (third conn))
 
+
 /// net type helper funcitons
 let netLen genNet =
     match  snd (snd genNet) with
@@ -36,19 +38,26 @@ let makeBusBits int=
     |0 -> Map [0,Low]
     |int -> (List.map (fun x-> (x,Low))[0..int])|>Map.ofList
 
-let interpretNetId netId =
-    match netId.SliceIndices with 
-    |Some (0,_)-> Bus (Map [0,Low])
-    |Some (int1,Some int2) -> Bus (makeBusBits (int1-int2))
-    |None -> Wire (Map [0,Low])
-    |_->printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough \n"
-        Wire (Map [0,Low])
 
-let rec genGenNets (blist:NetIdentifier list)=
-    List.map (fun (x:NetIdentifier) ->false, (x.Name,interpretNetId x )) blist  //only works for unclocked nets
 
-let genConnections name blist=
-    let mBlock = (List.filter (searchBlocks name) blist).Head
+ //only works for unclocked nets
+let addTLogic (name:string) (tLogLst:TLogic list)=
+    let mBlock = (List.filter (searchBlocks name) tLogLst).Head
+
+    let interpretNetId netId =
+        match netId.SliceIndices with 
+        |Some (0,_)-> 
+            Bus (Map [0,Low])
+        |Some (int1,Some int2) -> 
+            Bus (makeBusBits (int1-int2))
+        |None -> 
+            Wire (Map [0,Low])
+        |_->printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough \n"
+            Wire (Map [0,Low])
+
+    let genGenNets (netIdLst :NetIdentifier list)=
+        List.map (fun (x:NetIdentifier) ->false, (x.Name,interpretNetId x )) netIdLst
+
     (Name name,genGenNets mBlock.Inputs,genGenNets mBlock.Outputs)
 
 let getNamefromNet refName (genNet:GeneralNet) =
@@ -60,21 +69,30 @@ let getNamefromNet refName (genNet:GeneralNet) =
 let getNetfromName (name:string) (netList:GeneralNet list)=
     List.find (getNamefromNet name) (netList)
 
+
+let addDFF (size:int) =
+    let net = createNewMap size |> Bus
+    Name "DFF", [false, ("a", net )], [true,("out", net)]
+
+
 /// main functions
-let rec addMegaBlock ()=
-    match Console.ReadLine() with
-    |"end" ->[]
-    |"DFF" -> printf "specify DFF size \n"
-              match Int32.TryParse(Console.ReadLine()) with
-                  |(true,int)->((Name "DFF"),
-                                            [(false,("a",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))],
-                                            [(true,("out",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))])::(addMegaBlock())
-                  |_->printf "input invalid,number required \n"
-                      addMegaBlock()
-    |str when List.exists (searchBlocks str) avaliableTBlocks ->printf "New Megablock added \n"
-                                                                (genConnections str avaliableTBlocks)::(addMegaBlock () )
-    |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s \n" str
-            addMegaBlock ()
+// let rec addMegaBlock (acc: Connection List) (tBlockLst: TLogic list) =
+//     match Console.ReadLine() with
+//     |"end" ->[]
+//     |"DFF" -> printf "specify DFF size \n"
+//               match Int32.TryParse(Console.ReadLine()) with
+
+//                   |(true,size) ->
+//                     acc @ [addDFF size]
+//                   |_->printf "input invalid,number required \n"
+//                       addMegaBlock tBlockLst
+//     |str when List.exists (searchBlocks str) tBlockLst ->
+//         printf "New Megablock added \n"
+//         (genConnections str tBlockLst)::(addMegaBlock tBlockLst )
+//     |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s \n" str
+//             addMegaBlock tBlockLst
+
+
 
 let rec refactor (blist: Connection list) =
     match blist.Head with
@@ -128,8 +146,8 @@ let finaliseConnections conlist =
     List.map (fun x -> (first x,updateNets (second x) links,updateNets (third x) links)) conlist
     
 // outward functions
-let UserIn() =
-    addMegaBlock ()
-    |> List.sort
-    |> refactor
-    |> finaliseConnections 
+// let UserIn() =
+//     addMegaBlock ()
+//     |> List.sort
+//     |> refactor
+//     |> finaliseConnections 
