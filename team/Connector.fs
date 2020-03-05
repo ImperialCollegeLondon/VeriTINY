@@ -122,15 +122,15 @@ let rec refactor (cLst: Connection list) =
 
 
 let checkValidConnection inName outName (cLst:Connection list) : bool=
-    let inNet = getGNet inName (List.collect second cLst)
-    let outNet = getGNet outName (List.collect third cLst)
+    let inGNet = getGNet inName (List.collect second cLst)
+    let outGNet = getGNet outName (List.collect third cLst)
 
     let netLen (gNet: GeneralNet) =
         gNet
         |> extractNet
         |> netSize
 
-    match inNet,outNet with
+    match inGNet,outGNet with
     | a,b when (netLen a <> netLen b) -> 
         printf "nets cannot be connected as they are of differnet sizes\n"
         false
