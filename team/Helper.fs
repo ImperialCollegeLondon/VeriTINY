@@ -13,9 +13,9 @@ let rec lstOpParallel acc f lstA lstB =
 
 // initialized to low
 let createNewMap len = 
-        [0..len-1]
-        |> List.map (fun x -> (x, Low)) 
-        |> Map
+    [0..len-1]
+    |> List.map (fun x -> (x, Low)) 
+    |> Map
 
 let generateList n = [0..n-1]
 

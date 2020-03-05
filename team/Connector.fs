@@ -33,11 +33,11 @@ let netLen genNet =
     | Bus netMap ->
     netMap |> Map.toList |> List.map fst |> List.length
 
-let makeBusBits int=
-    match int with
-    |0 -> Map [0,Low]
-    |int -> (List.map (fun x-> (x,Low))[0..int])|>Map.ofList
-
+let makeMap (size:int) : Map<int,LogicLevel>=
+    match size with
+    | 0 -> Map [0,Low]
+    | size -> 
+        createNewMap size
 
 
  //only works for unclocked nets
@@ -46,13 +46,14 @@ let addTLogic (name:string) (tLogLst:TLogic list)=
 
     let interpretNetId netId =
         match netId.SliceIndices with 
-        |Some (0,_)-> 
+        |Some (0, _)-> 
             Bus (Map [0,Low])
-        |Some (int1,Some int2) -> 
-            Bus (makeBusBits (int1-int2))
+        |Some (int1, Some int2) -> 
+            Bus (makeMap(int1-int2))
         |None -> 
             Wire (Map [0,Low])
-        |_->printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough \n"
+        | _ -> 
+            printfn "NANI!? netId could not be interpreted either because Mark is stupid or Tuck didn't describe it well enough \n"
             Wire (Map [0,Low])
 
     let genGenNets (netIdLst :NetIdentifier list)=
