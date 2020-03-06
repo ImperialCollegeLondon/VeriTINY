@@ -45,7 +45,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
-12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}"
+12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
 
 13. \<number> ::= //any sequence of 0..9 
 
