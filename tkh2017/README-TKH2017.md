@@ -27,7 +27,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 2. \<module_name> ::= \<identifier>
   
-3. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> 
+3. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> | \<continuous_assign>
 
 4. \<input_declaration> ::= "input" \<variable_list> ";" | "input" \<range> \<variable_list> ";"
 
@@ -45,7 +45,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
-12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
+12. \<terminal> ::= \<expression>
 
 13. \<number> ::= //any sequence of 0..9 
 
@@ -54,6 +54,20 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 15. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
 
 16. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
+
+17. \<continuous_assign> ::= "assign" \<assignment_list>
+
+18. \<assignment_list> ::= \<assignment> | \<assignment> "," \<assignment_list>
+
+19. \<assignment> ::= \<expression> 
+
+20. \<primary> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
+
+21. \<binary_operator> ::= "&" | "|" 
+
+22. \<unary_operator> ::= "~" 
+
+23. \<expression> ::= \<primary> | \<unary_operator> \<primary> | \<expression> \<binary_operator> 
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 
