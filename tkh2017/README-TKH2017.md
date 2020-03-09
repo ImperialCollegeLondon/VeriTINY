@@ -59,11 +59,11 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 18. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
 
-19. \<binary_operator> ::= "&" | "|" 
+19. \<not_exp> ::= \<terminal> | "~" \<not_exp>
 
-20. \<unary_operator> ::= "~" 
+20. \<and_exp> ::= \<not_exp> | \<not_exp> "&" \<and_exp>
 
-21. \<expression> ::= \<terminal> | \<unary_operator> \<terminal> | \<expression> \<binary_operator> \<expression>
+21. \<or_exp> ::= \<and_exp> | \<and_exp> "|" \<or_exp>
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 
