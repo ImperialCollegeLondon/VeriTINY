@@ -53,7 +53,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 15. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
 
-16. \<continuous_assign> ::= "assign" \<terminal> "=" \<assignment>
+16. \<continuous_assign> ::= "assign" \<terminal> "=" \<assignment> ";"
 
 17. \<assignment> ::= \<expression> 
 
