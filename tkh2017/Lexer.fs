@@ -22,6 +22,9 @@ type Token = | Module
              | AndTok 
              | OrTok 
              | NotTok 
+             | AndOpTok
+             | OrOpTok
+             | NotOpTok
              | AssignTok
              | EndModule  
 
@@ -84,7 +87,8 @@ let lexAndImplode inpstring =
 
 let tokenMap = Map ["module", Module; "(", OpRoundBracket; ")", ClRoundBracket; "[", OpSqBracket; "]", ClSqBracket; 
                     "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", AndTok; "or", OrTok; "not", NotTok;
-                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire; "assign", AssignTok; "=", Equals]
+                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire; "assign", AssignTok; "=", Equals;
+                    "&", AndOpTok; "|", OrOpTok; "~", NotOpTok]
 
 let (|SingleValTok|_|) inpstring =
     Map.tryFind inpstring tokenMap

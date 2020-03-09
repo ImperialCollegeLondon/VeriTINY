@@ -4,7 +4,10 @@ open Lexer
 //TODO: Error messages
 
 type GateType = AND | OR | NOT
+type BinOpType = ANDOP | OROP
+type UnOpType = NOTOP 
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
+type ExpressionType = TERMEXP of TerminalType | UNEXP of UnOpType * TerminalType | BINEXP of ExpressionType * BinOpType * ExpressionType
 type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
@@ -13,6 +16,7 @@ type ModuleItemType =
     | WIRE of string list 
     | WIREBus of int * int * string list
     | GATEINST of GateType * string * TerminalType list
+    | ASSIGN of TerminalType * ExpressionType
 type ModuleType = MODULE of string * string list * ModuleItemType list
 
 /// Match single value token
@@ -68,6 +72,37 @@ and (|LISTTERMINAL|_|) tokList =
     | TERMINAL (Some parsed, Ok tokList') -> Some (Some [parsed], Ok tokList')
     | _ -> None 
 
+let rec (|EXPRESSION|_|) tokList = 
+    let convertToUnOpType token = 
+        match token with 
+        | NotOpTok -> NOTOP
+        | _ -> failwithf "What?"
+    
+    let convertToBinOpType token =
+        match token with 
+        | AndOpTok -> ANDOP
+        | OrOpTok -> OROP
+        | _ -> failwithf "What?"
+
+    match tokList with
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | TERMINAL (Some term, Ok tokList') -> 
+        Some (Some (TERMEXP term), Ok tokList')
+    | MATCHMULT [NotOpTok] (Some unop, TERMINAL (Some term, Ok tokList')) -> 
+        Some (Some (UNEXP (convertToUnOpType unop, term)), Ok tokList')
+    | EXPRESSION (Some exp1, MATCHMULT [AndOpTok; OrOpTok] (Some binop, EXPRESSION (Some exp2, Ok tokList'))) -> 
+        Some (Some (BINEXP (exp1, convertToBinOpType binop, exp2)), Ok tokList')
+    | _ -> None
+
+let (|CONTASSIGN|_|) tokList : (ModuleItemType option * Result<Token list, Token list>) option = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | MATCHSINGLE AssignTok (TERMINAL (Some term, MATCHSINGLE Equals (EXPRESSION (Some exp, Ok tokList')))) -> 
+        Some (Some (ASSIGN (term, exp)), Ok tokList')
+    | _ -> None
+
 let (|GATEINSTANCE|_|) tokList = 
     match tokList with 
     | Error tokList' ->
@@ -89,7 +124,7 @@ let (|GATEINSTANTIATION|_|) tokList =
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
-    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid,termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
+    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid, termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (GATEINST (convertToGateType gatetype, gateid, termlist)), Ok tokList')
     | _ -> None
 
@@ -153,6 +188,8 @@ let (|MODULEITEM|_|) tokList =
         Some (Some net, Ok tokList')
     | GATEINSTANTIATION (Some gateinst, Ok tokList') -> 
         Some (Some gateinst, Ok tokList')
+    | CONTASSIGN (Some assignexp, Ok tokList') -> 
+        Some (Some assignexp, Ok tokList')
     | _ -> None
                
 let rec (|LISTMODITEM|_|) tokList = 
