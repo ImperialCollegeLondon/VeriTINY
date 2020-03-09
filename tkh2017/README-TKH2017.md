@@ -59,7 +59,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 18. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
 
-19. \<not_exp> ::= \<terminal> | "~" \<not_exp>
+19. \<not_exp> ::= "~" \<terminal> //double negation and above not allowed
 
 20. \<and_exp> ::= \<not_exp> | \<not_exp> "&" \<and_exp>
 
