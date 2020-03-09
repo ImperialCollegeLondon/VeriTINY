@@ -45,7 +45,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
-12. \<terminal> ::= \<expression>
+12. \<terminal> ::= \<primary>
 
 13. \<number> ::= //any sequence of 0..9 
 
@@ -55,9 +55,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 16. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
 
-17. \<continuous_assign> ::= "assign" \<assignment_list>
-
-18. \<assignment_list> ::= \<assignment> | \<assignment> "," \<assignment_list>
+17. \<continuous_assign> ::= "assign" \<primary> "=" \<assignment>
 
 19. \<assignment> ::= \<expression> 
 
@@ -67,7 +65,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 22. \<unary_operator> ::= "~" 
 
-23. \<expression> ::= \<primary> | \<unary_operator> \<primary> | \<expression> \<binary_operator> 
+23. \<expression> ::= \<primary> | \<unary_operator> \<primary> | \<expression> \<binary_operator> \<expression>
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 
