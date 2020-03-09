@@ -55,7 +55,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 16. \<continuous_assign> ::= "assign" \<terminal> "=" \<assignment> ";"
 
-17. \<assignment> ::= \<expression> 
+17. \<assignment> ::= \<or_exp> 
 
 18. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
 
