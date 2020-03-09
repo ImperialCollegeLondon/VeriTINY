@@ -5,7 +5,27 @@ open NGrams
 
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
-type Token = | Module | Identifier of string | Number of int | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | AndTok | OrTok | NotTok | EndModule  
+type Token = | Module 
+             | Identifier of string 
+             | Number of int 
+             | Semicolon 
+             | Colon 
+             | Comma 
+             | OpRoundBracket
+             | ClRoundBracket 
+             | Output 
+             | Input 
+             | OpBrace 
+             | ClBrace 
+             | Equals
+             | Wire 
+             | OpSqBracket 
+             | ClSqBracket 
+             | AndTok 
+             | OrTok 
+             | NotTok 
+             | AssignTok
+             | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) =
     let takeIfInChars chars (acc,lst) isOpt = 
@@ -66,7 +86,7 @@ let lexAndImplode inpstring =
 
 let tokenMap = Map ["module", Module; "(", OpRoundBracket; ")", ClRoundBracket; "[", OpSqBracket; "]", ClSqBracket; 
                     "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", AndTok; "or", OrTok; "not", NotTok;
-                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire]
+                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire; "assign", AssignTok; "=", Equals]
 
 let (|SingleValTok|_|) inpstring =
     Map.tryFind inpstring tokenMap
