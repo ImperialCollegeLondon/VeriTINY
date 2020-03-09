@@ -4,10 +4,8 @@ open Lexer
 //TODO: Error messages
 
 type GateType = AND | OR | NOT
-type BinOpType = ANDOP | OROP
-type UnOpType = NOTOP 
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
-type ExpressionType = TERMEXP of TerminalType | UNEXP of UnOpType * TerminalType | BINEXP of ExpressionType * BinOpType * ExpressionType
+type ExpressionType = OREXP of ExpressionType * ExpressionType | ANDEXP of ExpressionType * ExpressionType | NOTEXP of ExpressionType | TERMEXP of TerminalType
 type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
@@ -72,34 +70,41 @@ and (|LISTTERMINAL|_|) tokList =
     | TERMINAL (Some parsed, Ok tokList') -> Some (Some [parsed], Ok tokList')
     | _ -> None 
 
-let rec (|EXPRESSION|_|) tokList = 
-    let convertToUnOpType token = 
-        match token with 
-        | NotOpTok -> NOTOP
-        | _ -> failwithf "What?"
-    
-    let convertToBinOpType token =
-        match token with 
-        | AndOpTok -> ANDOP
-        | OrOpTok -> OROP
-        | _ -> failwithf "What?"
-
+let rec (|NOTEXPRESSION|_|) tokList = 
     match tokList with
     | Error tokList' -> 
         Some (None, Error tokList')
-    | TERMINAL (Some term, Ok tokList') -> 
-        Some (Some (TERMEXP term), Ok tokList')
-    | MATCHMULT [NotOpTok] (Some unop, TERMINAL (Some term, Ok tokList')) -> 
-        Some (Some (UNEXP (convertToUnOpType unop, term)), Ok tokList')
-    | EXPRESSION (Some exp1, MATCHMULT [AndOpTok; OrOpTok] (Some binop, EXPRESSION (Some exp2, Ok tokList'))) -> 
-        Some (Some (BINEXP (exp1, convertToBinOpType binop, exp2)), Ok tokList')
+    | TERMINAL (Some termexp, Ok tokList') -> 
+        Some (Some (TERMEXP termexp), Ok tokList')
+    | MATCHSINGLE NotOpTok (NOTEXPRESSION (Some notexp, Ok tokList')) -> 
+        Some (Some (NOTEXP notexp), Ok tokList')
     | _ -> None
 
-let (|CONTASSIGN|_|) tokList : (ModuleItemType option * Result<Token list, Token list>) option = 
+let rec (|ANDEXPRESSION|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
-    | MATCHSINGLE AssignTok (TERMINAL (Some term, MATCHSINGLE Equals (EXPRESSION (Some exp, Ok tokList')))) -> 
+    | NOTEXPRESSION (Some notexp, MATCHSINGLE AndOpTok (ANDEXPRESSION (Some andexp, Ok tokList'))) -> 
+        Some (Some (ANDEXP (notexp, andexp)), Ok tokList')      
+    | NOTEXPRESSION (Some notexp, Ok tokList') -> 
+        Some (Some (notexp), Ok tokList')
+    | _ -> None
+
+let rec (|OREXPRESSION|_|) tokList = 
+    match tokList with
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | ANDEXPRESSION (Some andexp, MATCHSINGLE OrOpTok (OREXPRESSION (Some orexp, Ok tokList'))) -> 
+        Some (Some (OREXP (andexp, orexp)), Ok tokList')
+    | ANDEXPRESSION (Some andexp, Ok tokList') ->
+        Some (Some (andexp), Ok tokList')
+    | _ -> None
+
+let (|CONTASSIGN|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | MATCHSINGLE AssignTok (TERMINAL (Some term, MATCHSINGLE Equals (OREXPRESSION (Some exp, MATCHSINGLE Semicolon (Ok tokList'))))) -> 
         Some (Some (ASSIGN (term, exp)), Ok tokList')
     | _ -> None
 

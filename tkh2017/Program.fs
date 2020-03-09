@@ -65,5 +65,12 @@ let allTestsWithExpecto() =
 [<EntryPoint>]
 let main argv =
     allTestsWithExpecto() |> ignore
+    let test = "module hex_to_7seg (out, in);
+                    output  [6:0] out; 
+                    input   [3:0] in;
+                    
+                    assign out[6] = ~in[3]&~in[2]&~in[1] | in[3]&in[2]&~in[1]&~in[0];
+                endmodule"
+    printf "%A" (test |> tokenise |> parse)
     Console.ReadKey() |> ignore
     0 // return an integer exit code

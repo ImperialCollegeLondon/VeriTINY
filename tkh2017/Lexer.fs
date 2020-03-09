@@ -62,7 +62,7 @@ let rec lexMoreThanOne cLst =
             Option.orElse (lex2 clst) (lex1 clst)
 
     let combinedLexers =
-        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
+        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; assignTok; equalTok; operatorTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
         |> List.map lexNGram
         |> List.reduce (<|>)
         
