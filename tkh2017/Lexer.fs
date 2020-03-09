@@ -1,8 +1,6 @@
 module Lexer
 open NGrams
 
-//TODO: assign
-
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
 type Token = | Module 
