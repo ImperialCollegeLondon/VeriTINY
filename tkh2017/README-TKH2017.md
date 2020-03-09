@@ -57,15 +57,15 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 17. \<continuous_assign> ::= "assign" \<primary> "=" \<assignment>
 
-19. \<assignment> ::= \<expression> 
+18. \<assignment> ::= \<expression> 
 
-20. \<primary> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
+19. \<primary> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
 
-21. \<binary_operator> ::= "&" | "|" 
+20. \<binary_operator> ::= "&" | "|" 
 
-22. \<unary_operator> ::= "~" 
+21. \<unary_operator> ::= "~" 
 
-23. \<expression> ::= \<primary> | \<unary_operator> \<primary> | \<expression> \<binary_operator> \<expression>
+22. \<expression> ::= \<primary> | \<unary_operator> \<primary> | \<expression> \<binary_operator> \<expression>
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 
