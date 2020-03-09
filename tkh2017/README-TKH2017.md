@@ -45,27 +45,25 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
-12. \<terminal> ::= \<primary>
+12. \<number> ::= //any sequence of 0..9 
 
-13. \<number> ::= //any sequence of 0..9 
+13. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
 
-14. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
+14. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
 
-15. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
+15. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
 
-16. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
+16. \<continuous_assign> ::= "assign" \<primary> "=" \<assignment>
 
-17. \<continuous_assign> ::= "assign" \<primary> "=" \<assignment>
+17. \<assignment> ::= \<expression> 
 
-18. \<assignment> ::= \<expression> 
+18. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
 
-19. \<primary> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
+19. \<binary_operator> ::= "&" | "|" 
 
-20. \<binary_operator> ::= "&" | "|" 
+20. \<unary_operator> ::= "~" 
 
-21. \<unary_operator> ::= "~" 
-
-22. \<expression> ::= \<primary> | \<unary_operator> \<primary> | \<expression> \<binary_operator> \<expression>
+21. \<expression> ::= \<terminal> | \<unary_operator> \<terminal> | \<expression> \<binary_operator> \<expression>
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 
