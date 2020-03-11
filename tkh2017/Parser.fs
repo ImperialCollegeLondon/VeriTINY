@@ -3,7 +3,7 @@ open Lexer
 
 //TODO: Error messages
 
-type GateType = AND | OR | NOT
+type GateType = AND | OR | NOT | PASS
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
 type ExpressionType = OREXP of ExpressionType * ExpressionType | ANDEXP of ExpressionType * ExpressionType | NOTEXP of ExpressionType | TERMEXP of TerminalType
 type ModuleItemType = 
