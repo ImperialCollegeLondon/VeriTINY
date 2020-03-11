@@ -69,8 +69,9 @@ let main argv =
                     output  [6:0] out; 
                     input   [3:0] in;
                     
-                    assign out[6] = ~in[3]&~in[2]&~in[1] | in[3]&in[2]&~in[1]&~in[0];
+                    assign out[6] = ~in[3]&~in[2:0]&~in[1] | in[3]&in[2]&~in[1]&~in[0]
+                                    | ~in[3]&in[2]&in[1]& in[0];
                 endmodule"
-    printf "%A" (test |> tokenise |> parse)
+    printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
     0 // return an integer exit code
