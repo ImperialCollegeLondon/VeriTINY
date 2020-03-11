@@ -10,15 +10,78 @@ let getSecond (_, b, _) = b
 
 let getThird (_, _, c) = c 
 
+let genNewName (usedNames: int list) = 
+        string (List.length usedNames)
+
+///Deconstructs continuous assign expressions in AST down to gate level
+// let assignToGates (assignModItem: TerminalType * ExpressionType) (ast: ModuleType) ((record, usedNames): TLogic * int list) : ModuleType * TLogic * int list =
+//     let modName = match ast with
+//                   | MODULE (name, _, _) -> name
+    
+//     let portList = match ast with 
+//                    | MODULE (_, ports, _) -> ports
+    
+//     let modItemList = match ast with 
+//                       | MODULE (_, _, modItemLst) -> modItemLst
+
+//     let rec breakDown (expression: ExpressionType) ((record, usedNames): TLogic * int list) : ModuleItemType list * TLogic * int list = 
+//         match expression with 
+//         | OREXP (exp1, exp2) -> 
+//             let newName1 = genNewName usedNames
+//             let usedNames' = usedNames @ [List.length usedNames]
+//             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames')
+
+//             let newName2 = genNewName usedNames''
+//             let usedNames''' = usedNames'' @ [List.length usedNames'']
+//             let (gateList2, record'', usedNames'''') = breakDown exp2 (record', usedNames''')
+//             [GATEINST (OR, "", [TERMID (List.last usedNames); TERMID newName1; TERMID newName2]
+//         | ANDEXP (exp1, exp2) ->
+//             [GATEINST (AND, "", [TERMID (genNewName usedNames)])]
+//         | NOTEXP exp -> 
+//             [GATEINST (NOT, "", [TERMID (genNewName usedNames)])]
+//         | TERMEXP term -> 
+//             [GATEINST (PASS, "", [])]
+
+//     //Break down highest level gate first
+//     let modItemList' =
+//         match assignModItem |> snd with 
+//         | OREXP (exp1, exp2) -> 
+//             let newName1 = genNewName usedNames
+//             let usedNames' = usedNames @ [List.length usedNames]
+//             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames')
+
+//             let newName2 = genNewName usedNames''
+//             let usedNames''' = usedNames'' @ [List.length usedNames'']
+//             let (gateList2, record'', usedNames'''') = breakDown exp2 (record', usedNames''')
+//             [GATEINST (OR, "", [assignModItem |> fst; TERMID newName1; TERMID newName2])] 
+//             @ gateList1
+//             @ gateList2
+//             @ modItemList 
+//         | ANDEXP (exp1, exp2) -> 
+//             let newName1 = genNewName usedNames
+//             let usedNames' = usedNames @ [List.length usedNames]
+//             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames')
+
+//             let newName2 = genNewName usedNames''
+//             let usedNames''' = usedNames'' @ [List.length usedNames'']      
+//             let (gateList2, record'', usedNames'''') = breakDown exp2 (record', usedNames''')
+//             [GATEINST (AND, "", [assignModItem |> fst; TERMID newName1; TERMID newName2])] 
+//             @ gateList1
+//             @ gateList2
+//             @ modItemList
+//         | NOTEXP exp -> 
+//             [GATEINST (NOT, "", [assignModItem |> fst; TERMID (genNewName usedNames)])] @ breakDown exp @ modItemList
+//         | TERMEXP term -> 
+//             [GATEINST (PASS, "", [assignModItem |> fst; TERMID (genNewName usedNames); ])] @ modItemList
+
+//     MODULE (modName, portList, modItemList')
+    
+
 let convertAST (ast: ModuleType) : TLogic =
 
     ///Generates a skeleton concat net with size and a unique name (integers starting from 0)
     let genConcatNetList (usedNames: int list) : NetIdentifier list = 
-        let rec increaseCount num = 
-            if List.exists ((=) num) usedNames 
-            then increaseCount (num + 1)
-            else string num
-        [{Name = increaseCount 0; SliceIndices = None}]
+        [{Name = genNewName usedNames; SliceIndices = None}]
 
     let genWireNetList (wire: string list) : NetIdentifier list = 
         wire |> List.collect (fun name -> [{Name = name; SliceIndices = None}]) 
@@ -79,6 +142,7 @@ let convertAST (ast: ModuleType) : TLogic =
         | AND -> And
         | OR -> Or
         | NOT -> Not
+        | PASS -> Pass
 
     let getModItem ((record, usedNames): TLogic * int list) modItem : TLogic * int list = 
         match modItem with 
