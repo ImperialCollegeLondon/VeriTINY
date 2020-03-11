@@ -12,7 +12,12 @@ let getThird (_, _, c) = c
 
 let genNewName (usedNames: int list) = 
         string (List.length usedNames)
-        
+
+let removeHead lst = 
+    match lst with 
+    | hd :: tl -> tl 
+    | [] -> []     
+      
 ///Generates a skeleton concat net with size and a unique name (integers starting from 0)
 let genConcatNetList (usedNames: int list) : NetIdentifier list = 
     [{Name = genNewName usedNames; SliceIndices = None}]
@@ -72,6 +77,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
     let rec breakDown (expression: ExpressionType) ((record, usedNames): TLogic * int list) (outNet: NetIdentifier) : ModuleItemType list * TLogic * int list = 
         match expression with 
         | OREXP (exp1, exp2) -> 
+            printfn "OR2"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames') outNet
@@ -85,6 +91,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
             ([GATEINST (OR, "", [TERMID (string (List.last usedNames)); TERMID newName1; TERMID newName2])] @ gateList1 @ gateList2, updatedRecord, usedNames'''')
 
         | ANDEXP (exp1, exp2) ->
+            printfn "AND2"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames') outNet
@@ -95,9 +102,10 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
 
             let intermediateWire = genIntermediateWires outNet (string (List.last usedNames)) record''
             let updatedRecord = {record'' with Wires = intermediateWire @ record''.Wires}
-            ([GATEINST (OR, "", [TERMID (string (List.last usedNames)); TERMID newName1; TERMID newName2])] @ gateList1 @ gateList2, updatedRecord, usedNames'''')
+            ([GATEINST (AND, "", [TERMID (string (List.last usedNames)); TERMID newName1; TERMID newName2])] @ gateList1 @ gateList2, updatedRecord, usedNames'''')
 
         | NOTEXP exp -> 
+            printfn "NOT2"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList, record', usedNames'') = breakDown exp (record, usedNames') outNet
@@ -107,6 +115,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
             ([GATEINST (NOT, "", [TERMID (string (List.last usedNames)); TERMID newName1])] @ gateList, updatedRecord, usedNames'')
 
         | TERMEXP term -> 
+            printfn "TERM2"
             let intermediateWire = genIntermediateWires outNet (string (List.last usedNames)) record
             let updatedRecord = {record with Wires = intermediateWire @ record.Wires}
             ([GATEINST (PASS, "", [TERMID (string (List.last usedNames)); term])], updatedRecord, usedNames)
@@ -116,6 +125,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
         let outNet = List.head (genOutNet (assignModItem |> fst)) //here genOutNet produces a list of one element only
         match assignModItem |> snd with 
         | OREXP (exp1, exp2) -> 
+            printfn "OR Exp1: %A Exp2: %A" exp1 exp2
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames') outNet
@@ -124,11 +134,15 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
             let usedNames''' = usedNames'' @ [List.length usedNames'']
             let (gateList2, record'', usedNames'''') = breakDown exp2 (record', usedNames''') outNet
 
+            printfn "Gate List 1: %A" gateList1
+            printfn "Gate List 2: %A" gateList2
+            printfn "Output Gate: %A" (GATEINST (OR, "", [assignModItem |> fst; TERMID newName1; TERMID newName2]))
             ([GATEINST (OR, "", [assignModItem |> fst; TERMID newName1; TERMID newName2])] 
              @ gateList1
              @ gateList2
              @ modItemList, record'', usedNames'''')
         | ANDEXP (exp1, exp2) -> 
+            printfn "AND"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames') outNet
@@ -142,6 +156,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
              @ gateList2
              @ modItemList, record'', usedNames'''')
         | NOTEXP exp -> 
+            printfn "NOT"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList, record', usedNames'') = breakDown exp (record, usedNames') outNet
@@ -150,6 +165,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
              @ gateList
              @ modItemList, record', usedNames'')
         | TERMEXP term -> 
+            printfn "TERM"
             ([GATEINST (PASS, "", [assignModItem |> fst; term])] 
             @ modItemList, record, usedNames)
 
@@ -197,19 +213,25 @@ let convertAST (ast: ModuleType) : TLogic =
         | PASS -> Pass
 
     let getModItem ((ast, record, usedNames): ModuleType * TLogic * int list) modItem : ModuleType * TLogic * int list = 
+        printfn "%A" ast
+        let unwrapped = match ast with 
+                        | MODULE (name, portList, modItems) -> (name, portList, modItems)
+        let newModList = getThird unwrapped |> removeHead
+        let ast' = MODULE (getFirst unwrapped, getSecond unwrapped, getThird unwrapped)
+
         match modItem with 
         | INPWire inpwire -> 
-            ast, {record with Inputs = record.Inputs @ genWireNetList inpwire}, usedNames
+            ast', {record with Inputs = record.Inputs @ genWireNetList inpwire}, usedNames
         | INPBus (num1, num2, buslist) -> 
-            ast, {record with Inputs = record.Inputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
+            ast', {record with Inputs = record.Inputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
         | OUTWire outwire -> 
-            ast, {record with Outputs = record.Outputs @ genWireNetList outwire}, usedNames
+            ast', {record with Outputs = record.Outputs @ genWireNetList outwire}, usedNames
         | OUTBus (num1, num2, buslist) -> 
-            ast, {record with Outputs = record.Outputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
+            ast', {record with Outputs = record.Outputs @ genThickSliceNetList (num1, num2, buslist)}, usedNames
         | WIRE wire -> 
-            ast, {record with Wires = record.Wires @ genWireNetList wire}, usedNames
+            ast', {record with Wires = record.Wires @ genWireNetList wire}, usedNames
         | WIREBus (num1, num2, buslist) -> 
-            ast, {record with Wires = record.Wires @ genThickSliceNetList (num1, num2, buslist)}, usedNames 
+            ast', {record with Wires = record.Wires @ genThickSliceNetList (num1, num2, buslist)}, usedNames 
         | GATEINST (gatetype, name, termlist) -> 
             match termlist with 
             | hd :: tl -> 
@@ -222,13 +244,19 @@ let convertAST (ast: ModuleType) : TLogic =
                     let tmp' = {tmp with Wires = [(getSecond (tmp.ExpressionList.Head)).Head] @ tmp.Wires}
 
                     //Add a new gate inst to ExpressionList then add its terminal list by calling updateTermList
-                    updateTermList (ast, {tmp' with ExpressionList = tmp'.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
+                    updateTermList (ast', {tmp' with ExpressionList = tmp'.ExpressionList @ [convToOp gatetype, genConcatNetList usedNames, []]}, usedNames @ [List.length usedNames]) tl
                 | _ ->
-                    updateTermList (ast, {record with ExpressionList = record.ExpressionList @ [convToOp gatetype, genTermNetList hd, []]}, usedNames) tl
+                    updateTermList (ast', {record with ExpressionList = record.ExpressionList @ [convToOp gatetype, genTermNetList hd, []]}, usedNames) tl
             | _ -> failwithf "What?"
         | ASSIGN (outTerm, expList) -> 
             assignToGates (ast, record, usedNames) (outTerm, expList)
 
     match ast with 
     | MODULE (name, portlist, moditems) ->
-        moditems |> List.fold getModItem (ast, {Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}, []) |> getSecond
+        moditems
+        |> List.fold getModItem (ast, {Name = name; ExpressionList = []; Inputs = []; Outputs = []; Wires = []}, []) 
+        |> fun (ast', tlogic, usedNames) -> 
+            match ast' with 
+            | MODULE (name, portlist, moditems') -> 
+                moditems' |> List.fold getModItem (ast', tlogic, usedNames)
+        |> getSecond
