@@ -19,6 +19,11 @@
     <Compile Include="SimulationTypes.fs" />
     <Compile Include="SynchronousBlocks.fs" />
     <Compile Include="Simulator.fs" />
+    <!-- <Compile Include="../cc4117/ExampleTypes.fs" />
+    <Compile Include="../cc4117/TestFunctions.fs" /> -->
     <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Expecto.FsCheck" Version="8.13.1" />
   </ItemGroup>
 </Project>
