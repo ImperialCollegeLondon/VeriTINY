@@ -6,19 +6,24 @@
     <ProjectReference Include="..\Emulator\Emulator.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SharedTypes.fs" />
-    <Compile Include="EvalTypes.fs" />
-    <Compile Include="EvalNetHelper.fs" />
-    <Compile Include="LogicOperations.fs" />
-    <Compile Include="CombEval.fs" />
-    <Compile Include="SimulationTypes.fs" />
-    <Compile Include="Helper.fs" />
-    <Compile Include="ExampleTypes.fs" />
-    <Compile Include="SynchronousBlocks.fs" />
-    <Compile Include="Simulator.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/SharedTypes.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/NGrams.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/Lexer.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/Parser.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/EvalTypes.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/EvalNetHelper.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/LogicOperations.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/LogicBlockGen.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/CombEval.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/Helper.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/Connector.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/ConnectionTools.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/SimulationTypes.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/SynchronousBlocks.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/ExampleTypes.fs" />
+    <Compile Include="../Emulator/verilog2-emulator/Simulator.fs" />
 
     <Compile Include="Refs.fs" />
-    <Compile Include="SharedTypes.fs" />
     <Compile Include="Tooltips.fs" />
     <Compile Include="Editors.fs" />
     <Compile Include="ErrorDocs.fs" />
