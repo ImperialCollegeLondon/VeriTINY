@@ -73,7 +73,9 @@ let main argv =
                     output  [6:0] out; 
                     input   [3:0] in;
                     
-                    assign out = {in[3:0],in[3:0]};
+                    and(out[6], in[3], in[0]);
+                    assign out[4:1] = {in[3:2], in[2:1]} | ~in[3:0];
+                    assign out[5] = in[4]&~in[5];
                 endmodule"
     printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
