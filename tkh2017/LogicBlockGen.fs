@@ -186,14 +186,14 @@ let convertAST (ast: ModuleType) : TLogic =
 
             //Update the terminal list of the most recently added expression in ExpressionList 
             ast, {tmp' with ExpressionList = match List.rev tmp'.ExpressionList with 
-                                        | (op, output, termList) :: tl ->
-                                            (op, output, termList @ genConcatNetList usedNames) :: tl |> List.rev
-                                        | _ -> failwithf "What?"}, usedNames @ [List.length usedNames]
+                                             | (op, output, termList) :: tl ->
+                                                 (op, output, termList @ genConcatNetList usedNames) :: tl |> List.rev
+                                             | _ -> failwithf "What?"}, usedNames @ [List.length usedNames]
         | _ -> 
             ast, {record with ExpressionList = match List.rev record.ExpressionList with 
-                                          | (op, output, termList) :: tl -> 
-                                                (op, output, termList @ genTermNetList term) :: tl |> List.rev
-                                          | _ -> failwithf "What?"}, usedNames              
+                                               | (op, output, termList) :: tl -> 
+                                                    (op, output, termList @ genTermNetList term) :: tl |> List.rev
+                                               | _ -> failwithf "What?"}, usedNames              
 
     let updateTermList ((ast, record, usedNames): ModuleType * TLogic * int list) (termList: TerminalType list) : ModuleType * TLogic * int list = 
         termList |> List.fold updateTerm (ast, record, usedNames)
