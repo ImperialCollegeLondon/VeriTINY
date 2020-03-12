@@ -14,6 +14,9 @@ open Fable.Import.Browser
 open Refs
 open Fable
 open ExecutionTop
+
+
+open SharedTypes
 open BlockGraphics
 
 let maxSymbolWidth = 30
@@ -103,15 +106,15 @@ let setView view =
 let addBlockToDropDown blockName = 
     let newOption = makeElement "option" "option" blockName
     newOption.setAttribute ("value", blockName)
-    blockDropDown.appendChild(newOption)
+    blockDropDown.appendChild(newOption) |> ignore
 
+let getSelectedOptionFromDropDown ()  = 
+    let dropDown = blockDropDown :?> HTMLSelectElement
+    dropDown.value    
 
-let getDropDownAndDFFSize ()= 
-    let dropDown = blockDropDown
-    let DFFSize = DFFSizeInput.innerText
-    dropDown, DFFSize 
-
-    
+let getDFFSizeInp () =
+    let input = DFFSizeInput :?> HTMLInputElement
+    input.value
 
 let testSVG () = 
     let newSVG = drawBlocks c5CLst tLogicLstEx
