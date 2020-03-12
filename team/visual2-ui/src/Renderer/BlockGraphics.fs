@@ -94,7 +94,8 @@ let c5CLst =
     //  Name "AND", c5and1In, c5and1Out;
     //  Name "AND", c5and1In, c5and1Out;
     //  Name "AND", c5and1In, c5and1Out;
-     Name "DFF", c5and1In, c5and1Out;]
+     Name "DFF", c5and1In, c5and1Out;
+    Name "AND", c5and1In, c5and1Out;]
 
 
 
@@ -234,8 +235,7 @@ let drawBlocks (connLst: Connection list) (tLogicLst: TLogic list) =
     svg [
         HTMLProps.Y "0";
         HTMLProps.X "0";
-        HTMLProps.Width "800";
-        HTMLProps.Height (sprintf "%i" svgHeight)
+        HTMLProps.ViewBox (sprintf "0 0 800 %i" svgHeight);
     ] svgLst
 
 
