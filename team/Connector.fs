@@ -35,14 +35,15 @@ let getGNet (name:string) (gLst:GeneralNet list): GeneralNet=
     List.find (checkNetName name) gLst
 
 
-// /// net type helper funcitons
-// let netLen genNet =
-//     match  snd (snd genNet) with
-//     | Wire netMap
-//     | Bus netMap ->
-//     netMap |> Map.toList |> List.map fst |> List.length
+/// return a bool list 
+let searchGNetLst str (gLst: GeneralNet list) =
+    List.contains str (List.map getName gLst)
 
+let searchInNets str (conn:Connection) : bool=
+    searchGNetLst str (second conn)
 
+let searchOutNets str (conn:Connection) : bool=
+    searchGNetLst str (third conn)
 
  //only works for unclocked nets
  // previously genConnections
@@ -97,31 +98,49 @@ let addDFF (size:int): Connection =
 //             addMegaBlock tLogLst
 
 
-// gives nets unique names in Connection list
-let rec refactor (cLst: Connection list) =
-    
-    let renameGNet (gNet: GeneralNet) =
-        let addToStr = cLst.Length.ToString()
+// acc: tLst, newCLst
+let rec giveUniqueNames (tLst: string list, newCLst: Connection list) (cLst: Connection list): Connection list =
 
-        let addToName str (gNet: GeneralNet) =
-            match gNet with
+    let renameGNet str (gNet: GeneralNet) =
+        match gNet with
             | sync, (oldStr, net) ->
-                sync, (oldStr+str, net)
-        addToName addToStr gNet
+                sync, (str+oldStr, net)
 
-    match cLst.Head with
-    | conn when (cLst.Tail).Length = 0 -> 
-        [first conn,
-            List.map renameGNet (second conn),
-            List.map renameGNet (third conn)]
-    | conn -> 
-        (first conn,
-            List.map renameGNet (second conn),
-            List.map renameGNet (third conn)) :: (refactor cLst.Tail)
-    | _ -> []       
+    let rec countInstances (acc:int) (refStr:string) (lst:string list) =
+        match lst with
+        | hd::tl when refStr = hd -> 
+            countInstances (acc+1) refStr tl
+        | _ ::tl ->
+            countInstances acc refStr tl
+        | _ -> 
+            acc
+
+    let renameConnection (str:string) (prefix:string) (cIn:Connection): Connection =
+        let (lstIn, lstOut) = extractGenNetLsts cIn
+        let lstIn'= List.map (renameGNet prefix) lstIn
+        let lstOut' = List.map (renameGNet prefix) lstOut
+        (Name str, lstIn', lstOut')
+
+    match cLst with
+    | hd::tl ->
+        let (Name str) = first hd
+        // if megablock appeared before
+        if List.contains str tLst then
+            let tLst' = tLst @ [str]
+            let num = countInstances 0 str tLst'
+            let prefix = str + num.ToString() + "_"
+
+            let newCLst' = renameConnection str prefix hd 
+            giveUniqueNames (tLst', newCLst @ [newCLst']) tl 
+        // if megablock not appeared before
+        else
+            let prefix = str + "0_" 
+            let newCLst' = renameConnection str prefix hd
+            giveUniqueNames (tLst @ [str], newCLst @ [newCLst']) tl 
+    | _ -> newCLst
 
 
-let checkValidConnection inName outName (cLst:Connection list) : bool=
+let checkValidConnection outName inName  (cLst:Connection list)=
     let inGNet = getGNet inName (List.collect second cLst)
     let outGNet = getGNet outName (List.collect third cLst)
 
@@ -142,61 +161,39 @@ let checkValidConnection inName outName (cLst:Connection list) : bool=
         true
 
 
-let rec makeLinks (cLst: Connection list) : (string * string * GeneralNet) list=
+/// given input string and output string, make a link between them in connection list
+let makeLinks outName inName (cLst: Connection list) : (string * string * GeneralNet) =
+    let gLstIn = List.collect second cLst
+    let gLstOut = List.collect third cLst
 
-    let searchGNetLst str (gLst: GeneralNet list) =
-        List.contains str (List.map getName gLst)
+    let sync = fst (getGNet inName gLstIn) || fst (getGNet outName gLstOut)
+    let net = getGNet inName gLstIn |> snd
 
-    let searchInNets str (conn:Connection) : bool=
-        searchGNetLst str (second conn)
-
-    let searchOutNets str (conn:Connection) : bool=
-        searchGNetLst str (third conn)
-
-    printf "Enter block input node \n"
-    match Console.ReadLine() with
-    | "end" ->
-        []
-    | inName when List.contains true (List.map (searchInNets inName) cLst) -> 
-        printf "enter block output node \n"
-        match Console.ReadLine() with  
-            | outName when not(List.contains (true) (List.map (searchOutNets outName)  cLst))-> 
-                printf "NANI!? could not find output node: %A\n" outName    
-                makeLinks cLst
-            | outName when (checkValidConnection inName outName cLst) ->
-                let gLstIn = List.collect second cLst
-                let gLstOut = List.collect third cLst
-
-                let sync = fst (getGNet inName gLstIn) || fst (getGNet outName gLstOut)
-                let net = getGNet inName gLstIn |> snd
-
-                (inName, outName, (sync, net)) :: makeLinks cLst
-            | _ -> makeLinks cLst
-    | str -> 
-        printf "NANI!? input node: %A was not found \n" str
-        makeLinks cLst
+    inName, outName, (sync, net)
 
 
-let finaliseConnections (cLst: Connection list): Connection list =
-    printf "Current list %A\n" cLst
-    let links = makeLinks cLst
-    printf "links: %A\n" links
+// take link list as an argument
+// take in connection list and return updated connection list
+type Link = string * string * GeneralNet
+let finaliseConnections (linkLst:Link List) (cLst: Connection list): Connection list =
+ 
+    // lst of input strings
+    let inputNames = List.map first linkLst
+    // lst of output strings
+    let outputNames = List.map second linkLst
 
-    let updateNets (gLst:GeneralNet list) links =
-        let matchNames name link =
+    let updateGNetLst (gLst:GeneralNet list)  =
+        let matchNames name (link:Link) =
             match first link,second link with
             | a,b when a = name || b = name ->
                 true
             | _ ->
-                false
-
-        let lstA = List.map first links
-        let lstB = List.map second links
+                false        
 
         let returnNewGNet (gNet:GeneralNet) =
             match getName gNet with 
-                |name when List.contains name lstA || List.contains name lstB ->
-                    let newGNet = third (List.find (matchNames name) links) 
+                | name when List.contains name inputNames || List.contains name outputNames ->
+                    let newGNet = third (List.find (matchNames name) linkLst) 
                     newGNet
                 | _ -> 
                     gNet
@@ -206,13 +203,13 @@ let finaliseConnections (cLst: Connection list): Connection list =
     let updateConnection (conn: Connection): Connection =
         let gLstIn = second conn
         let gLstOut = third conn
-        first conn, updateNets gLstIn links, updateNets gLstOut links
+        first conn, updateGNetLst gLstIn, updateGNetLst gLstOut
 
     List.map updateConnection cLst
-    
-// outward functions
-// let UserIn() =
-//     addMegaBlock ()
-//     |> List.sort
-//     |> refactor
-//     |> finaliseConnections 
+
+
+/// example of changing cLst
+/// where "jeff" is output of a tLog and "b0" is input of a different tLog
+// let a = checkValidConnection "jeff" "b0" c4CLst
+// let linkA = makeLinks "jeff" "b0" c4CLst
+// let linkLst = [linkA]
