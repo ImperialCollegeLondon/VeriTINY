@@ -77,6 +77,7 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
     let rec breakDown (expression: ExpressionType) ((record, usedNames): TLogic * int list) (outNet: NetIdentifier) : ModuleItemType list * TLogic * int list = 
         match expression with 
         | OREXP (exp1, exp2) -> 
+            printfn "OR2"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames') outNet
@@ -205,11 +206,10 @@ let convertAST (ast: ModuleType) : TLogic =
         | PASS -> Pass
 
     let getModItem ((ast, record, usedNames): ModuleType * TLogic * int list) modItem : ModuleType * TLogic * int list = 
-        printfn "%A" ast
         let unwrapped = match ast with 
                         | MODULE (name, portList, modItems) -> (name, portList, modItems)
         let newModList = getThird unwrapped |> removeHead
-        let ast' = MODULE (getFirst unwrapped, getSecond unwrapped, getThird unwrapped)
+        let ast' = MODULE (getFirst unwrapped, getSecond unwrapped, newModList)
 
         match modItem with 
         | INPWire inpwire -> 

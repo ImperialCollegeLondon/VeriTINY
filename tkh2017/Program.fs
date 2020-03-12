@@ -62,6 +62,10 @@ let logicBlockGeTest3 =
 let allTestsWithExpecto() =
         runTestsInAssembly defaultConfig [||]
     
+//assign out[6] = ~in[3]&~in[2]&~in[1] | in[3]&in[2]&~in[1]&~in[0]
+//                 | ~in[3]&in[2]&in[1]&in[0];
+// assign out[5] = ~in[3]&~in[2]&in[0] | ~in[3]&~in[2]&in[1]
+//                 | ~in[3]&in[1]&in[0] | in[3]&in[2]&~in[1]&in[0]
 [<EntryPoint>]
 let main argv =
     allTestsWithExpecto() |> ignore
@@ -69,8 +73,7 @@ let main argv =
                     output  [6:0] out; 
                     input   [3:0] in;
                     
-                    assign out[6] = ~in[3]&~in[2]&~in[1] | in[3]&in[2]&~in[1]&~in[0]
-                                    | ~in[3]&in[2]&in[1]& in[0];
+                    assign out = {in[3:0],in[3:0]};
                 endmodule"
     printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
