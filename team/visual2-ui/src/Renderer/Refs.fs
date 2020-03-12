@@ -17,6 +17,8 @@ open Microsoft.FSharp.Collections
 open Node.Exports
 open EEExtensions
 
+open SharedTypes
+
 
 // **********************************************************************************
 //                                  App Version
@@ -587,3 +589,6 @@ let addBlockButton = getHtml "addBlockBtn"
 
 let blocksSVGContainer = getHtml "BlocksSvgContainer"
 let connectionsTable = getHtml "connectionsTable"
+
+//Mutables for connections
+let mutable (TLogicList: TLogic list) = []
