@@ -103,10 +103,10 @@ let setView view =
     // new mutability again, update the variable
     currentView <- view
 
-let addBlockToDropDown blockName = 
-    let newOption = makeElement "option" "option" blockName
-    newOption.setAttribute ("value", blockName)
-    blockDropDown.appendChild(newOption) |> ignore
+let addOptionToDropDown (dropDown: HTMLElement) optionDisp optionVal = 
+    let newOption = makeElement "option" "option" optionDisp
+    newOption.setAttribute ("value", optionVal)
+    dropDown.appendChild(newOption) |> ignore
 
 let getSelectedOptionFromDropDown ()  = 
     let dropDown = blockDropDown :?> HTMLSelectElement
@@ -119,7 +119,7 @@ let getDFFSizeInp () =
 let testSVG () = 
     let newSVG = drawBlocks c5CLst tLogicLstEx
 
-    addSVGToContainer newSVG blocksSVGContainer
+    updateBlockDiagram newSVG 
 
 let updateTable (mem) =     
     // old makeRow uses address, 
