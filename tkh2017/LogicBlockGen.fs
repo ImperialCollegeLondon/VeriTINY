@@ -11,7 +11,7 @@ let getSecond (_, b, _) = b
 let getThird (_, _, c) = c 
 
 let genNewName (usedNames: int list) = 
-        string (List.length usedNames)
+    string (List.length usedNames)
 
 let removeHead lst = 
     match lst with 
