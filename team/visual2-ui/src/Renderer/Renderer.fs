@@ -119,7 +119,7 @@ let init() =
         mapOfVals <- firstMapOfVals
         state <- firstState
         
-        Views.updateTable ([mapToRow mapOfVals; mapToRow state])
+        updateTable ([mapToRow mapOfVals; mapToRow state])
     )
 
     (Refs.byteViewBtn).addEventListener_click(fun _ ->
@@ -134,9 +134,17 @@ let init() =
 
 
     (Refs.addBlockButton).addEventListener_click(fun _ ->
-        Browser.console.log "Add Block Hook here" |> ignore
-        testSVG ()
+        Browser.console.log "Add Block Btn clicked"  |> ignore
+        ConnectionsManager.addBlockBtnClickListener ()
     )
+
+    (Refs.makeConnectionBtn).addEventListener_click(fun _ ->
+        Browser.console.log "Make Connection Btn clicked" |> ignore
+        ConnectionsManager.addBlockBtnClickListener ()
+        // connLst <- BlockGraphics.c5CLst
+        ConnectionsManager.updateConnNetDropDowns ()
+    )
+
 
     mapClickAttacher viewToIdTab Refs.viewTab (fun view ->
         Browser.console.log (sprintf "View changed to %A" view) |> ignore

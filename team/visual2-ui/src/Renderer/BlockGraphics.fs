@@ -9,6 +9,7 @@ open Fable.Import.React
 open Fable.Helpers.React
 module HTMLProps =  Fable.Helpers.React.Props
 open SharedTypes
+open Refs
 
 
 // tLogics for tests 
@@ -94,7 +95,8 @@ let c5CLst =
     //  Name "AND", c5and1In, c5and1Out;
     //  Name "AND", c5and1In, c5and1Out;
     //  Name "AND", c5and1In, c5and1Out;
-     Name "DFF", c5and1In, c5and1Out;]
+     Name "DFF", c5and1In, c5and1Out;
+    Name "AND", c5and1In, c5and1Out;]
 
 
 
@@ -103,26 +105,29 @@ let second (_,x,_) = x
 let third (_,_,x) = x
 
 let DFFTLogic (size: int) : TLogic =  
-    let ioNetIDLst = 
-        [0..size] 
-        |> List.map (fun i -> 
-            {
-                Name = (sprintf "%i" i);
-                SliceIndices = None
-            }
-        )
-    {
-        Name = "DFF"
-        Inputs = ioNetIDLst
-        Outputs = ioNetIDLst
+    let iNetID =    
+        {
+            Name = (sprintf "D[%i:0]" size);
+            SliceIndices = None
+        }
+
+    let oNetID =    
+        {
+            Name = (sprintf "Q[%i:0]" size);
+            SliceIndices = None
+        }
+     
+    {   Name = "DFF"
+        Inputs = [iNetID]
+        Outputs = [oNetID]
         ExpressionList = []
         Wires = []
     }
 
-let makeLabelElements xPosition truncateTo = 
+let makeLabelElements xPosition yOffset truncateTo = 
     List.mapi (fun i (inpName: string) -> 
             text [
-            HTMLProps.Y (sprintf "%i" (i * 30 + 55));
+            HTMLProps.Y (sprintf "%i" (i * 30 + yOffset + 55));
             HTMLProps.X xPosition;
             HTMLProps.TextAnchor "middle";
             HTMLProps.Fill "black"
@@ -145,11 +150,11 @@ let makeTLogicSVG (block: TLogic) xPos yPos=
 
     let inputLabels = 
         List.map (netIDToString) block.Inputs
-        |> makeLabelElements "20%" 7
+        |> makeLabelElements "20%" 0 7
 
     let outputLabels = 
         List.map (netIDToString) block.Outputs
-        |> makeLabelElements "80%" 7
+        |> makeLabelElements "80%" 0 7
 
     let svgChildrenBase = [
         rect [
@@ -180,7 +185,7 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
     let (Name megaBlockName)  = first conn
     let connTLogic = 
         match megaBlockName with
-        |"DFF" -> DFFTLogic (List.length (second conn))
+        |"DFF" -> DFFTLogic (Helper.netSize (conn |> second |> List.head |> Helper.extractNet))
         |combBlockName -> List.find (fun tlogic -> tlogic.Name = combBlockName) tLogicLst
 
     let formNetLines x1 x2 numLines =
@@ -201,11 +206,11 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
 
     let inputNetLables = 
         List.map getGeneralNetName (second conn)
-        |> makeLabelElements "0" 6
+        |> makeLabelElements "0" -3 6
 
     let outputNetLables = 
         List.map getGeneralNetName (third conn)
-        |> makeLabelElements "330" 6
+        |> makeLabelElements "330" -3 6
 
     let tLogicBlockSVG, blockHeight = makeTLogicSVG connTLogic "50" "0"
 
@@ -234,10 +239,9 @@ let drawBlocks (connLst: Connection list) (tLogicLst: TLogic list) =
     svg [
         HTMLProps.Y "0";
         HTMLProps.X "0";
-        HTMLProps.Width "800";
-        HTMLProps.Height (sprintf "%i" svgHeight)
+        HTMLProps.ViewBox (sprintf "0 0 800 %i" svgHeight);
     ] svgLst
 
 
-let addSVGToContainer svg container = ReactDom.render (svg, container)
+let updateBlockDiagram svg  = ReactDom.render (svg, blocksSVGContainer)
 

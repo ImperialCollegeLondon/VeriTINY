@@ -22,20 +22,20 @@
     <Compile Include="../Emulator/verilog2-emulator/SynchronousBlocks.fs" />
     <Compile Include="../Emulator/verilog2-emulator/ExampleTypes.fs" />
     <Compile Include="../Emulator/verilog2-emulator/Simulator.fs" />
-
     <Compile Include="Refs.fs" />
     <Compile Include="Tooltips.fs" />
     <Compile Include="Editors.fs" />
     <Compile Include="ErrorDocs.fs" />
     <Compile Include="Tabs.fs" />
     <Compile Include="Settings.fs" />
-    <Compile Include = "BlockGraphics.fs"/>
+    <Compile Include="BlockGraphics.fs" />
     <Compile Include="Views.fs" />
     <Compile Include="Files.fs" />
     <Compile Include="Testbench.fs" />
     <Compile Include="Integration.fs" />
-    <Compile Include="MenuBar.fs" />   
-    <Compile Include="Renderer.fs" />
+    <Compile Include="MenuBar.fs" />
+    <Compile Include="ConnectionsManager.fs" />
+    <Compile Include="Renderer.fs" />    
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
