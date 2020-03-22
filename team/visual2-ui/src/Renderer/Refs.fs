@@ -18,6 +18,7 @@ open Node.Exports
 open EEExtensions
 
 open SharedTypes
+open SimulationTypes
 
 
 // **********************************************************************************
@@ -185,26 +186,6 @@ let byteViewBtn = getHtml "byte-view"
 /// get reverse direction element
 let reverseViewBtn = getHtml "reverse-view"
 
-/// get memory list element
-let memList = getHtml "mem-list"
-
-//Simulation code
-let cLst = ExampleTypes.c3CLst
-let tLst = ExampleTypes.tLogicLstEx
-let initSyncMap,(syncBLst, asyncBLst) = Simulator.setupSimulation cLst
-
-let mutable inputs = ExampleTypes.c3InputLstofLst
-let mutable count = ExampleTypes.c3InputLstofLst.Length - inputs.Length
-
-let firstMapOfVals,firstState = 
-    count <- ExampleTypes.c3InputLstofLst.Length - inputs.Length
-    Browser.console.log (sprintf "count: %A" count)
-    Simulator.iterateState initSyncMap inputs.Head asyncBLst syncBLst tLst
-
-let mutable mapOfVals = firstMapOfVals
-let mutable state = 
-    Browser.console.log (sprintf "initialized")
-    firstState
 
 //---------------------File tab elements-------------------------------
 
@@ -288,27 +269,6 @@ let hexFormatter _ : string = jsNative
 [<Emit "'u' + ($0 >>> 0).toString(10)">]
 let uDecFormatter _ : string = jsNative
 
-// Returns a formatter for the given representation
-let formatterWithWidth width rep =
- // TODO: Use binformatter from testformats.fs
-    let binFormatter width fmt x =
-        let bin a =
-            [ 0..width - 1 ]
-            |> List.fold (fun s x ->
-                match ((a >>> x) % 2u), x with
-                | 1u, 7 | 1u, 15 | 1u, 23 -> "_1" + s
-                | 0u, 7 | 0u, 15 | 0u, 23 -> "_0" + s
-                | 1u, _ -> "1" + s
-                | 0u, _ -> "0" + s
-                | _ -> failwithf "modulo is broken"
-            ) ""
-        sprintf fmt (bin x)
-    match rep with
-    | Hex -> hexFormatter
-    | Bin -> (binFormatter width "0b%s")
-    | Dec -> (int32 >> sprintf "%d")
-    | UDec -> uDecFormatter
-
 
 /// Determine whether JS value is undefined
 [<Emit("$0 === undefined")>]
@@ -318,16 +278,16 @@ let isUndefined (_ : 'a) : bool = jsNative
 
 let appDirName : string = jsNative
 
-/// compare input with last input: if different, or no last input, execute function
-let cacheLastWithActionIfChanged actionFunc =
-    let mutable cache : 'a option = None
-    fun inDat ->
-        match cache with
-        | Some i when i = inDat -> ()
-        | Some _
-        | None ->
-            cache <- Some inDat
-            actionFunc inDat
+// /// compare input with last input: if different, or no last input, execute function
+// let cacheLastWithActionIfChanged actionFunc =
+//     let mutable cache : 'a option = None
+//     fun inDat ->
+//         match cache with
+//         | Some i when i = inDat -> ()
+//         | Some _
+//         | None ->
+//             cache <- Some inDat
+//             actionFunc inDat
 
 
 
@@ -532,7 +492,7 @@ let mutable currentTabWidgets : Map<string, obj> = Map.empty
 let mutable settingsTab : int option = None
 
 /// The current View in the right-hand pane
-let mutable currentView = Simulation
+let mutable currentView = Connections
 /// Whether the Memory View is byte of word based
 let mutable byteView = false
 /// direction of memory addresses
@@ -594,7 +554,41 @@ let connDropDown1 = getHtml "connDropDown1"
 let connDropDown2 = getHtml "connDropDown2"
 
 let makeConnectionBtn = getHtml "makeConnectionBtn"
+let clearConnectionBtn = getHtml "clearConnectionsBtn"
 
 //Mutables for connections
 let mutable (TLogicList: TLogic list) = []
 let mutable (connLst: Connection list) = []
+
+//--------------------------Simulation Tab-------------------------
+let mutable (inputs: GeneralNet list list) = []
+let mutable originalInputs: GeneralNet list list = []
+let mutable (inputsIndex: int) = 0
+let mutable simulationCount = 0
+let mutable state:Map<NetIdentifier, Net> = Map []
+let mutable (syncBLst: Block list) = []
+let mutable (asyncBLst: Block list) = []
+
+// used to update current inputs 
+let mutable maxInputLength = 10
+let mutable currentInputs: Map<string,GeneralNet> = Map []
+
+/// get memory list element
+let memList = getHtml "mem-list"
+let currList = getHtml "curr-list"
+let maxInputLengthText = getHtml "inputMaxInputLength"
+let maxInputLengthButton = getHtml "applyMaxInputLength"
+let refreshConns = getHtml "refreshConns"
+let netDropDown1 = getHtml "netDropDown1"
+let applyValButton = getHtml "applyVal"
+let inputValText = getHtml "inputVal"
+
+let compileButton = getHtml "compile"
+let nextButton = getHtml "nextButton"
+let backButton = getHtml "backButton"
+let saveInputsButton = getHtml "saveInputs"
+let clearInputsButton = getHtml "clearInputs"
+
+
+
+

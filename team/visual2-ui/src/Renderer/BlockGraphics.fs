@@ -104,17 +104,21 @@ let first (x,_,_) = x
 let second (_,x,_) = x
 let third (_,_,x) = x
 
-let DFFTLogic (size: int) : TLogic =  
+let DFFTLogic (size: int) : TLogic =
+    let sliceIndices = 
+        match size with
+        |1 -> None
+        |_ -> Some(size - 1, Some 0)
     let iNetID =    
         {
-            Name = (sprintf "D[%i:0]" size);
-            SliceIndices = None
+            Name = "D";
+            SliceIndices = sliceIndices
         }
 
     let oNetID =    
         {
-            Name = (sprintf "Q[%i:0]" size);
-            SliceIndices = None
+            Name = "Q"
+            SliceIndices = sliceIndices
         }
      
     {   Name = "DFF"
@@ -124,14 +128,14 @@ let DFFTLogic (size: int) : TLogic =
         Wires = []
     }
 
-let makeLabelElements xPosition yOffset truncateTo = 
+let makeLabelElements xPosition yOffset anchorPos  = 
     List.mapi (fun i (inpName: string) -> 
             text [
             HTMLProps.Y (sprintf "%i" (i * 30 + yOffset + 55));
             HTMLProps.X xPosition;
-            HTMLProps.TextAnchor "middle";
+            HTMLProps.TextAnchor anchorPos;
             HTMLProps.Fill "black"
-            ] [str (inpName.[0..truncateTo])]
+            ] [str inpName]
         )
 
 
@@ -139,22 +143,22 @@ let makeTLogicSVG (block: TLogic) xPos yPos=
     let numRows = (max (List.length block.Inputs)  (List.length block.Outputs))
     let blockHeight = (50 + (30 * numRows))
 
-    let netIDToString (netID: NetIdentifier) = 
+    let netIDToString truncateTo (netID: NetIdentifier)  = 
         let sliceStr =
             match netID.SliceIndices with
             |Some (x , Some y) -> sprintf "[%i:%i]" (max x y) (min x y)
             |Some (x, None) -> sprintf "[%i]" x
             |None -> ""
 
-        netID.Name + sliceStr
+        netID.Name.[0..truncateTo] + sliceStr
 
     let inputLabels = 
-        List.map (netIDToString) block.Inputs
-        |> makeLabelElements "20%" 0 7
+        List.map (netIDToString 5) block.Inputs 
+        |> makeLabelElements "25%" 0 "middle"
 
     let outputLabels = 
-        List.map (netIDToString) block.Outputs
-        |> makeLabelElements "80%" 0 7
+        List.map (netIDToString 5) block.Outputs 
+        |> makeLabelElements "75%" 0 "middle"
 
     let svgChildrenBase = [
         rect [
@@ -177,7 +181,7 @@ let makeTLogicSVG (block: TLogic) xPos yPos=
     (svg [
         HTMLProps.Y yPos;
         HTMLProps.X xPos;
-        HTMLProps.Width "250";
+        HTMLProps.Width "200";
         HTMLProps.Height (sprintf "%i" blockHeight);
     ]  (svgChildrenBase @ inputLabels @ outputLabels), blockHeight)
 
@@ -189,7 +193,7 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
         |combBlockName -> List.find (fun tlogic -> tlogic.Name = combBlockName) tLogicLst
 
     let formNetLines x1 x2 numLines =
-        [0..numLines]
+        [0..numLines-1]
             |> List.map (fun i -> 
                 line [
                     HTMLProps.X1 (sprintf "%i" x1)
@@ -199,20 +203,22 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
                     HTMLProps.Stroke "black"
                 ] []) 
 
-    let inputNetLines = formNetLines 0 50 (List.length connTLogic.Inputs)
-    let outputNetLines = formNetLines 300 350 (List.length connTLogic.Outputs)
+    let inputNetLines = formNetLines 0 75 (List.length connTLogic.Inputs)
+    let outputNetLines = formNetLines 275 350 (List.length connTLogic.Outputs)
 
-    let getGeneralNetName genNet = genNet |> snd |> fst
+    let getTruncatedGeneralNetName truncateTo genNet = 
+        let name = genNet |> Connector.getName
+        name.[0..truncateTo]
 
     let inputNetLables = 
-        List.map getGeneralNetName (second conn)
-        |> makeLabelElements "0" -3 6
+        List.map (getTruncatedGeneralNetName 10) (second conn)
+        |> makeLabelElements "0" -3 "start"
 
     let outputNetLables = 
-        List.map getGeneralNetName (third conn)
-        |> makeLabelElements "330" -3 6
+        List.map (getTruncatedGeneralNetName 10) (third conn)
+        |> makeLabelElements "280" -3 "start"
 
-    let tLogicBlockSVG, blockHeight = makeTLogicSVG connTLogic "50" "0"
+    let tLogicBlockSVG, blockHeight = makeTLogicSVG connTLogic "75" "0"
 
     (svg [
         HTMLProps.Y yPos;
@@ -244,4 +250,3 @@ let drawBlocks (connLst: Connection list) (tLogicLst: TLogic list) =
 
 
 let updateBlockDiagram svg  = ReactDom.render (svg, blocksSVGContainer)
-

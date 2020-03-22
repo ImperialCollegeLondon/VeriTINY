@@ -141,19 +141,19 @@ let setupSimulation (cLst:Connection list) =
 
 
 //additional top level function for iterating through inputs one by one
-let iterateState prevState (inpLst: GeneralNet list) (asyncBLst: Block list) (syncBLst: Block list)  (tLst: TLogic list) =
-    let initMap = updateMap (gLstToMap inpLst) prevState
+let iterateState syncState (inpLst: GeneralNet list) (asyncBLst: Block list) (syncBLst: Block list)  (tLst: TLogic list) =
+    let initMap = updateMap (gLstToMap inpLst) syncState
     advanceState initMap asyncBLst syncBLst tLst
 
 let simulateInputList (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=
    
     let initialSyncNetMap, (syncBLst, asyncBLst) = setupSimulation cLst
     // Keep advancing state until the lst of inputs are exhausted
-    let rec advanceMore prevState (lstOfInputs: GeneralNet list list) =
+    let rec advanceMore currState syncState (lstOfInputs: GeneralNet list list) =
         match lstOfInputs with
         | currentInputs::rest -> 
-            let _, nextState = iterateState prevState currentInputs asyncBLst syncBLst tLst
-            advanceMore nextState rest
-        | [] -> prevState
+            let currState', syncState' = iterateState syncState currentInputs asyncBLst syncBLst tLst
+            advanceMore currState' syncState' rest
+        | [] -> currState, syncState
 
-    advanceMore initialSyncNetMap lstOfInputs
+    advanceMore (Map []) initialSyncNetMap lstOfInputs

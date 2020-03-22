@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>emulator</AssemblyName>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-<Compile Include="EEExtensions.fs" />
-<Compile Include="CommonData.fs" />
-<Compile Include="Errors.fs" />
-<Compile Include="Expressions.fs" />
+    <Compile Include="EEExtensions.fs" />
+    <Compile Include="CommonData.fs" />
+    <Compile Include="Errors.fs" />
+    <Compile Include="Expressions.fs" />
     <Compile Include="CommonLex.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="Memory.fs" />

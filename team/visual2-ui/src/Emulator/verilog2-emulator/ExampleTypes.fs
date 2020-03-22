@@ -61,41 +61,6 @@ let mapC4 =
         { Name = "D"; SliceIndices = None}, Wire(Map [0, High]);
     ]
 
-let mapToRow (m:Map<NetIdentifier,Net>) =
-
-    let extractLogLevel (netIn: Net) =
-        match netIn with
-        | Wire netMap
-        | Bus netMap ->
-            netMap 
-            |> Map.toList 
-            |> List.map snd
-    
-    let logToStr log =
-        match log with
-        | Low -> "0"
-        | High -> "1"
-
-    let rec toStr acc (lst:string list) =
-        match lst with
-        | hd::tl -> 
-            toStr (acc + hd) tl
-        | _ -> acc
-
-    let nameLst = m |> Map.toList |> List.map (fst >> (fun netId -> netId.Name))
-    let logLst = m |> Map.toList |> List.map (snd >> extractLogLevel >> List.map logToStr >> toStr "")
-    
-    List.zip nameLst logLst
-    //|> List.map (fun (a,b) -> [a;b])
-
-let res1 = mapToRow mapC1
-let res2 = mapToRow mapC2
-let res3 = mapToRow mapC3 
-let res4 = mapToRow mapC4
-let resLst = [res1]
-
-
-
 
 let mapC5 =
     Map [

@@ -35,7 +35,9 @@
     <Compile Include="Integration.fs" />
     <Compile Include="MenuBar.fs" />
     <Compile Include="ConnectionsManager.fs" />
-    <Compile Include="Renderer.fs" />    
+    <Compile Include="SimulationManager.fs" />
+    <Compile Include="CompilationManager.fs" />
+    <Compile Include="Renderer.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

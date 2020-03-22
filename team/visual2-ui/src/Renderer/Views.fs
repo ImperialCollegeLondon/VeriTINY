@@ -108,20 +108,12 @@ let addOptionToDropDown (dropDown: HTMLElement) optionDisp optionVal =
     newOption.setAttribute ("value", optionVal)
     dropDown.appendChild(newOption) |> ignore
 
-let getSelectedOptionFromDropDown ()  = 
-    let dropDown = blockDropDown :?> HTMLSelectElement
-    dropDown.value    
+let getSelectedOptionFromDropDown (dropDown: HTMLElement)  = 
+    let dropDownSelectEl = dropDown :?> HTMLSelectElement
+    dropDownSelectEl.value    
 
-let getDFFSizeInp () =
-    let input = DFFSizeInput :?> HTMLInputElement
-    input.value
-
-let testSVG () = 
-    let newSVG = drawBlocks c5CLst tLogicLstEx
-
-    updateBlockDiagram newSVG 
-
-let updateTable (mem) =     
+let updateTable (lst) (tableID:HTMLElement) =  
+    let mem = [lst]
     // old makeRow uses address, 
     let makeRow (strA, strB) =
         let tr = makeEl "tr" "tr-head-mem"
@@ -149,9 +141,47 @@ let updateTable (mem) =
 
         addToDOM li [ table ]
 
-    memList.innerHTML <- ""
+    tableID.innerHTML <- ""
 
     // Add the new memory list
     mem
     |> List.map makeContig
-    |> List.iter (fun html -> memList.appendChild (html) |> ignore)
+    |> List.iter (fun html -> tableID.appendChild (html) |> ignore)
+
+let getDFFSizeInp () =
+    let input = DFFSizeInput :?> HTMLInputElement
+    input.value
+
+let testSVG () = 
+    let newSVG = drawBlocks c5CLst tLogicLstEx
+
+    updateBlockDiagram newSVG 
+
+let getMaxLengthFromText() =
+    let input = maxInputLengthText :?> HTMLInputElement
+    input.value
+
+let getInputValFromText()=
+    let input = inputValText :?> HTMLInputElement
+    input.value
+
+let getNameFromDropDown() =
+    let netName = netDropDown1 :?> HTMLSelectElement
+    netName.value
+
+let clearSimulationTable() = 
+    memList.innerHTML <- ""
+
+let clearCurrInputsTable() =
+    currList.innerHTML <- ""
+
+
+
+
+
+
+
+
+
+
+

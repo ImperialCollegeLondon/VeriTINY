@@ -168,6 +168,10 @@
     color: white;
 }
 
+#bottomHalfofSim {
+    padding-top: 50px;
+}
+
 
 #tabs-files {
     background-color: lightgray;

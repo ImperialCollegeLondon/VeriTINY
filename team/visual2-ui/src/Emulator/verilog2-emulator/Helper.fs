@@ -13,9 +13,9 @@ let rec lstOpParallel acc f lstA lstB =
 
 // initialized to low
 let createNewMap len = 
-        [0..len-1]
-        |> List.map (fun x -> (x, Low)) 
-        |> Map
+    [0..len-1]
+    |> List.map (fun x -> (x, Low)) 
+    |> Map
 
 let generateList n = [0..n-1]
 
@@ -27,38 +27,41 @@ let extractGenNetLsts (cIn: Connection) =
     lstIn, lstOut
 
 let extractNet (gNet: GeneralNet): Net =
-        match gNet with
-        | (_, (_, Wire netMap)) -> 
-            Wire netMap
-        | (_, (_, Bus netMap)) ->
-            Bus netMap
+    match gNet with
+    | (_, (_, Wire netMap)) -> 
+        Wire netMap
+    | (_, (_, Bus netMap)) ->
+        Bus netMap
 
 let netSize (netIn: Net): int =
-        match netIn with
-        | Wire netMap
-        | Bus netMap ->
-            netMap 
-            |> Map.toList 
-            |> List.map fst 
-            |> List.length
+    match netIn with
+    | Wire netMap
+    | Bus netMap ->
+        netMap 
+        |> Map.toList 
+        |> List.map fst 
+        |> List.length
+
+let gNetName (gNet: GeneralNet) =
+    gNet |> snd |> fst
 
 let updateGenNet (gNet: GeneralNet) newMap =
-        match gNet with
-        | (sync, (str, Wire _)) -> 
-            sync, (str, Wire newMap) 
-        | (sync, (str, Bus _)) -> 
-            sync, (str, Bus newMap)
+    match gNet with
+    | (sync, (str, Wire _)) -> 
+        sync, (str, Wire newMap) 
+    | (sync, (str, Bus _)) -> 
+        sync, (str, Bus newMap)
 
 let updateGenLst gNetLst newMaps =
     lstOpParallel [] updateGenNet gNetLst newMaps
 
-let extractLogLevel (netIn: Net) =
-        match netIn with
-        | Wire netMap
-        | Bus netMap ->
-            netMap 
-            |> Map.toList 
-            |> List.map snd
+let extractLogLevel (gNet: GeneralNet) =
+    match gNet |> snd |> snd with
+    | Wire netMap
+    | Bus netMap ->
+        netMap 
+        |> Map.toList 
+        |> List.map snd
 
 // Evaluation uses Map<NetIdentifier,Net> type, functions to convert below
 // update map with "otherMap" where origMap will be overwritten if given same key

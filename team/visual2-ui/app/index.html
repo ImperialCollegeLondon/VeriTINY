@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>(not) VisUAL2</title>
+    <title>VeriTINY</title>
     <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/photon.css">
@@ -34,19 +34,9 @@
                 </div>
                 <!-- btn-group -->
 
-                <button id="run" class="btn btn-fixed btn-default button-run">
-                    Run
+                <button id="compile" class="btn btn-default button-compile">
+                    Compile
                 </button>
-                <!-- run btn -->
-
-                <button id="reset" class="btn btn-default">
-                    Reset
-                </button>
-
-                <button id="stepf" class="btn btn-default button-forward">
-                    Step
-                </button>
-
 
             </div>
         </header>
@@ -87,7 +77,7 @@
 
                             <div>
                                 <h6>DFF Size</h6> 
-                                <input type="number" id="DFFSize" name="DFFSize">
+                                <input type="number" id="DFFSize" name="DFFSize" min = "1">
                             </div>
                             <hr>
                             
@@ -96,14 +86,14 @@
                                     Add Block
                                 </button>
                             </div>
-                            <hr><br>
-                            <div width = "100%" overflow-y = "scroll" id="BlocksSvgContainer"></div>
+                            <hr><br>                            
 
                             <div>
-                                <h6>Make Connections</h6>
+                                <h6>Select Nets to Connect</h6>
+                                Output Net:
                                 <select id="connDropDown1">                                  
                                 </select>
-
+                                Input Net: 
                                 <select id="connDropDown2">                                    
                                 </select>                                
                             </div>
@@ -112,67 +102,128 @@
                                 <button type = "button" class = "btn btn-default" id = "makeConnectionBtn">
                                     Make Connection
                                 </button>
-                            </div>
-                            </div>
+
+                                <button type = "button" class = "btn btn-default" id = "clearConnectionsBtn">
+                                    Clear Connections
+                                </button>
+
+                            </div>     
+
+                            <hr><br>
+                            <h6>Blocks</h6>                             
+                            <div width = "100%" overflow-y = "scroll" id="BlocksSvgContainer"></div>
 
                         </ul>
                         <ul id="view-mem" class="list-group invisible">
-                            <li class="list-group-item">
+                            <li class="list-group-item invisible">
                                 <div class="btn-group full-width">
                                     <button id="byte-view" class="btn full-width btn-byte">Enable Byte View</button>
                                     <button id="reverse-view" class="btn full-width btn-byte">Reverse Direction</button>
                                 </div>
                             </li>
-                            <li id="mem-list" class="list-group">
-                                <div class="list-group-item" style="padding:0px">
-                                    <table class="table-striped">
-                                        <tr class="tr-head-mem">
-                                            <th class="th-mem">NetName</th>
-                                            <th class="th-mem">Value</th>
-                                        </tr>
-                                        <tr>
-                                            <td class="td-mem"></td>
-                                            <td class="td-mem"></td>
-                                        </tr>
-                                    </table>
+
+                            <!-- SIMULATION TAB -->
+
+                            <div id="topHalfofSim">
+                                <div>
+                                    <div>
+                                        <h6>Enter number of cycles for Simulation</h6> 
+                                        <input type="text" id="inputMaxInputLength">
+                                        <button tinputsTopype = "button" class = "btn btn-default" id = "applyMaxInputLength">
+                                            Enter
+                                        </button>
+                                    </div>
+                                    <br>
+                                    <button tinputsTopype = "button" class = "btn btn-default" id = "refreshConns">
+                                        Refresh Connections
+                                    </button>
+
+                                    <h6>Net</h6>
+                                    <select id="netDropDown1">                              
+                                    </select> 
+
+                                    <h6>Input Value</h6> 
+                                    <input type="text" id="inputVal">
+                                    <button type = "button" class = "btn btn-default" id = "applyVal">
+                                        Enter
+                                    </button>
                                 </div>
-                            </li>
-                            <li>
-                                <div style="text-align:center">
-                                    <b>Uninitialized memory is zeroed</b>
+                                <br>
+                                <div id="inputTable"> 
+                                    <div>
+                                        <button type = "button" class = "btn btn-default" id = "backButton">
+                                            <
+                                        </button>
+                                        <hd id="inputNumber">Cycle: 0</hd>
+                                        <button type = "button" class = "btn btn-default" id = "nextButton">
+                                            > 
+                                        </button>
+                                        
+                                        <!-- Inputs Table -->
+                                        <li id="curr-list" class="list-group">
+                                            <div class="list-group-item" style="padding:0px">
+                                                <table class="table-striped">
+                                                    <tr class="tr-head-mem">
+                                                        <td class="th-mem">Net Name</td>
+                                                        <td class="th-mem">Value</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="td-mem">Press Refresh Connections</td>
+                                                        <td class="td-mem">Press Refresh Connections</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </li>
+                                    </div> 
+
+                                    <br>
+                                    <button type = "button" class = "btn btn-default" id = "clearInputs">
+                                        Clear All Inputs
+                                    </button>
                                 </div>
-                            </li>
+                            </div>
+
+                            
+                            <!-- Simulation Table -->
+                            <div id="bottomHalfofSim">
+                                <button type = "button" class = "btn btn-default" id = "saveInputs">
+                                    Save Inputs
+                                </button>
+                                <button id="run" class="btn btn-fixed btn-default button-run">
+                                    Run
+                                </button>
+                                <!-- run btn -->
+                
+                                <button id="reset" class="btn btn-default">
+                                    Reset
+                                </button>
+                
+                                <button id="stepf" class="btn btn-default button-forward">
+                                    Step
+                                </button>
+                                <div> 
+                                    <hd id="simulationCycle">Cycle: 0</hd> 
+                                </div> 
+                                
+                                
+                                <li id="mem-list" class="list-group">
+                                    <div class="list-group-item" style="padding:0px">
+                                        <table class="table-striped">
+                                            <tr class="tr-head-mem">
+                                                <th class="th-mem">Net Name</th>
+                                                <th class="th-mem">Value</th>
+                                            </tr>
+                                            <tr>
+                                                <td class="td-mem">Press Run or Step to simulate</td>
+                                                <td class="td-mem">Press Run or Step to simulate</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </li>
+                            </div>
+                            
                         </ul>
-                        <ul id="view-mem" class="list-group invisible">
-                            <li class="list-group-item">
-                                <div class="btn-group full-width">
-                                    <button id="byte-view" class="btn full-width btn-byte">Enable Byte View</button>
-                                    <button id="reverse-view" class="btn full-width btn-byte">Reverse Direction</button>
-                                </div>
-                            </li>
-                            <li id="mem-list" class="list-group">
-                                <div class="list-group-item" style="padding:0px">
-                                    <table class="table-striped">
-                                        <tr class="tr-head-mem">
-                                            <th class="th-mem">Address</th>
-                                            <th class="th-mem">Value</th>
-                                        </tr>
-                                        <tr>
-                                            <td class="td-mem"></td>
-                                            <td class="td-mem"></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </li>
-                            <li>
-                                <div style="text-align:center">
-                                    <b>Uninitialized memory is zeroed</b>
-                                </div>
-                            </li>
-                        </ul>
-                        <div id="view-sym" class="list-group invisible">
-                            <table class="table-striped" id="sym-table"></table>
-                        </div>
+                        
                     </div>
                 </div>
 

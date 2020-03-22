@@ -24,6 +24,8 @@ open Refs
 open MenuBar
 open Views
 
+open SimulationManager
+
 /// Hack to provide a constant global variable
 /// set from command line arguments of main process.
 /// 0 => production. 1 => dev. 2 => debug.
@@ -81,45 +83,57 @@ let init() =
 
     Refs.saveFileBtn.addEventListener_click (fun _ -> MenuBar.interlock "save file" Files.saveFile)
 
+    Refs.maxInputLengthButton.addEventListener_click(fun _ ->
+        Browser.console.log "Entering new max input length"
+        SimulationManager.updateMaxInputLength()
+    )
+
+    (Refs.saveInputsButton).addEventListener_click(fun _ ->
+        Browser.console.log "Saving inputs"
+        SimulationManager.saveInputs()
+
+    )
 
     Refs.runSimulationBtn.addEventListener_click (fun _ ->
        Browser.console.log "Run simulation hook here" |> ignore
+       if List.isEmpty inputs then showAlert "There are no inputs, please press reset to retrieve saved inputs." "Error!" else 
+       SimulationManager.runSimulation()
     )
 
     stepForwardBtn.addEventListener_click (fun _ ->
-       Browser.console.log "Step hook here" 
-
-       inputs <- inputs.Tail
-       let size = inputs.Length
-
-       let newMapOfVals, newState = 
-            count <- ExampleTypes.c3InputLstofLst.Length - inputs.Length
-            Browser.console.log (sprintf "count: %A" count)
-            iterateState state inputs.Head asyncBLst syncBLst tLst
-
-       mapOfVals <- newMapOfVals
-       state <- newState
-       Views.updateTable ([mapToRow mapOfVals; mapToRow state])
+       if List.isEmpty inputs then showAlert "Please press reset" "No more inputs!" else 
+       Browser.console.log "Step hook here"
+       SimulationManager.stepSimulation()
     )
 
 
     resetSimulationBtn.addEventListener_click (fun _ ->
-        Browser.console.log "Reset hook here" 
-        let cLst = c3CLst
-        let tLst = tLogicLstEx
-        let initSyncMap,(syncBLst, asyncBLst) = setupSimulation cLst
+        Browser.console.log "Reset hook here"
+        SimulationManager.resetSimulation()
+    )
+    
+    (Refs.applyValButton).addEventListener_click(fun _ ->
+        Browser.console.log "Apply Val Button clicked" |> ignore
+        SimulationManager.applyInput()
+    )
 
-        inputs <- c3InputLstofLst
+    (Refs.nextButton).addEventListener_click(fun _ ->
+        SimulationManager.nextInput()
+    )
 
-        let firstMapOfVals,firstState = 
-            count <- ExampleTypes.c3InputLstofLst.Length - inputs.Length
-            Browser.console.log (sprintf "count: %A" count)
-            iterateState initSyncMap inputs.Head asyncBLst syncBLst tLst
+    (Refs.backButton).addEventListener_click(fun _ ->
+        SimulationManager.prevInput()
+    )
 
-        mapOfVals <- firstMapOfVals
-        state <- firstState
-        
-        updateTable ([mapToRow mapOfVals; mapToRow state])
+
+    (Refs.clearInputsButton).addEventListener_click(fun _ ->
+        Browser.console.log "Clearing inputs" |> ignore
+        SimulationManager.clearInputs() 
+    )
+
+    (Refs.refreshConns).addEventListener_click(fun _ ->
+        Browser.console.log "Refresh Connections Button clicked" |> ignore
+        SimulationManager.refreshConnections()
     )
 
     (Refs.byteViewBtn).addEventListener_click(fun _ ->
@@ -140,11 +154,29 @@ let init() =
 
     (Refs.makeConnectionBtn).addEventListener_click(fun _ ->
         Browser.console.log "Make Connection Btn clicked" |> ignore
-        ConnectionsManager.addBlockBtnClickListener ()
-        // connLst <- BlockGraphics.c5CLst
-        ConnectionsManager.updateConnNetDropDowns ()
+        ConnectionsManager.makeConnectionsBtnClickListener ()
     )
 
+    (Refs.clearConnectionBtn).addEventListener_click(fun _ ->
+        Browser.console.log "Clear Connections Btn clicked" |> ignore
+        ConnectionsManager.clearConnectionsBtnClickListener ()
+    )
+
+    (Refs.applyValButton).addEventListener_click(fun _ ->
+        Browser.console.log "Apply Val Button clicked" |> ignore
+        let textBoxContents = getInputValFromText()
+        Browser.console.log textBoxContents |> ignore
+    )
+
+    (Refs.refreshConns).addEventListener_click(fun _ ->
+        Browser.console.log "Refresh Connections Button clicked" |> ignore
+        SimulationManager.updateNetDropDown()
+    )
+
+    (Refs.compileButton).addEventListener_click(fun _ -> 
+        Browser.console.log "Compile Button clicked" |> ignore 
+        CompilationManager.compileSourceCode()
+    )
 
     mapClickAttacher viewToIdTab Refs.viewTab (fun view ->
         Browser.console.log (sprintf "View changed to %A" view) |> ignore

@@ -74,7 +74,7 @@ let rec evaluateExprLst (exprsToEvaluate: Expression list) ( allNets: Map<NetIde
             let startNet = createNewBusMap (0, outputBusSize - 1) (Some initValue)
             List.fold (fun result (inpNetID: NetIdentifier) ->
                 let inpNet = allNets.[getNetByName inpNetID.Name allNets]                 
-                busOperator (EvalBus result, 0) (inpNet, getStartIndex inpNetID)) startNet inpLst
+                busOperator (EvalBus result, 0) (inpNet, getStartIndex inpNetID allNets)) startNet inpLst
 
         let resultNet = 
             match op with
@@ -82,10 +82,10 @@ let rec evaluateExprLst (exprsToEvaluate: Expression list) ( allNets: Map<NetIde
             |Or -> reduceInpLstWithOp OROpNet Low
             |Not ->
                 let inpNetID = List.head inpLst //not operations should only have 1 input
-                NOTOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID) outputBusSize
+                NOTOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID allNets) outputBusSize
             |Pass -> 
                 let inpNetID = List.head inpLst
-                PassOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID) outputBusSize
+                PassOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID allNets) outputBusSize
             |Concat -> ConcatOpNet inpLst allNets
 
         let outputID = List.head outLst

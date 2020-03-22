@@ -79,66 +79,24 @@ let addDFF (size:int): Connection =
     Name "DFF", [false, ("a", net)], [true,("out", net)]
 
 
-// let rec addMegaBlock (tLogLst: TLogic list)=
-//     match Console.ReadLine() with
-//     |"end" ->[]
-//     |"DFF" -> 
-//         printf "specify DFF size \n"
-//         match Int32.TryParse(Console.ReadLine()) with
-//             | (true,int) ->
-//                 ((Name "DFF"),
-//                     [(false,("a",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))],
-//                     [(true,("out",Bus( (List.map (fun n->(n,Low)) [0..int])|>Map.ofList)))])::(addMegaBlock tLogLst)
-//             | _ -> printf "input invalid,number required \n"
-//                    addMegaBlock tLogLst
-//     |str when List.exists (searchBlocks str) tLogLst ->
-//         printf "New Megablock added \n"
-//         (genConnections str avaliableTBlocks)::(addMegaBlock tLogLst )
-//     |str -> printf "NANI?! match failed when adding megablocks, no block exists with name %s \n" str
-//             addMegaBlock tLogLst
 
 
-// acc: tLst, newCLst
-let rec giveUniqueNames (tLst: string list, newCLst: Connection list) (cLst: Connection list): Connection list =
-
+let addConnection (connLst: Connection list) (cIn: Connection) =
     let renameGNet str (gNet: GeneralNet) =
         match gNet with
             | sync, (oldStr, net) ->
                 sync, (str+oldStr, net)
 
-    let rec countInstances (acc:int) (refStr:string) (lst:string list) =
-        match lst with
-        | hd::tl when refStr = hd -> 
-            countInstances (acc+1) refStr tl
-        | _ ::tl ->
-            countInstances acc refStr tl
-        | _ -> 
-            acc
+    let (Name newConnName) = first cIn
 
-    let renameConnection (str:string) (prefix:string) (cIn:Connection): Connection =
-        let (lstIn, lstOut) = extractGenNetLsts cIn
-        let lstIn'= List.map (renameGNet prefix) lstIn
-        let lstOut' = List.map (renameGNet prefix) lstOut
-        (Name str, lstIn', lstOut')
+    let connCount = List.filter (fun (Name nameStr, _, _) -> nameStr = newConnName) connLst |> List.length
 
-    match cLst with
-    | hd::tl ->
-        let (Name str) = first hd
-        // if megablock appeared before
-        if List.contains str tLst then
-            let tLst' = tLst @ [str]
-            let num = countInstances 0 str tLst'
-            let prefix = str + num.ToString() + "_"
+    let prefixGNet = List.map (fun gNet -> renameGNet (sprintf "%s_%i" newConnName connCount) gNet)
+    let prefixedInpGNets =  prefixGNet (second cIn)
+    let prefixedOutGNets = prefixGNet (third cIn)
 
-            let newCLst' = renameConnection str prefix hd 
-            giveUniqueNames (tLst', newCLst @ [newCLst']) tl 
-        // if megablock not appeared before
-        else
-            let prefix = str + "0_" 
-            let newCLst' = renameConnection str prefix hd
-            giveUniqueNames (tLst @ [str], newCLst @ [newCLst']) tl 
-    | _ -> newCLst
-
+    let prefixedConnection = (Name newConnName, prefixedInpGNets, prefixedOutGNets)
+    connLst @ [prefixedConnection]
 
 let checkValidConnection outName inName  (cLst:Connection list)=
     let inGNet = getGNet inName (List.collect second cLst)
@@ -151,18 +109,19 @@ let checkValidConnection outName inName  (cLst:Connection list)=
 
     match inGNet,outGNet with
     | a,b when (netLen a <> netLen b) -> 
-        printf "nets cannot be connected as they are of differnet sizes\n"
-        false
-    | a,b when (inName.[inName.Length - 1]=outName.[outName.Length - 1]) && not(fst a) && not(fst b) -> 
-        printf "nets cannot be connected as they would form an unclocked loop\n"
-        false
+        Error (sprintf "nets cannot be connected as they are of differnet sizes")
+    |a,b when List.exists (searchOutNets inName) cLst ->
+        Error (sprintf "two output nets cannot be connected together")
+    |a,b when List.contains ((List.filter(searchOutNets outName)cLst).Head)(List.filter(searchInNets inName)cLst) && not(fst a) && not(fst b)->
+        Error (sprintf "two output nets cannot be connected together")
     |_ -> 
         printf "connection made between %s %s, if this is impossible tell Mark\n" inName outName
-        true
+        Ok ()
 
 
+type Link = string * string * GeneralNet
 /// given input string and output string, make a link between them in connection list
-let makeLinks outName inName (cLst: Connection list) : (string * string * GeneralNet) =
+let makeLink outName inName (cLst: Connection list) : Link =
     let gLstIn = List.collect second cLst
     let gLstOut = List.collect third cLst
 
@@ -174,8 +133,8 @@ let makeLinks outName inName (cLst: Connection list) : (string * string * Genera
 
 // take link list as an argument
 // take in connection list and return updated connection list
-type Link = string * string * GeneralNet
-let finaliseConnections (linkLst:Link List) (cLst: Connection list): Connection list =
+
+let applyLinks (linkLst:Link List) (cLst: Connection list): Connection list =
  
     // lst of input strings
     let inputNames = List.map first linkLst
