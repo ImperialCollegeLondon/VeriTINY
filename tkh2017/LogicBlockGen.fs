@@ -39,7 +39,7 @@ let correctConcatExp (allNets: NetIdentifier list) (concatExp: Expression) : Exp
                 match netID.SliceIndices with
                 | Some (x, Some y) -> abs (x - y) + 1
                 | Some (x, None) -> 1
-                | None -> getBusSize (List.find ((=) netID) allNets)
+                | None -> getBusSize (List.find (fun x -> x.Name = netID.Name) allNets)
             totalSize + currNetSize
         List.fold folder 0 concatNetTerms
 
