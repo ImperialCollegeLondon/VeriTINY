@@ -69,13 +69,12 @@ let allTestsWithExpecto() =
 [<EntryPoint>]
 let main argv =
     allTestsWithExpecto() |> ignore
-    let test = "module hex_to_7seg (out, in);
-                    output  [6:0] out; 
-                    input   [3:0] in;
-                    
-                    and(out[6], in[3], in[0]);
-                    assign out[4:1] = {in[3:2], in[2:1]} | ~in[3:0];
-                    assign out[5] = in[4]&~in[5];
+    let test = "module haha(allOnes, someInput, someInput2, concatedThing);
+                    input[3:0] allOnes;
+                    input[1:0] someInput, someInput2;
+                    output[3:0] concatedThing;
+
+                    and (concatedThing, {someInput2, someInput}, allOnes);
                 endmodule"
     printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
