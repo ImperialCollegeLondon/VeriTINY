@@ -219,11 +219,11 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
         prefixRemovedName.[0..truncateTo]
 
     let inputNetLables = 
-        List.map (getTruncatedGeneralNetName 7) (second conn)
+        List.map (getTruncatedGeneralNetName 6) (second conn)
         |> makeLabelElements "0" -3 "start"
 
     let outputNetLables = 
-        List.map (getTruncatedGeneralNetName 7) (third conn)
+        List.map (getTruncatedGeneralNetName 6) (third conn)
         |> makeLabelElements "280" -3 "start"
 
     let tLogicBlockSVG, blockHeight = makeTLogicSVG connTLogic "75" "0"

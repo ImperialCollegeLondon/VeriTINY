@@ -18,7 +18,6 @@ open Node.Exports
 open EEExtensions
 
 open SharedTypes
-open SimulationTypes
 
 
 // **********************************************************************************

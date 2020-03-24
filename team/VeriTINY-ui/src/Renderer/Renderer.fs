@@ -13,8 +13,6 @@ open Fable.Core.JsInterop
 open Fable.Import
 open Fable.Import.Browser
 
-open ExampleTypes
-open Simulator
 
 // open DevTools to see the message
 // Menu -> View -> Toggle Developer Tools
@@ -23,8 +21,6 @@ Browser.console.log "Hi from renderer.fs" |> ignore
 open Refs
 open MenuBar
 open Views
-
-open SimulationManager
 
 /// Hack to provide a constant global variable
 /// set from command line arguments of main process.

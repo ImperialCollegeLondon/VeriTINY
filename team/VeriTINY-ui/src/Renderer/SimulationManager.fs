@@ -225,7 +225,7 @@ let stepSimulation() =
 let runSimulation() =
     if List.isEmpty inputs then showAlert "No inputs to simulate" "Error!" else
     initSimulation()
-    simulationCount <- inputs.Length
+    simulationCount <- inputs.Length - 1
     let finalState,finalSyncState = Simulator.simulateInputList inputs connLst TLogicList
     state <- finalSyncState
     displaySimulationCycle()

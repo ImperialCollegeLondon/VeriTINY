@@ -1,11 +1,9 @@
 module Simulator
 open SharedTypes
-open SimulationTypes
 open EvalNetHelper
 open Helper
 open SynchronousBlocks
 open CombEval
-open Fable.Import.Browser
 
 
 /// Advance to next clock cycle, return synchronous states
@@ -102,10 +100,6 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncCLst: Connection list) 
 
     //printfn "Synchronous states after synchronous evaluation: \n %A" nextState
     mapOfVals, nextState
-
-    /// Convert to Block list for evaluation 
-let cLstToBlockLst (cLst: Connection List) : Block list =
-    List.map (fun (mBlock, a, b) -> (mBlock, gLstToMap a, gLstToMap b)) cLst
 
 /// Extract synchronous nets from cLst and initialize them to Low
 let returnSyncNets (cLst: Connection List) = 
