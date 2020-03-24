@@ -228,4 +228,4 @@ let parse inpTokList =
     | MATCHMODULE (Some ast, Ok []) -> Ok ast
     | MATCHMODULE (_, Error lst) //?
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
-    | _ -> failwithf "What?"
+    | _ -> Error (0, [])
