@@ -1,5 +1,5 @@
 # VeriTINY
-![alt-text]( https://github.com/channen2/Verilog2/blob/master/visual.png)
+![logo](https://github.com/channen2/Verilog2/blob/master/visual.png)
 
 ## Introduction
 
@@ -43,8 +43,7 @@ Type Verilog code in the text editor. Allows use of a limited set of instrucions
 
     16. "terminal_list" ::= "terminal" | "terminal" `,` "terminal_list"
 
-![Help1]
-[Help1]: 'https://github.com/channen2/Verilog2/blob/master/Help1.PNG'
+![Help1](https://github.com/channen2/Verilog2/blob/master/Help1.PNG)
 
 Verlilog code is parsed and stored as a logic block.
 
@@ -55,14 +54,12 @@ Use buttons in block interface to add to SVG environment in `Connections` . Allo
 Make connection between blocks by usinf the drop-down menu
 
 
-![Help2]
-[Help2]: 'https://github.com/channen2/Verilog2/blob/master/Help2.PNG'
+![Help2](https://github.com/channen2/Verilog2/blob/master/Help2.PNG)
 
 Simulate using the step button, avaliable in the `Simulation` tab.
 
 
-![Help3]
-[Help3]: 'https://github.com/channen2/Verilog2/blob/master/Help3.PNG'
+![Help3](https://github.com/channen2/Verilog2/blob/master/Help3.PNG)
 
 ## Project Structure
 
