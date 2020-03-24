@@ -184,7 +184,7 @@ let findNamedFile (name : string) =
         path.Split [| '/'; '\\' |]
         |> Array.toList
         |> List.map String.toLower
-    if name = "Untitled.s" || name = "" then Core.Option.None
+    if name = "Untitled.v" || name = "" then Core.Option.None
     else
         Refs.fileTabList
         |> List.map (fun id -> (Refs.tabFilePath id).innerText, id)
@@ -218,7 +218,7 @@ let createNamedFileTab fName fPath =
         id
 
 let createFileTab() =
-    createNamedFileTab "Untitled.s" ""
+    createNamedFileTab "Untitled.v" ""
     |> (fun tId -> selectFileTab tId; tId) // Switch to the tab we just created
 
 let deleteCurrentTab() =

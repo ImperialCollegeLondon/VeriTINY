@@ -63,8 +63,8 @@ let resultUndefined errCase x =
 let fileFilterOpts =
     ResizeArray [
         createObj [
-            "name" ==> "Assembly Code"
-            "extensions" ==> ResizeArray [ "s" ]
+            "name" ==> "Verilog Code"
+            "extensions" ==> ResizeArray [ "v" ]
         ]
     ] |> Some
 
@@ -114,12 +114,12 @@ let filterBadName isSave path =
     |> function
         | [] -> []
         | pl -> List.last pl |> (fun name ->
-            if name = "Untitled.s"
+            if name = "Untitled.v"
             then
                 showVexAlert (
                     if isSave then
-                        "Can't save 'Untitled.s'- choose another name"
-                    else "Can't open file 'Untitled.s'. rename file to open it")
+                        "Can't save 'Untitled.v'- choose another name"
+                    else "Can't open file 'Untitled.v'. rename file to open it")
                 []
             else [ path ])
 

@@ -23,12 +23,12 @@ open Fable.Core.JsInterop
 open Fable.Import
 
 let resetEmulator() =
-    printfn "Resetting..."
-    Tooltips.deleteAllContentWidgets()
-    Editors.removeEditorDecorations currentFileTabId
-    Editors.enableEditors()
-    memoryMap <- Map.empty
-    symbolMap <- Map.empty
-    regMap <- initialRegMap
-    setMode ResetMode
-    updateClockTime (0uL, 0uL)
+    printfn "Resetting"
+    // Tooltips.deleteAllContentWidgets()
+    // Editors.removeEditorDecorations currentFileTabId
+    // Editors.enableEditors()
+    // memoryMap <- Map.empty
+    // symbolMap <- Map.empty
+    // regMap <- initialRegMap
+    // setMode ResetMode
+    // updateClockTime (0uL, 0uL)
