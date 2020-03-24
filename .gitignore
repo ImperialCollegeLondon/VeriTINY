@@ -41,6 +41,7 @@ temp
 
 # ionide
 *.js
+!webpack.config.js
 *.js.map
 .orig
 release.cmd
