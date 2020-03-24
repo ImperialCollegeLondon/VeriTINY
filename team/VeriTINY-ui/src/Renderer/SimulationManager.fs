@@ -48,10 +48,9 @@ let rec toStr acc (lst:string list) =
 let currInputToTableRow (m:Map<string, GeneralNet>): (string * string) list =
 
     let intToStr (x:int) = sprintf "%A" x
-    let netValueFromGNet (gNet:GeneralNet): string = gNet |> extractLogLevel |> List.rev |> logicLevelsToint |> intToStr
-
+    
     let netNames = m |> Map.toList |> List.map fst 
-    let netValues = m |> Map.toList |> List.map (snd >> extractLogLevel >> List.map logToStr >> toStr "")    
+    let netValues = m |> Map.toList |> List.map (snd >> extractLogLevel >> List.rev >> List.map logToStr >> toStr "")    
 
     List.zip netNames netValues
 
@@ -63,14 +62,13 @@ let simulationMapToRow (m:Map<NetIdentifier,Net>) =
         | Wire netMap
         | Bus netMap ->
             netMap 
-            |> Map.toList 
+            |> Map.toList
             |> List.map snd
 
     let nameLst = m |> Map.toList |> List.map (fst >> (fun netId -> netId.Name))
-    let logLst = m |> Map.toList |> List.map (snd >> extractLogLevel >> List.map logToStr >> toStr "")
+    let logLst = m |> Map.toList |> List.map (snd >> extractLogLevel >> List.rev >>List.map logToStr >> toStr "") 
     
     List.zip nameLst logLst
-    //|> List.map (fun (a,b) -> [a;b])
 
 
 
@@ -83,7 +81,8 @@ let makeGNet (netName: string) (netValue: string): GeneralNet =
         if n = 1 then Wire else Bus
     
     let lstOfLog = intToLogicLevelList (int netValue) []
-                   |> padLogicLvlListToLength size |> List.rev
+                   |> padLogicLvlListToLength size 
+
     let n = lstOfLog.Length
 
     if n > size 
