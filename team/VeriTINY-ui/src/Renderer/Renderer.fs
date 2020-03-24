@@ -156,6 +156,10 @@ let init() =
         SimulationManager.refreshConnections ()
     )
 
+    (Refs.showNetsBtn).addEventListener_click(fun _ ->
+        SimulationManager.showNetsBtnClickListener()
+    )
+
     (Refs.compileButton).addEventListener_click(fun _ -> 
         Browser.console.log "Compile Button clicked" |> ignore 
         CompilationManager.compileSourceCode()

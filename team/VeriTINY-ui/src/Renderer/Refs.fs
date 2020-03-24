@@ -564,13 +564,15 @@ let mutable (connLst: Connection list) = []
 let mutable (inputs: GeneralNet list list) = []
 let mutable (inputsIndex: int) = 0
 let mutable simulationCount = -1
-let mutable state:Map<NetIdentifier, Net> = Map []
+let mutable synchronousState:Map<NetIdentifier, Net> = Map []
 let mutable (syncCLst: Connection list) = []
 let mutable (asyncCLst: Connection list) = []
 
 // used to update current inputs 
 let mutable maxInputLength = 10
 let mutable currentInputs: Map<string,GeneralNet> = Map []
+let mutable showAllNets = true
+let mutable allStates: Map<NetIdentifier, Net> = Map []
 
 /// get memory list element
 let memList = getHtml "mem-list"
@@ -586,6 +588,6 @@ let nextButton = getHtml "nextButton"
 let backButton = getHtml "backButton"
 let simulationCycleDisplay = getHtml "simulationCycle"
 let refreshConnsButton = getHtml "refreshConns"
-
+let showNetsBtn = getHtml "showAllNets"
 
 

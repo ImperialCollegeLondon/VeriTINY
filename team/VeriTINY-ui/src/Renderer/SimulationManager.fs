@@ -108,15 +108,22 @@ let updateCurrentInputsTable() =
     let tableRows = currInputToTableRow currentInputs
     updateTable tableRows currList
 
-let updateSimulationTable(stateMap)  =
-    let tableRows = simulationMapToRow stateMap
+let updateSimulationTable()  =
+    if simulationCount = -1 then () else
+    let tableRows = 
+        if showAllNets then 
+            simulationMapToRow allStates
+        else
+            returnOutputNetStates allStates
+            |> simulationMapToRow
+
     updateTable tableRows memList
 
 let initSimulation() =
     let initSyncMap,(sync, async) = Simulator.setupSimulation connLst
     syncCLst <- sync
     asyncCLst <- async
-    state <- initSyncMap
+    synchronousState <- initSyncMap
 
    
 let updateInputs() =
@@ -204,12 +211,13 @@ let resetSimulation() =
 let stepSimulation() =
     let step() =
         simulationCount <- simulationCount + 1
-        let currState, syncState = Simulator.iterateState state inputs.[simulationCount] asyncCLst syncCLst TLogicList
-        state <- syncState
+        let currState, syncState = Simulator.iterateState synchronousState inputs.[simulationCount] asyncCLst syncCLst TLogicList
+        synchronousState <- syncState
+        allStates <- currState
         displaySimulationCycle()
 
-        // let outputNetStates = returnOutputNetStates currState
-        updateSimulationTable(currState)
+        updateSimulationTable()
+
                
     if List.isEmpty inputs then showAlert "No inputs to simulate" "Error!" else 
 
@@ -227,11 +235,19 @@ let runSimulation() =
     initSimulation()
     simulationCount <- inputs.Length - 1
     let finalState,finalSyncState = Simulator.simulateInputList inputs connLst TLogicList
-    state <- finalSyncState
+    synchronousState <- finalSyncState
+    allStates <- finalState
     displaySimulationCycle()
 
-    // let outputNetStates = returnOutputNetStates finalState
-    updateSimulationTable(finalState)
+    updateSimulationTable()
     showAlert "Displaying final states of all nets" "Simulation Complete!" 
-    
-    
+       
+let updateShowNetsBtnTxt() = 
+    if showAllNets then showNetsBtn.innerHTML <- "Show Output Nets Only" else showNetsBtn.innerHTML <- "Show All Nets"
+
+let showNetsBtnClickListener() = 
+    showAllNets <- not showAllNets
+    updateShowNetsBtnTxt()
+    updateSimulationTable()
+
+
