@@ -78,7 +78,7 @@
                                 </button>
 
                                 <button type = "button" class = "btn btn-default" id = "clearBlocksBtn">
-                                    Clear Block List
+                                    Reset
                                 </button>
                             </div>
                             <div>
@@ -105,7 +105,7 @@
                                 </button>
 
                                 <button type = "button" class = "btn btn-default" id = "clearConnectionsBtn">
-                                    Clear Connections
+                                    Clear Blocks
                                 </button>
 
                             </div>     
@@ -129,7 +129,7 @@
                                 <div>
                                     <div>
                                         <h6>Enter number of cycles for Simulation</h6> 
-                                        <input type="text" id="inputMaxInputLength" value="10">
+                                        <input type="number" id="inputMaxInputLength" value="10" min="1">
                                         <button tinputsTopype = "button" class = "btn btn-default" id = "applyMaxInputLength">
                                             Enter
                                         </button>
@@ -145,12 +145,15 @@
                                     </select> 
 
                                     <h6>Input Value (Dec)</h6> 
-                                    <input type="text" id="inputVal">
+                                    <input type="number" id="inputVal" min="0">
                                     <button type = "button" class = "btn btn-default" id = "applyVal">
                                         Enter
                                     </button>
                                 </div>
                                 <br>
+
+                                <h5> Simulation Inputs </h5>
+                    
                                 <div id="inputTable"> 
                                     <div>
                                         <button type = "button" class = "btn btn-default" id = "backButton">
@@ -160,8 +163,10 @@
                                         <button type = "button" class = "btn btn-default" id = "nextButton">
                                             > 
                                         </button>
+
                                         
                                         <!-- Inputs Table -->
+                                        
                                         <li id="curr-list" class="list-group">
                                             <div class="list-group-item" style="padding:0px">
                                                 <table class="table-striped">
@@ -184,7 +189,8 @@
                             
                             <!-- Simulation Table -->
                             <div id="bottomHalfofSim">
-                            
+                                <h5> Simulation Table </h5>
+
                                 <button id="run" class="btn btn-fixed btn-default button-run">
                                     Run
                                 </button>
@@ -205,7 +211,7 @@
                                     <hd id="simulationCycle">Cycle: 0</hd> 
                                 </div> 
                                 
-                                
+
                                 <li id="mem-list" class="list-group">
                                     <div class="list-group-item" style="padding:0px">
                                         <table class="table-striped">
