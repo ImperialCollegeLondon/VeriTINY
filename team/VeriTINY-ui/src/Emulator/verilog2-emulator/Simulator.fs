@@ -7,76 +7,58 @@ open CombEval
 
 
 /// Advance to next clock cycle, return synchronous states
-let advanceState (initMap: Map<NetIdentifier,Net>) (asyncCLst: Connection list) (syncCLst: Connection list) (tLst: TLogic List) = 
+let advanceState (initMap: Map<NetIdentifier,Net>) (asyncCLst: SimBlock list) (syncCLst: SimBlock list) (tLst: TLogic List) = 
 
-    let rec checkIfNetsAreKnown (refMap: Map<NetIdentifier, Net>) (lst: GeneralNet List) =
+    let rec checkIfNetsAreKnown (refMap: Map<NetIdentifier, Net>) (lst: SimNetInfo List) =
         match lst with
-        | hd::tl when Map.containsKey (gNetToNetID hd |> fst) refMap ->
+        | hd::tl when Map.containsKey hd.ID refMap ->
             checkIfNetsAreKnown refMap tl
         | [] -> true
         | _ -> false
 
     // return map with keys according to input list and values from refmap 
-    let takeFromMap (refMap:Map<NetIdentifier,Net>) (lst: GeneralNet list) =
-        let netIds = List.map (gNetToNetID >> fst) lst
+    let takeFromMap (refMap:Map<NetIdentifier,Net>) (lst: SimNetInfo list) =
+        let netIds = List.map extractNetIDFromInfo lst
         let netList = List.map (fun x -> refMap.[x]) netIds
         List.zip netIds netList |> Map.ofList
 
     // take nets from map retaining order from gNetLst
-    let takeNetsFromMap (refMap:Map<NetIdentifier,Net>) (lst:GeneralNet list): Net list =
-        let netIds = List.map (gNetToNetID >> fst) lst
+    let takeNetsFromMap (refMap:Map<NetIdentifier,Net>) (lst:SimNetInfo list): Net list =
+        let netIds = List.map extractNetIDFromInfo lst
         let netList = List.map (fun x -> refMap.[x]) netIds
         netList 
     
-    let getTLogicByName (tLst:TLogic List) (mBlock: Megablock) =
-        let (Name str) = mBlock
+    let getTLogicByName (tLst:TLogic List) (mBlock: MegablockType) =
         let checker s (tLog: TLogic): bool = 
             s = tLog.Name
-        List.find (checker str) tLst
+        List.find (checker mBlock) tLst
 
-    let evaluateTLogic (refMap:Map<NetIdentifier,Net>) (lstIn: GeneralNet list) (lstOut: GeneralNet list) (tLog:TLogic) =
+    let evaluateTLogic (refMap:Map<NetIdentifier,Net>) (simBlock:SimBlock) (tLog:TLogic): Map<NetIdentifier, Net> =
         
-        let newGNet (name:string) (net:Net) =
-            false, (name, net) 
-
-        let rec makeGNetLst acc (nameLst: string list) (netLst: Net list): GeneralNet list =
-            match nameLst, netLst with
-            | nameHd::nameTl, netHd::netTl ->
-                let gNet = newGNet nameHd netHd
-                makeGNetLst ([gNet] @ acc) nameTl netTl
-            | [], [] -> 
-                acc
-            | _ -> 
-                failwithf "Length of name list did not match length of net list"
-
-        let reorderOutputs (outputMap: Map<NetIdentifier,Net>) (orderedOutputNames: string list): Net list = 
-            List.map (fun x -> 
-                               let netId = getNetByName x outputMap
-                               outputMap.[netId]) orderedOutputNames
-
+        let reorderOutputs (outputMap: Map<NetIdentifier,Net>) (orderedOutputNames: NetIdentifier list): Net list = 
+            List.map (fun x -> outputMap.[x]) orderedOutputNames
 
         // names ordered according to tLogic
-        let inputNamesFromTLog = tLog.Inputs |> List.map (fun x -> x.Name)
-        let outputNamesFromTLog = tLog.Outputs |> List.map (fun x -> x.Name)
 
-        // nets ordered from connection 
-        let inputNetLst = takeNetsFromMap refMap lstIn
-        let outputNetLst = List.map extractNet lstOut
-        let originalOutputNames = List.map gNetName lstOut
-
+        // nets ordered from SimBlock 
+        let inputNetLst = takeNetsFromMap refMap simBlock.inNets
+        let outputNetLst = List.map makeNetFromInfo simBlock.outNets //only works because TLogics are purely combininatorial right now
+       
         // make maps for evaluation
-        let mapForEval = makeGNetLst [] inputNamesFromTLog inputNetLst |> gLstToMap
-        let defaultOutput = makeGNetLst [] outputNamesFromTLog outputNetLst |> gLstToMap
+        let mapForEval = List.zip tLog.Inputs inputNetLst |> Map
+        let defaultOutput = List.zip tLog.Outputs outputNetLst |> Map
 
         let result = evaluateModuleWithInputs tLog mapForEval defaultOutput
-        let outputNets = reorderOutputs result outputNamesFromTLog
-       
-        makeGNetLst [] originalOutputNames outputNets |> gLstToMap
+        let outputNets = reorderOutputs result tLog.Outputs
 
-    let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncCLst: Connection list) =
-        match asyncCLst with 
-        | (mBlock, lstIn, lstOut)::rest when checkIfNetsAreKnown acc lstIn ->
-            let acc' = mBlock |> getTLogicByName tLst |> evaluateTLogic acc lstIn lstOut |> updateMap acc
+        List.zip (List.map extractNetIDFromInfo simBlock.outNets) outputNets |> Map
+
+        
+
+    let rec simulateAsync (acc:Map<NetIdentifier,Net>) (asyncBLst: SimBlock list) =
+        match asyncBLst with 
+        | hd::rest when checkIfNetsAreKnown acc hd.inNets ->
+            let acc' = hd.MegablockType |> getTLogicByName tLst |> evaluateTLogic acc hd |> updateMap acc
             simulateAsync acc' rest
         | hd::rest ->             
             simulateAsync acc (rest @ [hd])
@@ -84,12 +66,12 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncCLst: Connection list) 
             acc
         | _ -> failwithf "Shouldn't happen"
 
-    let rec simulateSync (acc:Map<NetIdentifier,Net>) (refMap:Map<NetIdentifier,Net>) (syncCLst: Connection list) =
-        match syncCLst with
-        | (mBlock, lstIn, lstOut)::rest when List.contains mBlock syncMegaBlockLst->
+    let rec simulateSync (acc:Map<NetIdentifier,Net>) (refMap:Map<NetIdentifier,Net>) (syncBLst: SimBlock list) =
+        match syncBLst with
+        | hd::rest when List.contains hd.MegablockType syncMegaBlockLst->
             // takes values from refMap using keys of mapIn
-            let mapIn' = takeFromMap refMap lstIn
-            let acc' = (mapIn', gLstToMap lstOut) ||> evaluateSyncBlock mBlock  |> updateMap acc
+            let mapIn' = takeFromMap refMap hd.inNets
+            let acc' = (mapIn', hd.outNets) ||> evaluateSyncBlock hd.MegablockType  |> updateMap acc
             simulateSync acc' refMap rest
         | [] -> acc 
         | _ -> failwithf "other megablocks not supported yet"
@@ -102,39 +84,24 @@ let advanceState (initMap: Map<NetIdentifier,Net>) (asyncCLst: Connection list) 
     mapOfVals, nextState
 
 /// Extract synchronous nets from cLst and initialize them to Low
-let returnSyncNets (cLst: Connection List) = 
+let returnSyncNets (bLst: SimBlock List) = 
     
-    let findAllSync (cLst:Connection List) =
-        let rec findSync acc gLst =
-            match gLst with
-            | hd::tl -> 
-                if fst hd then 
-                    findSync (acc @ [hd]) tl
-                else 
-                    findSync acc tl
-            | [] -> 
-                acc
-        let getSyncFromConnection (cIn: Connection) =
-            cIn 
-            |> extractGenNetLsts 
-            |> opOnTuple (findSync []) 
-            |> (fun (a, b) -> a @ b)
-        List.collect getSyncFromConnection cLst
-    
-    let initializeSync (gNet: GeneralNet) = 
-        let newMapLen = gNet |> extractNet |> netSize 
-        updateGenNet gNet (createNewMap newMapLen)
-        
-    cLst 
+    let findAllSync (bLst:SimBlock List) =
+        List.fold (fun clockedNetInfos block ->
+            let getClockedNetInfos netInfos = List.filter (fun netInfo -> netInfo.isClocked) netInfos
+            let clockedInps = getClockedNetInfos block.inNets
+            let clockedOuts = getClockedNetInfos block.outNets
+            clockedNetInfos @ clockedInps @ clockedOuts
+            ) [] bLst
+
+    bLst 
     |> findAllSync 
     |> List.distinct 
-    |> List.map initializeSync 
 
 // Seperate sync/async megablocks 
-let seperateMegaBlocks (cLst) =
-    let checkIfSyncBlock (cIn: Connection) =
-        let (megaBlock), _, _ = cIn
-        List.contains megaBlock syncMegaBlockLst
+let seperateMegaBlocks (bLst) =
+    let checkIfSyncBlock (bIn: SimBlock) =
+        List.contains bIn.MegablockType syncMegaBlockLst
     let rec seperate lstA lstB lst =
         match lst with
         | hd::tl ->
@@ -143,24 +110,30 @@ let seperateMegaBlocks (cLst) =
             else
                 seperate lstA (lstB @ [hd]) tl
         | [] -> lstA, lstB
-    seperate [] [] cLst // -> (syncCLst, asyncCLst)
+    seperate [] [] bLst // -> (syncBLst, asyncBLst)
 
 
-let setupSimulation (cLst:Connection list) =
-    let initialSyncNetMap = returnSyncNets cLst |> gLstToMap
-    initialSyncNetMap, seperateMegaBlocks cLst
+let setupSimulation (bLst:SimBlock list) =
+    let initialSyncNetInfoLst = returnSyncNets bLst
+    let initialSyncNetMap = 
+        List.map (fun netInfo -> 
+        let netMap = makeNetFromInfo netInfo
+        let netID = extractNetIDFromInfo netInfo
+        (netID, netMap)) initialSyncNetInfoLst |> Map
+    
+    initialSyncNetMap, seperateMegaBlocks bLst
 
 
 //additional top level function for iterating through inputs one by one
-let iterateState syncState (inpLst: GeneralNet list) (asyncCLst: Connection list) (syncCLst: Connection list)  (tLst: TLogic list) =
-    let initMap = updateMap (gLstToMap inpLst) syncState
+let iterateState syncState (inpMap: Map<NetIdentifier, Net>) (asyncCLst: SimBlock list) (syncCLst: SimBlock list)  (tLst: TLogic list) =
+    let initMap = updateMap inpMap syncState
     advanceState initMap asyncCLst syncCLst tLst
 
-let simulateInputList (lstOfInputs: GeneralNet List list) (cLst:Connection list) (tLst: TLogic list)=
+let simulateInputList (lstOfInputs: Map<NetIdentifier, Net> list) (cLst:SimBlock list) (tLst: TLogic list)=
    
     let initialSyncNetMap, (syncCLst, asyncCLst) = setupSimulation cLst
     // Keep advancing state until the lst of inputs are exhausted
-    let rec advanceMore currState syncState (lstOfInputs: GeneralNet list list) =
+    let rec advanceMore currState syncState (lstOfInputs: Map<NetIdentifier, Net> list) =
         match lstOfInputs with
         | currentInputs::rest -> 
             let currState', syncState' = iterateState syncState currentInputs asyncCLst syncCLst tLst

@@ -2,7 +2,7 @@ module SharedTypes
 
 type LogicLevel = | High | Low
 type Operator = | And | Or | Not | Concat | Pass 
-type Megablock = | Name of string
+type MegablockType = string
 
 type Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
 // type NamedNet = string * Net
@@ -30,16 +30,15 @@ type TLogic = {
     Wires: NetIdentifier list
 }  
 
-type SimNetWrapper = {
+type SimNetInfo = {
         ID: NetIdentifier   
         isClocked: bool
-        Net: Net
 }
 
 type SimBlock = {
-    BlockType: string
-    inNets: SimNetWrapper list
-    outNets: SimNetWrapper list
+    MegablockType: MegablockType
+    inNets: SimNetInfo list
+    outNets: SimNetInfo list
     //possibility to add block instance names here
 }
     

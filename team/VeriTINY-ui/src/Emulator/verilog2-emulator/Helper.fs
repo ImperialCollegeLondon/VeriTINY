@@ -1,7 +1,17 @@
 module Helper
 open SharedTypes
+open EvalNetHelper
 
 // module containing helper functions
+
+let extractNetIDFromInfo netInfo = netInfo.ID
+
+let makeNetFromInfo (netInfo: SimNetInfo) = 
+            let ID = netInfo.ID
+            match ID.SliceIndices with
+            |Some(x, Some y) -> createNewBusMap (min x y, max x y) Low |> Bus
+            |Some(x, None)  -> createNewBusMap (x, x) Low |> Bus
+            |None -> createNewBusMap (0, 0) Low |> Wire
 
 let rec lstOpParallel acc f lstA lstB =
     match lstA, lstB with
