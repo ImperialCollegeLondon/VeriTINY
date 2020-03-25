@@ -3,9 +3,7 @@
 
 ## Introduction
 
-Simple Verilog simulator.
-Built in F# with the help of using fable and electron.
-Features a Verllog code editor and a block interface.
+VeriTINY is a simple Verilog simulator that supports a subset of the Verilog HDL. It features a Verilog code editor, a block connections interface, and a digital circuit simulator.
 
 
 ## Installation Instructions
@@ -36,7 +34,7 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 
 ## Workflow
 
-1. Type Verilog code in the text editor. Allows use of a limited set of instrucions:
+1. Type Verilog code in the text editor. VeriTINY currently supports the following language features:
 
 * Gate instantiation 
   * AND, OR, NOT only  
