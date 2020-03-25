@@ -52,10 +52,12 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 Verilog code may also be saved and loaded as .v files.
 
 
-![Help1](https://github.com/channen2/Verilog2/blob/master/Help1.PNG)
+![WF1](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png)
 
 
 2. Press the `compile` button to convert Verilog code into a block. The block will appear in the `block list` drop down in the `Connections` tab.
+
+![WF2](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-2.png)
 
 
 
@@ -67,11 +69,15 @@ Verilog code may also be saved and loaded as .v files.
    * `Reset` - Clear the `block list` and the `Blocks Workspace`
 
 
+![WF3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-3.png)
+
 4. Use the buttons in the `Simulation` tab to enter inputs to simulation. These will be displayed in the `Simulation Inputs Table`.
    * Enter the number of cycles you wish to simulate for using the textbox at the top of the `Simulation` tab and press `Enter`
     * `Refresh Connections` - Load the block diagram that is defined in the `Connections Tab` for simulation
    * Select a `Net` using the dropdown and enter a decimal value to apply to the net into the `Input Value` textbox and press `Enter`
      * Use the left and right buttons  `<` `>` to apply values to the nets for different cycles
+
+![WF4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png)
   
 
 5. Use the buttons in the bottom half of the `Simulation` tab to simulate the circuit. The values of the nets will be displayed in the `Simulation Table`.
@@ -81,16 +87,14 @@ Verilog code may also be saved and loaded as .v files.
    * `Show Output Nets only / Show All Nets` - Toggle between showing output nets and all nets in the `Simulation Table`
 
 
+![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png)
+
 #### Notes
 * You can switch between the `Connections` and `Simulation` tab freely, however if you make changes in the `Blocks Workspace` then you *must* press the `Refresh Connections` button to load your changes. Doing this will erase the simulation state and inputs.
 * You can change the *upcoming* simulation inputs *at any point* during simulation. Changing past inputs will have no effect on simulation.
 
 
-![Help2](https://github.com/channen2/Verilog2/blob/master/Help2.PNG)
 
-
-
-![Help3](https://github.com/channen2/Verilog2/blob/master/Help3.PNG)
 
 ## Project Structure
 
