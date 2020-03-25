@@ -1,5 +1,5 @@
 # VeriTINY
-![logo](https://github.com/channen2/Verilog2/blob/master/visual.png)
+![logo](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png)
 
 ## Introduction
 
