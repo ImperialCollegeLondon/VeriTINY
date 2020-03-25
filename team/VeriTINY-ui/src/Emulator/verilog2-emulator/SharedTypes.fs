@@ -5,8 +5,9 @@ type Operator = | And | Or | Not | Concat | Pass
 type Megablock = | Name of string
 
 type Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>
-type NamedNet = string * Net
-type GeneralNet = (bool * NamedNet) 
+// type NamedNet = string * Net
+// type GeneralNet = (bool * NamedNet) 
+
 
 type NGram = (char list * bool * bool) list
 type Lexer = char list -> (char list * char list) option
@@ -19,7 +20,7 @@ type NetIdentifier = {
     //SliceIndicies can be None if whole bus is to be selected 
 }
 
-type Expression = (Operator * NetIdentifier list * NetIdentifier list)
+type Expression = (Operator * NetIdentifier list * NetIdentifier list) //output net list first
 
 type TLogic = {
     Name: string
@@ -29,4 +30,19 @@ type TLogic = {
     Wires: NetIdentifier list
 }  
 
-type Connection = Megablock * GeneralNet list * GeneralNet list 
+type SimNetWrapper = {
+        ID: NetIdentifier   
+        isClocked: bool
+        Net: Net
+}
+
+type SimBlock = {
+    BlockType: string
+    inNets: SimNetWrapper list
+    outNets: SimNetWrapper list
+    //possibility to add block instance names here
+}
+    
+
+// type Connection = Megablock * GeneralNet list * GeneralNet list 
+
