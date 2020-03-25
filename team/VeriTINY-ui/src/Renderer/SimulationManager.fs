@@ -239,7 +239,7 @@ let runSimulation() =
     displaySimulationCycle()
 
     updateSimulationTable()
-    showAlert "Displaying final states of all nets" "Simulation Complete!" 
+    showAlert "Displaying final states of nets" "Simulation Complete!" 
        
 let updateShowNetsBtnTxt() = 
     if showAllNets then showNetsBtn.innerHTML <- "Show Output Nets Only" else showNetsBtn.innerHTML <- "Show All Nets"
