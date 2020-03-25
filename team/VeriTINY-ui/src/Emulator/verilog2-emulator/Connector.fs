@@ -3,11 +3,14 @@ module Connector
 open System
 open SharedTypes
 open Helper
+open EvalNetHelper
 
-// tuple helper function
-let first (a, _, _) = a
-let second (_, b, _) = b
-let third (_, _, c) = c
+
+type Link = {
+    inNet: string;
+    outNet: string;
+    netInfo: SimNetInfo
+}
 
 // /search helper functions
 let searchBlocks name (block:TLogic)=
@@ -17,48 +20,28 @@ let searchBlocks name (block:TLogic)=
     | _ -> 
         false
 
-// extract name from GeneralNet
-let getName (gNet: GeneralNet) =
-    gNet 
-    |> snd 
-    |> fst
-
-// get Net from netList
-let getGNet (name:string) (gLst:GeneralNet list): GeneralNet=
-    let checkNetName refName (gNet:GeneralNet) =
-        let name = getName gNet
-        match name with
-            |name when name = refName -> 
-                true
-            |_ -> 
-                false
-    List.find (checkNetName name) gLst
-
+let getNetInfoByName (name: string) (netInfoLst: SimNetInfo list): SimNetInfo =
+    List.find (fun netInfo -> 
+        let netID = netInfo.ID
+        name = netID.Name) netInfoLst
 
 /// return a bool list 
-let searchGNetLst str (gLst: GeneralNet list) =
-    List.contains str (List.map getName gLst)
-
-let searchInNets str (conn:Connection) : bool=
-    searchGNetLst str (second conn)
-
-let searchOutNets str (conn:Connection) : bool=
-    searchGNetLst str (third conn)
+let searchNetInfoLst name (netInfoLst: SimNetInfo list): bool =
+    List.exists (fun netInfo -> 
+        let netID = extractNetIDFromInfo netInfo
+        name = netID.Name) netInfoLst
 
  //only works for unclocked nets
  // previously genConnections
-let addTLogic (str:string) (tLogLst:TLogic list): Connection=
-    let mBlock = (List.filter (searchBlocks str) tLogLst).Head
+let addTLogic (str:MegablockType) (tLogLst:TLogic list): SimBlock=
+    let mBlock = List.find (searchBlocks str) tLogLst
 
     let interpretNetId netId =
         match netId.SliceIndices with 
         |Some (0, _)-> 
             Map [0,Low]
             |> Bus    
-        |Some (num2, Some num1) -> 
-            abs(num2 - num1) + 1
-            |> createNewMap 
-            |> Bus
+        |Some (num2, Some num1) -> createNewBusMap (0 , abs(num2 - num1) + 1) Low |> Bus
         |None -> 
             Map [0,Low]
             |> Wire 
@@ -67,109 +50,150 @@ let addTLogic (str:string) (tLogLst:TLogic list): Connection=
             Map [0,Low]
             |> Wire 
 
-    let createGenNets (netIdLst :NetIdentifier list): GeneralNet list=
-        List.map (fun (x:NetIdentifier) -> false, (x.Name,interpretNetId x)) netIdLst
+    let createSimNetInfos (netIdLst :NetIdentifier list): SimNetInfo list=
+        List.map (fun x -> {
+            ID = x
+            isClocked = false;
+        }) netIdLst
 
-    Name str, createGenNets mBlock.Inputs, createGenNets mBlock.Outputs
-
-
-
-let addDFF (size:int): Connection =
-    let net =
-        match size with
-        | 1 -> 
-            createNewMap size |> Wire
-        | _ ->
-            createNewMap size |> Bus
-    Name "DFF", [false, ("a", net)], [true,("out", net)]
+    {
+        MegablockType = str
+        inNets = createSimNetInfos mBlock.Inputs
+        outNets = createSimNetInfos mBlock.Outputs
+    }
 
 
 
+let addDFF (size:int): SimBlock =
+    let makeNetIDWithName name = 
+        {
+            Name = name
+            SliceIndices = 
+                match size with
+                |1 -> None
+                |x -> Some (0, Some (x - 1))
 
-let addConnection (connLst: Connection list) (cIn: Connection) =
-    let renameGNet str (gNet: GeneralNet) =
-        match gNet with
-            | sync, (oldStr, net) ->
-                sync, (str+oldStr, net)
+        }
+        
+    {
+       MegablockType = "DFF";
+       inNets = [
+           {
+               ID = makeNetIDWithName "D"
+               isClocked = false
+           }
+        ];
 
-    let (Name newConnName) = first cIn
+        outNets = [
+            {
+               ID = makeNetIDWithName "Q"
+               isClocked = true
+            }
+        ]  
+    }
 
-    let connCount = List.length connLst 
+ 
 
-    let prefixGNet = List.map (fun gNet -> renameGNet (sprintf "%s.%i" newConnName connCount) gNet)
-    let prefixedInpGNets =  prefixGNet (second cIn)
-    let prefixedOutGNets = prefixGNet (third cIn)
 
-    let prefixedConnection = (Name newConnName, prefixedInpGNets, prefixedOutGNets)
-    connLst @ [prefixedConnection]
 
-let checkValidConnection outName inName  (cLst:Connection list)=
-    let inGNet = getGNet inName (List.collect second cLst)
-    let outGNet = getGNet outName (List.collect third cLst)
 
-    let netLen (gNet: GeneralNet) =
-        gNet
-        |> extractNet
-        |> netSize
+let addConnection (blockLst: SimBlock list) (bIn: SimBlock) =
 
-    match inGNet,outGNet with
+    let blockCount = List.length blockLst 
+
+    let prefixNetIDsInInfo = 
+        List.map (fun (netInfo:SimNetInfo) -> 
+            let netID = netInfo.ID
+            let prefixedName = netID.Name + (sprintf "%s.%i" bIn.MegablockType blockCount) 
+            let prefixedNetID = {netID with Name = prefixedName}
+            {netInfo with ID = prefixedNetID}
+        )
+    let prefixedInpNetInfos =  prefixNetIDsInInfo bIn.inNets
+    let prefixedOutNetInfos = prefixNetIDsInInfo bIn.outNets
+
+    let prefixedBlock = {bIn with inNets = prefixedInpNetInfos; outNets = prefixedOutNetInfos }    
+    blockLst @ [prefixedBlock]
+
+let checkValidConnection outName inName (bLst:SimBlock list) =
+    let allOutNetInfos = (List.collect (fun block -> block.outNets) bLst)
+    let allInNetInfos = (List.collect (fun block -> block.inNets) bLst)
+    let inNetInfo = getNetInfoByName inName allInNetInfos
+    let outNetInfo = getNetInfoByName outName allOutNetInfos
+
+    let netLen netInfo =
+        netInfo
+        |> extractNetIDFromInfo
+        |> getBusSize
+
+    match inNetInfo,outNetInfo with
     | a,b when (netLen a <> netLen b) -> 
         Error (sprintf "nets cannot be connected as they are of differnet sizes")
-    |a,b when List.exists (searchOutNets inName) cLst ->
+    |a,b when searchNetInfoLst inName allOutNetInfos ->
         Error (sprintf "two output nets cannot be connected together")
-    |a,b when List.contains ((List.filter(searchOutNets outName)cLst).Head)(List.filter(searchInNets inName)cLst) && not(fst a) && not(fst b)->
-        Error (sprintf "two output nets cannot be connected together")
+    // |a,b when List.contains ((List.filter(searchOutNets outName)cLst).Head)(List.filter(searchInNets inName)cLst) && not(fst a) && not(fst b)->
+    //     Error (sprintf "two output nets cannot be connected together")
     |_ -> 
         printf "connection made between %s %s, if this is impossible tell Mark\n" inName outName
         Ok ()
 
 
-type Link = string * string * GeneralNet
 /// given input string and output string, make a link between them in connection list
-let makeLink outName inName (cLst: Connection list) : Link =
-    let gLstIn = List.collect second cLst
-    let gLstOut = List.collect third cLst
+let makeLink outName inName (bLst: SimBlock list) : Link =
+    let allOutNetInfos = (List.collect (fun block -> block.outNets) bLst)
+    let allInNetInfos = (List.collect (fun block -> block.inNets) bLst)
 
-    let sync = fst (getGNet inName gLstIn) || fst (getGNet outName gLstOut)
-    let net = getGNet inName gLstIn |> snd
+    let inNetInfo = getNetInfoByName inName allInNetInfos
+    let outNetInfo = getNetInfoByName outName allOutNetInfos
 
-    inName, outName, (sync, net)
+    let isClocked' = inNetInfo.isClocked || outNetInfo.isClocked
+    
+    let newNetInfo = 
+        {
+            ID = outNetInfo.ID
+            isClocked = isClocked'
+        }
+
+    {
+        inNet = inName
+        outNet = outName
+        netInfo = newNetInfo
+    }
+
 
 
 // take link list as an argument
 // take in connection list and return updated connection list
 
-let applyLinks (linkLst:Link List) (cLst: Connection list): Connection list =
+let applyLinks (linkLst:Link List) (bLst: SimBlock list): SimBlock list =
  
     // lst of input strings
-    let inputNames = List.map first linkLst
+    let inputNames = List.map (fun x -> x.inNet) linkLst
     // lst of output strings
-    let outputNames = List.map second linkLst
+    let outputNames = List.map (fun x -> x.outNet) linkLst
 
-    let updateGNetLst (gLst:GeneralNet list)  =
+    let updateNetInfoLst (netInfoLst: SimNetInfo list)  =
         let matchNames name (link:Link) =
-            match first link,second link with
+            match link.inNet , link.outNet with
             | a,b when a = name || b = name ->
                 true
             | _ ->
                 false        
 
-        let returnNewGNet (gNet:GeneralNet) =
-            match getName gNet with 
+        let returnNewNetInfo (netInfo: SimNetInfo) =
+            let netID = netInfo.ID
+            match netID.Name with 
                 | name when List.contains name inputNames || List.contains name outputNames ->
-                    let newGNet = third (List.find (matchNames name) linkLst) 
-                    newGNet
+                    let link =  (List.find (matchNames name) linkLst) 
+                    link.netInfo                    
                 | _ -> 
-                    gNet
+                    netInfo
 
-        List.map returnNewGNet gLst
+        List.map returnNewNetInfo netInfoLst
 
-    let updateConnection (conn: Connection): Connection =
-        let gLstIn = second conn
-        let gLstOut = third conn
-        first conn, updateGNetLst gLstIn, updateGNetLst gLstOut
-
-    List.map updateConnection cLst
+    let updateBlock(block: SimBlock): SimBlock =     
+        {block with inNets = updateNetInfoLst block.inNets; outNets = updateNetInfoLst block.outNets;}
+ 
+    List.map updateBlock bLst
 
 
 /// example of changing cLst
