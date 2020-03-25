@@ -6,6 +6,10 @@ open EvalNetHelper
 
 let extractNetIDFromInfo netInfo = netInfo.ID
 
+let extractNameFromInfo netInfo = 
+    let netID = extractNetIDFromInfo netInfo
+    netID.Name
+
 let makeNetFromInfo (netInfo: SimNetInfo) = 
             let ID = netInfo.ID
             match ID.SliceIndices with
