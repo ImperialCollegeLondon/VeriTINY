@@ -152,11 +152,6 @@ let getDFFSizeInp () =
     let input = DFFSizeInput :?> HTMLInputElement
     input.value
 
-let testSVG () = 
-    let newSVG = drawBlocks c5CLst tLogicLstEx
-
-    updateBlockDiagram newSVG 
-
 let getMaxLengthFromText() =
     let input = maxInputLengthText :?> HTMLInputElement
     input.value
