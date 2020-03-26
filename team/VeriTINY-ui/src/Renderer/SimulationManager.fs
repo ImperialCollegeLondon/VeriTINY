@@ -54,7 +54,7 @@ let makeNetWithVal (netID: NetIdentifier) (netValue: string): Net =
     let oldNet = currentInputs.[netID]
     let netSize = getBusSize netID
     
-    let busOrMap (n:int) =
+    let wireOrBus (n:int) =
         if n = 1 then Wire else Bus
     
     let newLogLst = intToLogicLevelList (int netValue) []
@@ -69,7 +69,7 @@ let makeNetWithVal (netID: NetIdentifier) (netValue: string): Net =
     else
         List.zip [0..newNetLen-1] newLogLst 
         |> Map 
-        |> busOrMap newNetLen
+        |> wireOrBus newNetLen
 
 let updateCurrentInputsTable() =
     let tableRows = mapToTableRows currentInputs
@@ -169,7 +169,7 @@ let refreshConnections() =
 
 let updateMaxInputLength() =
     let maxInputLength' = getMaxLengthFromText()
-    if int maxInputLength <= 0 then showAlert "Please enter a positive integer." "Error!" else
+    if int maxInputLength' <= 0 then showAlert "Please enter a positive integer." "Error!" else
     maxInputLength <- int maxInputLength'
     refreshConnections()
 
