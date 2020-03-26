@@ -2,6 +2,8 @@
 
 I was responsible for the `Connections` tab in the UI which allows blocks (VeriTINY modules or DFFs)  to be added to a workspace and connected togther. A screenshot of the UI is given below. 
 
+![WF3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-3.png)
+
 In order to make the tab I wrote two F# modules: 
 * `BlockGraphics.fs` - This module contains functions which are used to create SVGs to represent the `SimBlock` blocks on the UI. It uses React to form the SVG elements. 
 * `ConnectionsManager.fs`  -  Manages updating the internal circuit model state based on user interaction, and also updating the Connections tab based on the state. 
