@@ -1,0 +1,265 @@
+﻿<!doctype html>
+<html>
+
+<head>
+    <title>VeriTINY</title>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/photon.css">
+    <link rel="stylesheet" href="css/vistally.css">
+    <link rel="stylesheet" href="css/vex.css" />
+    <link rel="stylesheet" href="css/vex-theme-default.css" />
+
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
+    <!--<link rel="stylesheet" href="css/material-icons.css">-->
+</head>
+
+<body id="vis-body" class="invisible">
+    <div class="window">
+        <!-- .toolbar-header sits at the top of your app -->
+        <header id="vis-header" class="toolbar toolbar-header">
+            <div class="toolbar-actions">
+                <div class="btn-group">
+                    <button id="explore" class="btn btn-default">
+                        <span class="icon icon-folder"></span>
+                    </button>
+                    <!-- open btn -->
+                    <button id="save" class="btn btn-default">
+                        <span class="icon icon-floppy"></span>
+                    </button>
+                    <!-- save btn -->
+                </div>
+                <!-- btn-group -->
+
+                <button id="compile" class="btn btn-default button-compile">
+                    Compile
+                </button>
+
+            </div>
+        </header>
+        <!-- Header -->
+
+        <div class="window-content">
+            <div class="pane-group">
+                <div class="pane" id="file-view-pane">
+                    <div id="tabs-files" class="tab-group">
+                        <div id="new-file-tab" class="tab-item tab-item-fixed">
+                            <span class="icon icon-plus"></span>
+                        </div>
+                    </div>
+                    <div id="darken-overlay" class="invisible"></div>
+                </div>
+                <!-- editor -->
+
+                <div id="dashboard" class="pane">
+                    <div id="controls">
+                        <ul class="list-group">
+                            <li class="list-group-item" style="padding:0px">
+                                <div class="tab-group full-width">
+                                    <tab id="tab-reg" class="tab-item active">Connections</tab>
+                                    <tab id="tab-mem" class="tab-item">Simulation</tab>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="viewer">
+                        <ul id="view-reg" class="list-group">
+                            <div>
+                                <h6>Select Block to add</h6>
+                                <select id="blockDropDown" name="blockDropDown">
+                                    <option value="DFF">DFF</option>
+                                </select>
+
+                                <button type = "button" class = "btn btn-default" id = "addBlockBtn">
+                                    Add Block
+                                </button>
+
+                                <button type = "button" class = "btn btn-default" id = "clearBlocksBtn">
+                                    Reset
+                                </button>
+                            </div>
+                            <div>
+                                <h6>DFF Size</h6> 
+                                <input type="number" id="DFFSize" name="DFFSize" min = "1" value = "1">
+                            </div>
+                            <hr>
+                            <hr><br>                            
+
+                            <div>
+                                <h6>Select Nets to Connect</h6>
+                                Output Net:
+                                <select id="connDropDown1">                                  
+                                </select>
+                                <br>
+                                Input Net: 
+                                <select id="connDropDown2">                                    
+                                </select>                                
+                            </div>
+                            
+                            <div>
+                                <button type = "button" class = "btn btn-default" id = "makeConnectionBtn">
+                                    Make Connection
+                                </button>
+
+                                <button type = "button" class = "btn btn-default" id = "clearConnectionsBtn">
+                                    Clear Blocks
+                                </button>
+
+                            </div>     
+
+                            <hr><br>
+                            <h6>Blocks</h6>                             
+                            <div width = "100%" overflow-y = "scroll" id="BlocksSvgContainer"></div>
+
+                        </ul>
+                        <ul id="view-mem" class="list-group invisible">
+                            <li class="list-group-item invisible">
+                                <div class="btn-group full-width">
+                                    <button id="byte-view" class="btn full-width btn-byte">Enable Byte View</button>
+                                    <button id="reverse-view" class="btn full-width btn-byte">Reverse Direction</button>
+                                </div>
+                            </li>
+
+                            <!-- SIMULATION TAB -->
+
+                            <div id="topHalfofSim">
+                                <div>
+                                    <div>
+                                        <h6>Enter number of cycles for Simulation</h6> 
+                                        <input type="number" id="inputMaxInputLength" value="10" min="1">
+                                        <button tinputsTopype = "button" class = "btn btn-default" id = "applyMaxInputLength">
+                                            Enter
+                                        </button>
+                                        <button tinputsTopype = "button" class = "btn btn-default" id = "refreshConns">
+                                            Refresh Connections
+                                        </button>
+                                    </div>
+                                    <br>
+
+
+                                    <h6>Net</h6>
+                                    <select id="netDropDown1">                              
+                                    </select> 
+
+                                    <h6>Input Value (Dec)</h6> 
+                                    <input type="number" id="inputVal" min="0">
+                                    <button type = "button" class = "btn btn-default" id = "applyVal">
+                                        Enter
+                                    </button>
+                                </div>
+                                <br>
+
+                                <h5> Simulation Inputs </h5>
+                    
+                                <div id="inputTable"> 
+                                    <div>
+                                        <button type = "button" class = "btn btn-default" id = "backButton">
+                                            <
+                                        </button>
+                                        <hd id="inputNumber">Cycle: 0</hd>
+                                        <button type = "button" class = "btn btn-default" id = "nextButton">
+                                            > 
+                                        </button>
+
+                                        
+                                        <!-- Inputs Table -->
+                                        
+                                        <li id="curr-list" class="list-group">
+                                            <div class="list-group-item" style="padding:0px">
+                                                <table class="table-striped">
+                                                    <tr class="tr-head-mem">
+                                                        <td class="th-mem">Net Name</td>
+                                                        <td class="th-mem">Value (Bin)</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="td-mem">Press Refresh Connections</td>
+                                                        <td class="td-mem">Press Refresh Connections</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </li>
+                                    </div> 
+
+                                </div>
+                            </div>
+
+                            
+                            <!-- Simulation Table -->
+                            <div id="bottomHalfofSim">
+                                <h5> Simulation Table </h5>
+
+                                <button id="run" class="btn btn-fixed btn-default button-run">
+                                    Run
+                                </button>
+                                <!-- run btn -->
+                
+                                <button id="reset" class="btn btn-default">
+                                    Reset
+                                </button>
+                
+                                <button id="stepf" class="btn btn-default button-forward">
+                                    Step
+                                </button>
+
+                                <button id="showAllNets" class="btn btn-default button">
+                                    Show Output Nets Only
+                                </button>
+                                <div> 
+                                    <hd id="simulationCycle">Cycle: 0</hd> 
+                                </div> 
+                                
+
+                                <li id="mem-list" class="list-group">
+                                    <div class="list-group-item" style="padding:0px">
+                                        <table class="table-striped">
+                                            <tr class="tr-head-mem">
+                                                <th class="th-mem">Net Name</th>
+                                                <th class="th-mem">Value (Bin)</th>
+                                            </tr>
+                                            <tr>
+                                                <td class="td-mem">Press Run or Step to simulate</td>
+                                                <td class="td-mem">Press Run or Step to simulate</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </li>
+                                
+                            </div>
+                            
+                        </ul>
+                        
+                    </div>
+                </div>
+
+                <!-- table -->
+            </div>
+            <!-- pane-group -->
+        </div>
+        <!-- Header -->
+
+    </div>
+    <!-- window -->
+    <script>
+        // Monaco uses a custom amd loader that over-rides node's require.
+        // Keep a reference to node's require so we can restore it after executing the amd loader file.
+        var nodeRequire = global.require;
+        global.require('electron-settings');
+    </script>
+    <script>console.log('hello from index.html');</script>
+    <script src="js/renderer.js"></script>
+    <script>console.log('renderer.js has been successfully loaded!');</script>
+    <script src="js/tippy.all.min.js"></script>
+    <script src="js/vex.combined.min.js"></script>
+    <script>vex.defaultOptions.className = 'vex-theme-default'</script>
+    <script src="js/svg.min.js"></script>
+    <script src="js/vs/loader.js"></script>
+    <script>console.log('loader done...');</script>
+    <script src="js/monaco-init.js"></script>
+
+
+</body>
+
+</html>

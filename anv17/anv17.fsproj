@@ -9,6 +9,7 @@
     <Compile Include="EvalNetHelper.fs" />
     <Compile Include="LogicOperations.fs" />
     <Compile Include="CombEval.fs" />
+    <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

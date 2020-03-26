@@ -3,16 +3,21 @@
 open System
 
 open SharedTypes
+open SimulationTypes
 open ExampleTypes
-open Evaluator
 open Helper
+open SynchronousBlocks
+open Simulator
+open CombEval
+open TestFunctions
 
+open Expecto
 
-let splitTest = groupLogic [] [High;Low;High;Low;High;Low;High;Low] [1;3;3;1]
-let updateDFFTest = updateDFF dffMixedIn dffMixedOut
 
 
 [<EntryPoint>]
 let main argv =
     printfn "Hello World from F#!"
+
+
     0 // return an integer exit code

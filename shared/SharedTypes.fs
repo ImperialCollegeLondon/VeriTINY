@@ -30,19 +30,3 @@ type TLogic = {
 }  
 
 type Connection = Megablock * GeneralNet list * GeneralNet list 
-
-type GraphEndPoint = |SingleInput of LogicLevel |BusInput of int
-
-type DGraphNetNode = {
-    NetName: string
-    BusSize: int
-}
-
-type DGraphOpNode = Operator
-type DGraphNode = |NetNode of DGraphNetNode|OpNode of DGraphOpNode
-type DGraphEdge = {
-    Input: DGraphNode
-    Output: DGraphNode
-    SliceIndicies: (int * int) option
-    IsSliceOfInput: bool
-}
