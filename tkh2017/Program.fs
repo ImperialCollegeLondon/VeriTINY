@@ -62,8 +62,20 @@ let logicBlockGeTest3 =
 let allTestsWithExpecto() =
         runTestsInAssembly defaultConfig [||]
     
+//assign out[6] = ~in[3]&~in[2]&~in[1] | in[3]&in[2]&~in[1]&~in[0]
+//                 | ~in[3]&in[2]&in[1]&in[0];
+// assign out[5] = ~in[3]&~in[2]&in[0] | ~in[3]&~in[2]&in[1]
+//                 | ~in[3]&in[1]&in[0] | in[3]&in[2]&~in[1]&in[0]
 [<EntryPoint>]
 let main argv =
     allTestsWithExpecto() |> ignore
+    let test = "module haha(allOnes, someInput, someInput2, concatedThing);
+                    input[3:0] allOnes;
+                    input[1:0] someInput, someInput2;
+                    output[3:0] concatedThing;
+
+                    and (concatedThing, {someInput2, someInput}, allOnes);
+                endmodule"
+    printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
     0 // return an integer exit code

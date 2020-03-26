@@ -3,8 +3,9 @@ open Lexer
 
 //TODO: Error messages
 
-type GateType = AND | OR | NOT
+type GateType = AND | OR | NOT | PASS
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
+type ExpressionType = OREXP of ExpressionType * ExpressionType | ANDEXP of ExpressionType * ExpressionType | NOTEXP of ExpressionType | TERMEXP of TerminalType
 type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
@@ -13,6 +14,7 @@ type ModuleItemType =
     | WIRE of string list 
     | WIREBus of int * int * string list
     | GATEINST of GateType * string * TerminalType list
+    | ASSIGN of TerminalType * ExpressionType
 type ModuleType = MODULE of string * string list * ModuleItemType list
 
 /// Match single value token
@@ -68,6 +70,44 @@ and (|LISTTERMINAL|_|) tokList =
     | TERMINAL (Some parsed, Ok tokList') -> Some (Some [parsed], Ok tokList')
     | _ -> None 
 
+let rec (|NOTEXPRESSION|_|) tokList = 
+    match tokList with
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | TERMINAL (Some termexp, Ok tokList') -> 
+        Some (Some (TERMEXP termexp), Ok tokList')
+    | MATCHSINGLE NotOpTok (NOTEXPRESSION (Some notexp, Ok tokList')) -> 
+        Some (Some (NOTEXP notexp), Ok tokList')
+    | _ -> None
+
+let rec (|ANDEXPRESSION|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | NOTEXPRESSION (Some notexp, MATCHSINGLE AndOpTok (ANDEXPRESSION (Some andexp, Ok tokList'))) -> 
+        Some (Some (ANDEXP (notexp, andexp)), Ok tokList')      
+    | NOTEXPRESSION (Some notexp, Ok tokList') -> 
+        Some (Some (notexp), Ok tokList')
+    | _ -> None
+
+let rec (|OREXPRESSION|_|) tokList = 
+    match tokList with
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | ANDEXPRESSION (Some andexp, MATCHSINGLE OrOpTok (OREXPRESSION (Some orexp, Ok tokList'))) -> 
+        Some (Some (OREXP (andexp, orexp)), Ok tokList')
+    | ANDEXPRESSION (Some andexp, Ok tokList') ->
+        Some (Some (andexp), Ok tokList')
+    | _ -> None
+
+let (|CONTASSIGN|_|) tokList = 
+    match tokList with 
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | MATCHSINGLE AssignTok (TERMINAL (Some term, MATCHSINGLE Equals (OREXPRESSION (Some exp, MATCHSINGLE Semicolon (Ok tokList'))))) -> 
+        Some (Some (ASSIGN (term, exp)), Ok tokList')
+    | _ -> None
+
 let (|GATEINSTANCE|_|) tokList = 
     match tokList with 
     | Error tokList' ->
@@ -89,7 +129,7 @@ let (|GATEINSTANTIATION|_|) tokList =
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
-    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid,termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
+    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid, termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (GATEINST (convertToGateType gatetype, gateid, termlist)), Ok tokList')
     | _ -> None
 
@@ -153,6 +193,8 @@ let (|MODULEITEM|_|) tokList =
         Some (Some net, Ok tokList')
     | GATEINSTANTIATION (Some gateinst, Ok tokList') -> 
         Some (Some gateinst, Ok tokList')
+    | CONTASSIGN (Some assignexp, Ok tokList') -> 
+        Some (Some assignexp, Ok tokList')
     | _ -> None
                
 let rec (|LISTMODITEM|_|) tokList = 
