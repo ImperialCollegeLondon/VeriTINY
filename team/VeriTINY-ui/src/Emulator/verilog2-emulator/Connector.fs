@@ -104,7 +104,7 @@ let addConnection (blockLst: SimBlock list) (bIn: SimBlock) =
     let prefixNetIDsInInfo = 
         List.map (fun (netInfo:SimNetInfo) -> 
             let netID = netInfo.ID
-            let prefixedName = netID.Name + (sprintf "%s.%i" bIn.MegablockType blockCount) 
+            let prefixedName =  (sprintf "%s.%i" bIn.MegablockType blockCount) + netID.Name 
             let prefixedNetID = {netID with Name = prefixedName}
             {netInfo with ID = prefixedNetID}
         )
