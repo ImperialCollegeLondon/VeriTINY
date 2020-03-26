@@ -202,7 +202,7 @@ From Visual2, handles the side menu tab switching. Also added helper functions f
 
 ## Visual2
 
-The VeriTINY UI is based off of the Visual2 repo linked below:
+The VeriTINY UI is based off the Visual2 repo linked below:
 
 [Visual2 Github Repo](https://github.com/ImperialCollegeLondon/Visual2)
 
