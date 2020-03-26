@@ -1,6 +1,4 @@
-# VeriTINY
-![logo]
-[logo]: https://github.com/channen2/Verilog2/blob/master/visual.png
+# VeriTINY  <img src="https://github.com/channen2/Verilog2/blob/master/visual.png" width="48">
 
 ## Introduction
 
