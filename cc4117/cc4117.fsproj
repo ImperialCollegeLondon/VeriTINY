@@ -1,18 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="../shared/SharedTypes.fs" />
-    <Compile Include="Evaluator.fs" />
+    <Compile Include="../anv17/EvalTypes.fs" />
+    <Compile Include="../anv17/EvalNetHelper.fs" />
+    <Compile Include="../anv17/LogicOperations.fs" />
+    <Compile Include="../anv17/CombEval.fs" />
+    <Compile Include="SimulationTypes.fs" />
+    <Compile Include="Helper.fs" />
+    <Compile Include="ExampleTypes.fs" />
+    <Compile Include="SynchronousBlocks.fs" />
+    <Compile Include="Simulator.fs" />
+    <Compile Include="TestFunctions.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Expecto.FsCheck" Version="8.13.1" />
   </ItemGroup>
-
 </Project>
