@@ -18,7 +18,12 @@ let compileSourceCode() =
     let logicBlock = editorCode 
                      |> Lexer.tokenise 
                      |> Parser.parse 
-                     |> fun (Ok ast) -> ast |> LogicBlockGen.convertAST
+                     |> function 
+                        | Ok ast ->
+                            ast |> LogicBlockGen.convertAST
+                        | Error _ -> 
+                            showAlert "Error in source code" "Oh no!" 
+    
     Browser.console.log logicBlock |> ignore
     if doesBlockExist logicBlock.Name
     then showAlert "There is already a block with this name in the simulation" "Error!"
