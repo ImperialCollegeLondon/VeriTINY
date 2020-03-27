@@ -9,7 +9,7 @@ The top half of the tab allows the user to apply inputs for simulation as well a
 The bottom half of the tab contains the `Simulation Table` where the simulation takes place.
 
 
-![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png)
+![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png)
 
 In the group phase, I refactored the `Connector.fs` module to work with the UI. 
 
