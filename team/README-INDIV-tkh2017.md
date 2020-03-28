@@ -1,6 +1,6 @@
 # Individual Statement for Team Code Submission - tkh2017
 
-During the group phase of the project I first continued to work on the `Lexer`, `Parser` and `LogicBlockGen` modules. Specifically, I added support for continuous assigns, bracketed expressions and also fixed some bugs in concatenations. 
+During the group phase of the project, I first continued to work on the `Lexer`, `Parser` and `LogicBlockGen` modules. Specifically, I added support for continuous assigns, bracketed expressions and also fixed some bugs in concatenations. 
 
 The following BNF definitions were added to VeriTINY: 
 
@@ -24,7 +24,7 @@ VeriTINY is right associative, hence the statement `assign out = a|b|c` is the s
 
 Support for bracketed expressions was also added (this was done after our team interview on 25/3/2020) so that the need of having to declare many intermediate connections is reduced.  
 
-During the final stages of the group phase, I worked on the integration of the compilation process into the GUI. This was done in the `CompilationManager` module which manages the lexing, parsing, AST deconstructing and module generating work when the compile button is clicked in the GUI.  
+During the final stages of the group phase, I worked on the integration of the compilation process with the GUI. This was done in the `CompilationManager` module which manages the lexing, parsing, AST deconstructing and module generating work when the user clicks the compile button.  
 
 Finally, I also worked on the syntax highlighting and designed a logo for our program. 
 
