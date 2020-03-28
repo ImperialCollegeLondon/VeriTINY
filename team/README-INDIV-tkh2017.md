@@ -4,6 +4,7 @@ During the group phase of the project I first continued to work on the `Lexer`, 
 
 The following BNF definitions were added to VeriTINY: 
 
+```
 16. \<continuous_assign> ::= "assign" \<terminal> "=" \<assignment> ";" //output terminal with concatenation is not allowed at present
 
 17. \<assignment> ::= \<or_exp> 
@@ -15,6 +16,7 @@ The following BNF definitions were added to VeriTINY:
 20. \<and_exp> ::= \<not_exp> | \<not_exp> "&" \<and_exp>
 
 21. \<or_exp> ::= \<and_exp> | \<and_exp> "|" \<or_exp>
+```
 
 For continuous assigns, 3 binary operators were implemented and, as in Verilog, "~" has the highest precedence, followed by "&" and finally "|". 
 
