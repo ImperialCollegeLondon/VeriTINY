@@ -1,5 +1,5 @@
 {
-  "name": "visual",
+  "name": "veritiny",
   "productName": "VeriTINY",
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "launch": "electron . -w",
     "launch-debug": "electron . -w --debug",
     "launch-win-pack": "dist/Visual2-win32-x64/VisUAL2.exe",
-    "make-osx-dmg": "yarn electron-installer-dmg --overwrite --icon=app/visual.ico.icns dist/visual2-darwin-x64 dist/visual2-osx"
+    "make-osx-dmg": "yarn electron-installer-dmg --overwrite --icon=app/visual.ico.icns dist/VeriTINY-darwin-x64 dist/VeriTINY-osx"
   },
   "dependencies": {
     "babel-plugin-transform-runtime": "^6.23.0",
