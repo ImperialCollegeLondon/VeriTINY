@@ -80,7 +80,7 @@ let rec (|NOTEXPRESSION|_|) tokList =
         Some (Some (NOTEXP notexp), Ok tokList')
     | _ -> None
 
-let rec (|ANDEXPRESSION|_|) tokList = 
+let (|ANDEXPRESSION|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -90,7 +90,7 @@ let rec (|ANDEXPRESSION|_|) tokList =
         Some (Some (notexp), Ok tokList')
     | _ -> None
 
-let rec (|OREXPRESSION|_|) tokList = 
+let (|OREXPRESSION|_|) tokList = 
     match tokList with
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -141,7 +141,7 @@ let (|RANGE|_|) tokList =
         Some (Some (number1, number2), Ok tokList')
     | _ -> None
 
-let rec (|LISTVAR|_|) tokList = 
+let (|LISTVAR|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -197,7 +197,7 @@ let (|MODULEITEM|_|) tokList =
         Some (Some assignexp, Ok tokList')
     | _ -> None
                
-let rec (|LISTMODITEM|_|) tokList = 
+let (|LISTMODITEM|_|) tokList = 
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
