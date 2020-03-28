@@ -24,6 +24,12 @@ let lexerTest3 =
         Expect.equal (tokenise sampleCode3) expected "Lexer test 3"
 
 [<Tests>]
+let lexerTest4 = 
+    testCase "Lexer test 4" <| fun () -> 
+        let expected = lexerTest4Ans
+        Expect.equal (tokenise sampleCode4) expected "Lexer test 4"
+
+[<Tests>]
 let parserTest1 = 
     testCase "Parser test 1" <| fun () -> 
         let expected = parserTest1Ans
@@ -40,6 +46,12 @@ let parserTest3 =
     testCase "Parser test 3" <| fun () -> 
         let expected = parserTest3Ans
         Expect.equal (parse lexerTest3Ans) expected "Parser test 3"   
+
+[<Tests>]
+let parserTest4 = 
+    testCase "Parser test 4" <| fun () -> 
+        let expected = parserTest4Ans
+        Expect.equal (parse lexerTest4Ans) expected "Parser test 4"    
 
 [<Tests>]
 let logicBlockGeTest1 = 
@@ -59,23 +71,26 @@ let logicBlockGeTest3 =
         let expected = logicBlockGenTest3Ans
         Expect.equal (match parserTest3Ans with | Ok ast -> convertAST ast | _ -> failwithf "What?") expected "Logic Block Gen test 3" 
 
+[<Tests>]
+let logicBlockGeTest4 = 
+    testCase "Logic Block Gen test 4" <| fun () -> 
+        let expected = logicBlockGenTest4Ans
+        Expect.equal (match parserTest4Ans with | Ok ast -> convertAST ast | _ -> failwithf "What?") expected "Logic Block Gen test 4" 
+
 let allTestsWithExpecto() =
         runTestsInAssembly defaultConfig [||]
     
-//assign out[6] = ~in[3]&~in[2]&~in[1] | in[3]&in[2]&~in[1]&~in[0]
-//                 | ~in[3]&in[2]&in[1]&in[0];
-// assign out[5] = ~in[3]&~in[2]&in[0] | ~in[3]&~in[2]&in[1]
-//                 | ~in[3]&in[1]&in[0] | in[3]&in[2]&~in[1]&in[0]
 [<EntryPoint>]
 let main argv =
     allTestsWithExpecto() |> ignore
-    let test = "module haha(allOnes, someInput, someInput2, concatedThing);
-                    input[3:0] allOnes;
-                    input[1:0] someInput, someInput2;
-                    output[3:0] concatedThing;
+    let test = "module test(out, a, b, c);
+                    input  a, b, c;
+                    output out;
 
-                    and (concatedThing, {someInput2, someInput}, allOnes);
+                    assign out = (a | b) | c;
                 endmodule"
-    printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
+    // printf "%A" (test |> tokenise)
+    // printf "%A" (test |> tokenise |> parse) 
+    // printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
     0 // return an integer exit code
