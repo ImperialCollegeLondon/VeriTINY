@@ -1,10 +1,8 @@
-module Parser 
+module rec Parser 
 open Lexer
 
-//TODO: Error messages
-
 type GateType = AND | OR | NOT | PASS
-type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list
+type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list | EXP of ExpressionType
 type ExpressionType = OREXP of ExpressionType * ExpressionType | ANDEXP of ExpressionType * ExpressionType | NOTEXP of ExpressionType | TERMEXP of TerminalType
 type ModuleItemType = 
     | OUTWire of string list 
@@ -48,7 +46,7 @@ let (|MATCHNUM|_|) (tokList: Result<Token list, Token list>) =
 
 //------------------- Parse rules -------------------------
 
-let rec (|TERMINAL|_|) tokList = 
+let (|TERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -59,9 +57,11 @@ let rec (|TERMINAL|_|) tokList =
     | MATCHID (Some idname, Ok tokList') -> Some (Some (TERMID idname), Ok tokList')
     | MATCHSINGLE OpBrace (LISTTERMINAL (Some termlist, MATCHSINGLE ClBrace (Ok tokList'))) -> 
         Some (Some (TERMCONCAT termlist), Ok tokList')
+    | MATCHSINGLE OpRoundBracket (OREXPRESSION (Some exp, (MATCHSINGLE ClRoundBracket (Ok tokList')))) -> 
+        Some (Some (EXP exp), Ok tokList')
     | _ -> None 
 
-and (|LISTTERMINAL|_|) tokList = 
+let (|LISTTERMINAL|_|) tokList = 
     match tokList with 
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -228,4 +228,4 @@ let parse inpTokList =
     | MATCHMODULE (Some ast, Ok []) -> Ok ast
     | MATCHMODULE (_, Error lst) //?
     | MATCHMODULE (_, Ok lst) -> Error <| (List.length inpTokList - List.length lst, lst)
-    | _ -> Error (0, [])
+    | _ -> failwithf "What?"
