@@ -14,3 +14,5 @@ I also helped in testing and debugging the `Simulation` tab as that interacts cl
 
 Finally, after the demo, I helped in refactoring the program to move from using the `Connection` and `GeneralNet` types to the `SimBlock` and `SimNetInfo` types.
 
+I would like to add that cc4117 has put in the most effort, beyond expectations, in order to add and polish features, as well as helping to fix bugs during the team phase.
+
