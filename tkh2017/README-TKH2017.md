@@ -27,7 +27,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 2. \<module_name> ::= \<identifier>
   
-3. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> 
+3. \<module_item> ::= \<input_declaration> | \<output_declaration> | \<net_declaration> | \<gate_instantiation> | \<continuous_assign>
 
 4. \<input_declaration> ::= "input" \<variable_list> ";" | "input" \<range> \<variable_list> ";"
 
@@ -45,15 +45,25 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
-12. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" | "{" \<terminal_list> "}"
+12. \<number> ::= //any sequence of 0..9 
 
-13. \<number> ::= //any sequence of 0..9 
+13. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
 
-14. \<identifier> ::= //any sequence of letters (case-sensitive), digits and underscore, first character must be a letter/underscore
+14. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
 
-15. \<module_item_list> ::= \<module_item> | \<module_item> \<module_item_list>
+15. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
 
-16. \<terminal_list> ::= \<terminal> | \<terminal> "," \<terminal_list>
+16. \<continuous_assign> ::= "assign" \<terminal> "=" \<assignment> ";" //terminal with concatenation is not allowed at present
+
+17. \<assignment> ::= \<or_exp> 
+
+18. \<terminal> ::= \<identifier> | \<identifier> "\[" \<number> "]" | \<identifier> "\[" \<number> ":" \<number> "\]" |  | "(" \<or_exp> ")" | "{" \<terminal_list> "}" //only 1 depth of concatenation is allowed at present
+
+19. \<not_exp> ::= \<terminal> | "~" \<not_exp> 
+
+20. \<and_exp> ::= \<not_exp> | \<not_exp> "&" \<and_exp>
+
+21. \<or_exp> ::= \<and_exp> | \<and_exp> "|" \<or_exp>
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 

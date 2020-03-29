@@ -1,11 +1,32 @@
 module Lexer
 open NGrams
 
-//TODO: assign
-
 type Lexer = char list -> (char list * char list) option
 type NGram = (char list * bool * bool) list
-type Token = | Module | Identifier of string | Number of int | Semicolon | Colon | Comma | OpRoundBracket | ClRoundBracket | Output | Input | OpBrace | ClBrace | Wire | OpSqBracket | ClSqBracket | AndTok | OrTok | NotTok | EndModule  
+type Token = | Module 
+             | Identifier of string 
+             | Number of int 
+             | Semicolon 
+             | Colon 
+             | Comma 
+             | OpRoundBracket
+             | ClRoundBracket 
+             | Output 
+             | Input 
+             | OpBrace 
+             | ClBrace 
+             | Equals
+             | Wire 
+             | OpSqBracket 
+             | ClSqBracket 
+             | AndTok 
+             | OrTok 
+             | NotTok 
+             | AndOpTok
+             | OrOpTok
+             | NotOpTok
+             | AssignTok
+             | EndModule  
 
 let lexNGram (ngram: NGram) (cLst: char list) =
     let takeIfInChars chars (acc,lst) isOpt = 
@@ -41,7 +62,7 @@ let rec lexMoreThanOne cLst =
             Option.orElse (lex2 clst) (lex1 clst)
 
     let combinedLexers =
-        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
+        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; assignTok; equalTok; operatorTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
         |> List.map lexNGram
         |> List.reduce (<|>)
         
@@ -66,7 +87,8 @@ let lexAndImplode inpstring =
 
 let tokenMap = Map ["module", Module; "(", OpRoundBracket; ")", ClRoundBracket; "[", OpSqBracket; "]", ClSqBracket; 
                     "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", AndTok; "or", OrTok; "not", NotTok;
-                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire]
+                    "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire; "assign", AssignTok; "=", Equals;
+                    "&", AndOpTok; "|", OrOpTok; "~", NotOpTok]
 
 let (|SingleValTok|_|) inpstring =
     Map.tryFind inpstring tokenMap
