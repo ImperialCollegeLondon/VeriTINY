@@ -64,7 +64,7 @@ let rec lexMoreThanOne cLst =
             Option.orElse (lex2 clst) (lex1 clst)
 
     let combinedLexers =
-        [moduleTok; punctuationTok; andTok; orTok; notTok; inputTok; outputTok; assignTok; equalTok; operatorTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
+        [moduleTok; punctuationTok; andTok; orTok; notTok; xorTok; inputTok; outputTok; assignTok; equalTok; operatorTok; endModuleTok; identifierTok; numberTok; emptyLine] //tries to lex from the beginning of the list 
         |> List.map lexNGram
         |> List.reduce (<|>)
         
@@ -88,7 +88,7 @@ let lexAndImplode inpstring =
     | _ -> None  
 
 let tokenMap = Map ["module", Module; "(", OpRoundBracket; ")", ClRoundBracket; "[", OpSqBracket; "]", ClSqBracket; 
-                    "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", AndTok; "or", OrTok; "not", NotTok; "xor", XorTok
+                    "{", OpBrace; "}", ClBrace; ";", Semicolon; ":", Colon; ",", Comma; "and", AndTok; "or", OrTok; "not", NotTok; "xor", XorTok;
                     "endmodule", EndModule; "input", Input; "output", Output; "wire", Wire; "assign", AssignTok; "=", Equals;
                     "&", AndOpTok; "|", OrOpTok; "~", NotOpTok; "^", XorOpTok]
 

@@ -94,7 +94,7 @@ let (|XOREXPRESSION|_|) tokList =
     match tokList with
     | Error tokList' -> 
         Some (None, Error tokList')
-    | ANDEXPRESSION (Some andexp, MATCHSINGLE OrOpTok (XOREXPRESSION (Some xorexp, Ok tokList'))) -> 
+    | ANDEXPRESSION (Some andexp, MATCHSINGLE XorOpTok (XOREXPRESSION (Some xorexp, Ok tokList'))) -> 
         Some (Some (XOREXP (andexp, xorexp)), Ok tokList')
     | ANDEXPRESSION (Some andexp, Ok tokList') ->
         Some (Some (andexp), Ok tokList')
