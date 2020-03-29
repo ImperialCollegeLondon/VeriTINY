@@ -15,14 +15,16 @@ The following BNF definitions were added to VeriTINY:
 
 20. \<and_exp> ::= \<not_exp> | \<not_exp> "&" \<and_exp>
 
-21. \<or_exp> ::= \<and_exp> | \<and_exp> "|" \<or_exp>
+21. \<xor_exp> ::= \<and_exp> | \<and_exp> "^" \<xor_exp>
+
+22. \<or_exp> ::= \<xor_exp> | \<xor_exp> "|" \<or_exp>
 ```
 
-For continuous assigns, 3 binary operators were implemented and, as in Verilog, "~" has the highest precedence, followed by "&" and finally "|". 
+For continuous assigns, 4 binary operators were implemented and, as in Verilog, "~" has the highest precedence, followed by "^", "&" and finally "|". 
 
 VeriTINY is right associative, hence the statement `assign out = a|b|c` is the same as `assign out = a|(b|c)`.
 
-Support for bracketed expressions was also added (this was done after our team interview on 25/3/2020) so that the need of having to declare many intermediate connections is reduced.  
+After our team interview on 25/3/2020, support for the xor operator and bracketed expressions were added so that the need of having to declare many intermediate connections is reduced.
 
 During the final stages of the group phase, I worked on the integration of the compilation process with the GUI. This was done in the `CompilationManager` module which manages the lexing, parsing, AST deconstructing and module generating work when the user clicks the compile button.  
 
