@@ -29,6 +29,9 @@ There are pre-written verilog files that can be used with VeriTINY along with th
 
 ![demo3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/deca4fsm.png)
 
+`Demo 4` - [Twos Complement Adder Subtractor](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/adder_subtractor.v) 
+Information on this circuit can be found [here](http://www.yilectronics.com/Courses/ENGR338L/ENGR338L_2017f/StudentLabs/htregillus/FinalProject.html)
 
+![demo4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/adder-subtractor.png)
 
 # Extensions
