@@ -1,9 +1,9 @@
 module rec Parser 
 open Lexer
 
-type GateType = AND | OR | NOT | PASS
+type GateType = AND | OR | NOT | XOR | PASS
 type TerminalType = TERMID of string | TERMIDWire of string * int | TERMIDBus of string * int * int | TERMCONCAT of TerminalType list | EXP of ExpressionType
-type ExpressionType = OREXP of ExpressionType * ExpressionType | ANDEXP of ExpressionType * ExpressionType | NOTEXP of ExpressionType | TERMEXP of TerminalType
+type ExpressionType = OREXP of ExpressionType * ExpressionType | XOREXP of ExpressionType * ExpressionType | ANDEXP of ExpressionType * ExpressionType | NOTEXP of ExpressionType | TERMEXP of TerminalType
 type ModuleItemType = 
     | OUTWire of string list 
     | OUTBus of int * int * string list
@@ -70,7 +70,7 @@ let (|LISTTERMINAL|_|) tokList =
     | TERMINAL (Some parsed, Ok tokList') -> Some (Some [parsed], Ok tokList')
     | _ -> None 
 
-let rec (|NOTEXPRESSION|_|) tokList = 
+let (|NOTEXPRESSION|_|) tokList = 
     match tokList with
     | Error tokList' -> 
         Some (None, Error tokList')
@@ -90,14 +90,24 @@ let (|ANDEXPRESSION|_|) tokList =
         Some (Some (notexp), Ok tokList')
     | _ -> None
 
+let (|XOREXPRESSION|_|) tokList = 
+    match tokList with
+    | Error tokList' -> 
+        Some (None, Error tokList')
+    | ANDEXPRESSION (Some andexp, MATCHSINGLE OrOpTok (XOREXPRESSION (Some xorexp, Ok tokList'))) -> 
+        Some (Some (XOREXP (andexp, xorexp)), Ok tokList')
+    | ANDEXPRESSION (Some andexp, Ok tokList') ->
+        Some (Some (andexp), Ok tokList')
+    | _ -> None
+
 let (|OREXPRESSION|_|) tokList = 
     match tokList with
     | Error tokList' -> 
         Some (None, Error tokList')
-    | ANDEXPRESSION (Some andexp, MATCHSINGLE OrOpTok (OREXPRESSION (Some orexp, Ok tokList'))) -> 
-        Some (Some (OREXP (andexp, orexp)), Ok tokList')
-    | ANDEXPRESSION (Some andexp, Ok tokList') ->
-        Some (Some (andexp), Ok tokList')
+    | XOREXPRESSION (Some xorexp, MATCHSINGLE OrOpTok (OREXPRESSION (Some orexp, Ok tokList'))) -> 
+        Some (Some (OREXP (xorexp, orexp)), Ok tokList')
+    | XOREXPRESSION (Some xorexp, Ok tokList') ->
+        Some (Some (xorexp), Ok tokList')
     | _ -> None
 
 let (|CONTASSIGN|_|) tokList = 
@@ -124,12 +134,13 @@ let (|GATEINSTANTIATION|_|) tokList =
         | AndTok -> AND
         | OrTok -> OR
         | NotTok -> NOT
+        | XorTok -> XOR
         | _ -> failwithf "What?"
 
     match tokList with 
     | Error tokList' ->
         Some (None, Error tokList')
-    | MATCHMULT [AndTok; OrTok; NotTok] (Some gatetype, GATEINSTANCE (Some (gateid, termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
+    | MATCHMULT [AndTok; OrTok; NotTok; XorTok] (Some gatetype, GATEINSTANCE (Some (gateid, termlist), MATCHSINGLE Semicolon (Ok tokList'))) -> 
         Some (Some (GATEINST (convertToGateType gatetype, gateid, termlist)), Ok tokList')
     | _ -> None
 
