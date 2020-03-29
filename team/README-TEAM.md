@@ -34,4 +34,19 @@ Information on this circuit can be found [here](http://www.yilectronics.com/Cour
 
 ![demo4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/adder-subtractor.png)
 
-# Extensions
+# Possible Improvements
+
+* Expand language support​
+  * Literals ​
+  * Assign ​
+ 
+* ~Connections Type​~
+* GeneralNet Type​
+* Saving of block level connections + simulation results
+* Block diagram UI​
+* Drag and drop blocks​
+* Form connections by clicking ​
+* Show connections being formed (likely use a library)​
+* Simulation UI
+* Show waveforms​
+* Scripting language?​
