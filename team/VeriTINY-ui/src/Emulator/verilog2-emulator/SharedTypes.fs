@@ -1,7 +1,7 @@
 module SharedTypes
 
 type LogicLevel = | High | Low
-type Operator = | And | Or | Not | Concat | Pass 
+type Operator = | And | Or | Not | Concat | Pass | Xor 
 type MegablockType = string
 
 type Net = | Wire of Map<int,LogicLevel> | Bus of Map<int,LogicLevel>

@@ -80,6 +80,7 @@ let rec evaluateExprLst (exprsToEvaluate: Expression list) ( allNets: Map<NetIde
             match op with
             |And -> reduceInpLstWithOp ANDOpNet High
             |Or -> reduceInpLstWithOp OROpNet Low
+            |Xor -> reduceInpLstWithOp XOROpNet Low
             |Not ->
                 let inpNetID = List.head inpLst //not operations should only have 1 input
                 NOTOpNet allNets.[getNetByName inpNetID.Name allNets] (getStartIndex inpNetID allNets) outputBusSize
