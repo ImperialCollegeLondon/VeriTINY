@@ -1,6 +1,18 @@
 # Team README - Post Demo Information 
 
-This README contains information on ... 
+# Post Demo Additions
+
+1. Update support
+2. Bracket support
+3. Add XOR support
+
+
+# Module Interfaces 
+
+![interfaces](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/module-interfaces.png)
+
+The `SimBlock` and `SimNetInfo` types are 
+
 
 # Demos 
 There are pre-written verilog files that can be used with VeriTINY along with their respective block diagrams below:
@@ -17,6 +29,6 @@ There are pre-written verilog files that can be used with VeriTINY along with th
 
 ![demo3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/deca4fsm.png)
 
-# Module Interfaces 
+
 
 # Extensions
