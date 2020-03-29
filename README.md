@@ -18,7 +18,6 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 
 4. On macOS or linux ensure you have [paket installed](https://fsprojects.github.io/Paket/installation.html). Run `setup.bat` (on Windows) or `sh setup.sh` (on linux or macOS). 
 
-
 5. In a terminal window execute `yarn start` (shortcut for `yarn run start`).
 
 6. Open your `electron` app in a new terminal tab by running `yarn launch`. This command will start the application and also _hot reload_ it whenever source files are recompiled, or CSS files changed. 
@@ -33,7 +32,7 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
   * AND, OR, NOT, XOR only  
   * Example: `and a1 (out, a, b)`
 * Continuous Assigns
-  * "&", "|", "~", "^"
+  * `&`, `|`, `~`, `^`
   * Example: `assign out = a & b`
 * Bus slicing
   * Example: `a[2:0]`
@@ -57,7 +56,6 @@ Verilog code may also be saved and loaded as .v files.
    * `Clear Blocks` - Clears the `Blocks Workspace`
    * `Reset` - Clear the `block list` and the `Blocks Workspace`
 
-
 ![WF3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-3.png)
 
 4. Use the buttons in the `Simulation` tab to enter inputs to simulation. These will be displayed in the `Simulation Inputs Table`.
@@ -68,13 +66,11 @@ Verilog code may also be saved and loaded as .v files.
 
 ![WF4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png)
   
-
 5. Use the buttons in the bottom half of the `Simulation` tab to simulate the circuit. The values of the nets will be displayed in the `Simulation Table`.
    * `Run` - Simulate all cycles and display the final state
    * `Step` - Simulate the next cycle and display the current state
    * `Reset` - Reset simulation to the initial state
    * `Show Output Nets only / Show All Nets` - Toggle between showing output nets and all nets in the `Simulation Table`
-
 
 ![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png)
 
