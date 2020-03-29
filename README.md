@@ -1,20 +1,9 @@
-# HLP2020-Verilog2
+# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png" width="26" height="26">
 
-The project deliverable is an easy to use tool for designing and simulating simple synchronous single-clock hardware. The deliverable will execute circuits that are designed using a subset of Verilog (VeriTINY) at gate level and configurable megablocks for components such as registers, RAMs, adders/subtractors and multiplexers.
+VeriTINY is a simple and easy to use Verilog simulator for designing and simulating simple synchronous single-clock hardware. It supports a subset of the Verilog HDL and features a Verilog code editor, a block connections interface, and a digital circuit simulator.
 
-Extensions for this deliverable include high quality hints/error messages in the program and display of waveforms during simulation.
-
-# VeriTINY
-![logo](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png)
-
-## Introduction
-
-VeriTINY is a simple Verilog simulator that supports a subset of the Verilog HDL. It features a Verilog code editor, a block connections interface, and a digital circuit simulator.
-
-
-## Installation Instructions
-The installation process is similar to the instructions found in Visual2. The full set of instructions which includes in-depth explanations for each command can be found [here](https://github.com/ImperialCollegeLondon/Visual2).
-
+## Build Instructions
+The build process is similar to the instructions found in Visual2. The full set of instructions which includes in-depth explanations for each command can be found [here](https://github.com/ImperialCollegeLondon/Visual2).
 
 1. Follow instructions to install [yarn](https://yarnpkg.com/lang/en/docs/install/) (which tell you to install Node as well).
 
@@ -25,7 +14,6 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 
 2. Navigate to `\team\VeriTINY-ui` in a command-line interpreter. 
 
-
 3. Fetch the required `npm` packages by executing `yarn install`. This project consistently uses `yarn` Node package manager instead of `npm`.
 
 4. On macOS or linux ensure you have [paket installed](https://fsprojects.github.io/Paket/installation.html). Run `setup.bat` (on Windows) or `sh setup.sh` (on linux or macOS). 
@@ -35,8 +23,7 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 
 6. Open your `electron` app in a new terminal tab by running `yarn launch`. This command will start the application and also _hot reload_ it whenever source files are recompiled, or CSS files changed. 
 
-7.  Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist/os-name/*` and a zip in `./dist`. For osx, the easiest way to run Visual2 once it has been built is to navigate to `./dist/VeriTINY-darwin-x64` and execute `open -a VeriTINY.app` in terminal. Note that some host-target combinations will not correctly generate: `pack-osx must be executed on os-x. 
-
+7.  Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist/os-name/*` and a zip in `./dist`. Note that some host-target combinations will not correctly generate: pack-osx must be executed on os-x. 
 
 ## Workflow
 
@@ -46,26 +33,22 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
   * AND, OR, NOT, XOR only  
   * Example: `and a1 (out, a, b)`
 * Continuous Assigns
-  * "&", "|", "~" 
+  * "&", "|", "~", "^"
   * Example: `assign out = a & b`
 * Bus slicing
   * Example: `a[2:0]`
 * Single-level concatenations
   * Example: `{currState[3], prevState[2:0]}`
-* Brackets
+* Bracketed Expressions
   * Example: `assign out = ~(a & b)`
 
 Verilog code may also be saved and loaded as .v files.
 
-
 ![WF1](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png)
-
 
 2. Press the `compile` button to convert Verilog code into a block. The block will appear in the `block list` drop down in the `Connections` tab.
 
 ![WF2](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-2.png)
-
-
 
 3. Use the buttons in the `Connections` tab to add and connect blocks in the `Blocks Workspace`.  
    * `Add Block` - Add selected block from the `block list` dropdown to the workspace
@@ -100,8 +83,6 @@ Verilog code may also be saved and loaded as .v files.
 * You can change the *upcoming* simulation inputs *at any point* during simulation. Changing past inputs will have no effect on simulation.
 
 
-
-
 ## Project Structure
 
 #### Files in VeriTINY-ui\src\Emulator\verilog2-emulator
@@ -118,36 +99,35 @@ Takes Verilog/VeriTINY code and lexes it into a list of tokens
 #### Parser.fs
 Takes list of tokens and parses it, generating an AST as a DU of type `ModuleType`
 
-##### EvalTypes.fs 
+#### EvalTypes.fs 
 Contains the EvalNet type definition 
 
-##### EvalNetHelper.fs
+#### EvalNetHelper.fs
 Contains functions used to analyse and manipulate nets of the `EvalNet` type 
 
 #### LogicBockGen.fs
 Translates the AST to a record of type `TLogic`, which can be used to generates blocks in the interface
 
-##### LogicOperations.fs 
+#### LogicOperations.fs 
 Contains Definitions for Operations (e.g. `AND`, `OR`, `NOT`) used in CombEval 
 
 #### CombEval.fs
 Evaluates `TLogic` blocks from LogicBlockGen so it can be used in simulation
 
-##### Helper.fs
+#### Helper.fs
 Contains helper functions for simulation
 
 #### Connector.fs
 Creates a list of connections from `TLogic` and DFF blocks
 
-##### ConnectionTools.fs
+#### ConnectionTools.fs
 Set of functions for interacting with connections list
 
-##### SynchronousBlocks.fs
+#### SynchronousBlocks.fs
 Contains implemented synchronous blocks
 
 #### Simulator.fs
 Contains functions to take a list of connections and user defined inputs and simulates the circuit
-
 
 #### Files in VeriTINY-ui\src\Renderer
 
@@ -204,8 +184,6 @@ From Visual2, modified tooltips when hovering over objects.
 
 #### Views
 From Visual2, handles the side menu tab switching. Also added helper functions for updating UI elements.
-
-
 
 
 ## Visual2
