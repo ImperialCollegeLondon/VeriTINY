@@ -558,19 +558,19 @@ let clearConnectionBtn = getHtml "clearConnectionsBtn"
 
 //Mutables for connections
 let mutable (TLogicList: TLogic list) = []
-let mutable (connLst: Connection list) = []
+let mutable (blockLst: SimBlock list) = []
 
 //--------------------------Simulation Tab-------------------------
-let mutable (inputs: GeneralNet list list) = []
+let mutable (inputs: Map<NetIdentifier, Net> list) = []
 let mutable (inputsIndex: int) = 0
 let mutable simulationCount = -1
 let mutable synchronousState:Map<NetIdentifier, Net> = Map []
-let mutable (syncCLst: Connection list) = []
-let mutable (asyncCLst: Connection list) = []
+let mutable (syncBLst: SimBlock list) = []
+let mutable (asyncBLst: SimBlock list) = []
 
 // used to update current inputs 
 let mutable maxInputLength = 10
-let mutable currentInputs: Map<string,GeneralNet> = Map []
+let mutable currentInputs: Map<NetIdentifier, Net> = Map []
 let mutable showAllNets = true
 let mutable allStates: Map<NetIdentifier, Net> = Map []
 

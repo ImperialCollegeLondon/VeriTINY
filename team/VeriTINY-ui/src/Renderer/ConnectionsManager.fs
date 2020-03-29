@@ -9,15 +9,15 @@ open Fable.Import.Browser
 
 
 let getAllConnOutNetNames () =   
-    List.fold (fun allNetNames (Name blockName, _, outGenNets) ->     
-        let outNetNames = List.map Connector.getName outGenNets
-        allNetNames @ outNetNames) [] connLst
+    List.fold (fun allNetNames block ->
+        let outNetNames = block.outNets |> List.map Helper.extractNameFromInfo
+        allNetNames @ outNetNames) [] blockLst
     |> List.distinct
 
 let getAllConnInpNetNames () =   
-    List.fold (fun allNetNames (Name blockName, inpGenNets, _) ->
-        let inpNetNames = List.map Connector.getName inpGenNets       
-        allNetNames @ inpNetNames) [] connLst
+    List.fold (fun allNetNames block ->
+        let inNetNames = block.inNets |> List.map Helper.extractNameFromInfo
+        allNetNames @ inNetNames) [] blockLst
     |> List.distinct
 
 let updateConnNetDropDowns () =
@@ -30,9 +30,9 @@ let updateConnNetDropDowns () =
     List.iter (fun netName -> addOptionToDropDown connDropDown1 netName netName) allConnOutNetNames
     List.iter (fun netName -> addOptionToDropDown connDropDown2 netName netName) allConnInpNetNames
 
-let updateConnLst (newConnLst: Connection list) = 
-    connLst <- newConnLst
-    let updatedSVG = drawBlocks connLst TLogicList
+let updateConnLst (newBlockLst: SimBlock list) = 
+    blockLst <- newBlockLst
+    let updatedSVG = drawBlocks blockLst TLogicList
 
     updateBlockDiagram updatedSVG
     updateConnNetDropDowns ()
@@ -49,21 +49,21 @@ let addBlockBtnClickListener () =
         let DFFSize = getDFFSizeInp () |> int
         //TODO: add error checking here
         let DFFConnection = addDFF DFFSize       
-        updateConnLst (Connector.addConnection connLst DFFConnection)
+        updateConnLst (Connector.addConnection blockLst DFFConnection)
     |blockName ->
         let combBlockConnection = addTLogic nameBlockToAdd TLogicList
-        updateConnLst (Connector.addConnection connLst combBlockConnection)
+        updateConnLst (Connector.addConnection blockLst combBlockConnection)
         console.log (sprintf "Conn block: %A" combBlockConnection)
 
 let makeConnectionsBtnClickListener () =
     let net1 = getSelectedOptionFromDropDown connDropDown1
     let net2 = getSelectedOptionFromDropDown connDropDown2
 
-    let connectionValid = checkValidConnection net1 net2 connLst
+    let connectionValid = checkValidConnection net1 net2 blockLst
     match connectionValid with
     |Ok _ ->
-        let newLink = makeLink net1 net2 connLst
-        let newConnLst = applyLinks [newLink] connLst
+        let newLink = makeLink net1 net2 blockLst
+        let newConnLst = applyLinks [newLink] blockLst
         updateConnLst newConnLst
     |Error str ->
         showAlert str "Error!"
