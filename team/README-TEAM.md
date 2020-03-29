@@ -2,20 +2,23 @@
 
 # Post Demo Additions
 
-1. Update support
-2. Bracket support
-3. Add XOR support
+1. Updated Types 
+   * `GeneralNet` removed and replaced with `SimNetInfo` 
+   * `Connection` removed and replaced with `SimBlock`
+2. Added bracket support
+   * Example: `assign out = ~(a & b)`
+3. Added XOR support to basic operators
+   * Example: `assign out = a ^ b`
+   * Example: `xor x1 (out, a, b)`
 
 
 # Module Interfaces 
 
 ![interfaces](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/module-interfaces.png)
 
-The `SimBlock` and `SimNetInfo` types are 
-
 
 # Demos 
-There are pre-written verilog files that can be used with VeriTINY along with their respective block diagrams below:
+This section contains pre-written verilog files along with their respective block diagrams that can be used in VeriTINY
 
 `Demo 1` - [Simple 1-bit AND Gate](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/and_gate.v)
 
@@ -39,14 +42,14 @@ Information on this circuit can be found [here](http://www.yilectronics.com/Cour
 * Expand language support​
   * Literals ​
   * Assign ​
- 
+  * ~Brackets~
 * ~Connections Type​~
-* GeneralNet Type​
+* ~GeneralNet Type​~
 * Saving of block level connections + simulation results
 * Block diagram UI​
-* Drag and drop blocks​
-* Form connections by clicking ​
-* Show connections being formed (likely use a library)​
+  * Drag and drop blocks​
+  * Form connections by clicking ​
+  * Show connections being formed (likely use a library)​
 * Simulation UI
-* Show waveforms​
-* Scripting language?​
+  * Show waveforms​
+  * Scripting language for simulation inputs
