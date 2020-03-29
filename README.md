@@ -57,6 +57,28 @@ Verilog code may also be saved and loaded as .v files.
 * You can switch between the `Connections` and `Simulation` tab freely, however if you make changes in the `Blocks Workspace` then you *must* press the `Refresh Connections` button to load your changes. Doing this will erase the simulation state and inputs.
 * You can change the *upcoming* simulation inputs *at any point* during simulation. Changing past inputs will have no effect on simulation.
 
+## Getting Started
+
+1. Download the [latest VeriTINY binary release](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/releases) for your platform.
+
+### Windows
+
+* Unzip the download anywhere on your system: the extracted files will use approximately 200MB.
+* You can then delete the downloaded zip file.
+* To run the program double-click the executable `VeriTINY.exe` which can be found in the top-level unzipped directory.
+* No installation is required
+
+### OS-X
+
+* Open the downloaded DMG file
+* Drag the VeriTINY-darwin-x64 directory into the applications directory as normal to install
+* The following warning might appear when you first try to launch the application: "VeriTINY" can't be opened because it is from an unidentified developer. In that case:
+    * Open `System Preferences`
+    * Go to `Security & Privacy`
+    * In the bottom rigth corner, under `General`, click 'Open anyway'
+    * Click 'Open' in the pop up window
+    * If VeriTINY does not seem to start, simply quit the application and re-launch
+
 ## Build Instructions
 The build process is similar to the instructions found in Visual2. The full set of instructions which includes in-depth explanations for each command can be found [here](https://github.com/ImperialCollegeLondon/Visual2).
 
