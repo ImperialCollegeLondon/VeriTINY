@@ -77,7 +77,6 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
     let rec breakDown (expression: ExpressionType) ((record, usedNames): TLogic * int list) (outNet: NetIdentifier) : ModuleItemType list * TLogic * int list = 
         match expression with 
         | OREXP (exp1, exp2) -> 
-            printfn "OR2"
             let newName1 = genNewName usedNames
             let usedNames' = usedNames @ [List.length usedNames]
             let (gateList1, record', usedNames'') = breakDown exp1 (record, usedNames') outNet
@@ -113,9 +112,13 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
             ([GATEINST (NOT, "", [TERMID (string (List.last usedNames)); TERMID newName1])] @ gateList, updatedRecord, usedNames'')
 
         | TERMEXP term -> 
-            let intermediateWire = genIntermediateWires outNet (string (List.last usedNames)) record
-            let updatedRecord = {record with Wires = intermediateWire @ record.Wires}
-            ([GATEINST (PASS, "", [TERMID (string (List.last usedNames)); term])], updatedRecord, usedNames)
+            match term with 
+            | EXP exp -> 
+                breakDown exp (record, usedNames) outNet
+            | _ -> 
+                let intermediateWire = genIntermediateWires outNet (string (List.last usedNames)) record
+                let updatedRecord = {record with Wires = intermediateWire @ record.Wires}
+                ([GATEINST (PASS, "", [TERMID (string (List.last usedNames)); term])], updatedRecord, usedNames)
 
     //Break down highest level gate first
     let assignBrokenDown: ModuleItemType list * TLogic * int list =
@@ -130,9 +133,6 @@ let assignToGates ((ast, record, usedNames): ModuleType * TLogic * int list) (as
             let usedNames''' = usedNames'' @ [List.length usedNames'']
             let (gateList2, record'', usedNames'''') = breakDown exp2 (record', usedNames''') outNet
 
-            // printfn "Gate List 1: %A" gateList1
-            // printfn "Gate List 2: %A" gateList2
-            // printfn "Output Gate: %A" (GATEINST (OR, "", [assignModItem |> fst; TERMID newName1; TERMID newName2]))
             ([GATEINST (OR, "", [assignModItem |> fst; TERMID newName1; TERMID newName2])] 
              @ gateList1
              @ gateList2
@@ -188,7 +188,7 @@ let convertAST (ast: ModuleType) : TLogic =
             ast, {tmp' with ExpressionList = match List.rev tmp'.ExpressionList with 
                                              | (op, output, termList) :: tl ->
                                                  (op, output, termList @ genConcatNetList usedNames) :: tl |> List.rev
-                                             | _ -> failwithf "What?"}, usedNames @ [List.length usedNames]
+                                             | _ -> failwithf "What?"}, usedNames @ [List.length usedNames]                        
         | _ -> 
             ast, {record with ExpressionList = match List.rev record.ExpressionList with 
                                                | (op, output, termList) :: tl -> 

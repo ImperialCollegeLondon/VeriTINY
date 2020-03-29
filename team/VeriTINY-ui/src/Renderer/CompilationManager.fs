@@ -23,6 +23,7 @@ let compileSourceCode() =
                             ast |> LogicBlockGen.convertAST
                         | Error _ -> 
                             showAlert "Error in source code" "Oh no!" 
+                            failwithf "Error in source code" // to return same type 
     
     Browser.console.log logicBlock |> ignore
     if doesBlockExist logicBlock.Name

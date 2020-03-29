@@ -21,6 +21,23 @@ let punctuationTok =
     [['('; ')'; '['; ']'; '{'; '}'; ':'; ';'; ','], false, false;
      [' '], true, true]
 
+let operatorTok = 
+    [['&'; '|'; '~'], false, false;
+     [' '], true, true]
+
+let assignTok = 
+    [['a'], false, false;
+     ['s'], false, false;
+     ['s'], false, false; 
+     ['i'], false, false;
+     ['g'], false, false;
+     ['n'], false, false;
+     [' '], true, true]
+
+let equalTok = 
+    [['='], false, false; 
+     [' '], true, true]
+
 let andTok = 
     [['a'], false, false;
      ['n'], false, false;

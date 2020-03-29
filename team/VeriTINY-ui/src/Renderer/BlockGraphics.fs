@@ -13,98 +13,6 @@ open Refs
 open EEExtensions
 
 
-// tLogics for tests 
-let tLogicEx1 : TLogic= { 
-    Name = "bus_and"
-    ExpressionList =
-        [(And, 
-            [{ Name = "c"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = Some (3, Some 1) };
-            { Name = "b"; SliceIndices = Some (3, Some 1) }]);
-        (And, [{ Name = "d"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = Some (0, None) };
-            { Name = "b"; SliceIndices = Some (0, None) }])]
-    Inputs = [{ Name = "a"; SliceIndices = Some (3, Some 1) };
-            { Name = "b"; SliceIndices = Some (3, Some 1) }]
-    Outputs = [{ Name = "c"; SliceIndices = None }]
-    Wires = [] }
-
-let tLogicEx2 : TLogic= { 
-    Name = "simpAND"
-    ExpressionList =
-        [(And, 
-            [{ Name = "c"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None };
-            { Name = "b"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None };
-        { Name = "b"; SliceIndices = None }]
-    Outputs = [{ Name = "c"; SliceIndices = None }]
-    Wires = [] }
-
-let tLogicEx3 : TLogic= { 
-    Name = "simpOR"
-    ExpressionList =
-        [(Or, 
-            [{ Name = "c"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None };
-            { Name = "b"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None };
-        { Name = "b"; SliceIndices = None }]
-    Outputs = [{ Name = "c"; SliceIndices = None }]
-    Wires = [] }
-
-let tLogicEx4 : TLogic= { 
-    Name = "simpNOT"
-    ExpressionList =
-        [(Not, 
-            [{ Name = "b"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None }]
-    Outputs = [{ Name = "b"; SliceIndices = None }]
-    Wires = [] }
-
-// D is not mapped (should retain prev value)
-let tLogicEx5 : TLogic= { 
-    Name = "AND"
-    ExpressionList =
-        [(And, 
-            [{ Name = "c"; SliceIndices = None }],
-            [{ Name = "a"; SliceIndices = None };
-            { Name = "b"; SliceIndices = None }])]
-    Inputs =
-        [{ Name = "a"; SliceIndices = None };
-        { Name = "b"; SliceIndices = None }]
-    Outputs = [{ Name = "c"; SliceIndices = None }; { Name = "d"; SliceIndices = None }]
-    Wires = [] }
-
-let tLogicLstEx = [tLogicEx1; tLogicEx2; tLogicEx3; tLogicEx4; tLogicEx5]
-
-
-let c5and1In: GeneralNet list =
-    [false, ("andIn0", Wire(Map [0, High]));
-    false, ("andIn1", Wire(Map [0, Low]))]
-
-let c5and1Out: GeneralNet list =
-    [false, ("andOut1", Wire(Map [0, Low]));
-    false, ("unMappedOutput", Wire(Map [0, High]))]
-
-let c5CLst = 
-    [Name "AND", c5and1In, c5and1Out;
-    //  Name "AND", c5and1In, c5and1Out;
-    //  Name "AND", c5and1In, c5and1Out;
-    //  Name "AND", c5and1In, c5and1Out;
-     Name "DFF", c5and1In, c5and1Out;
-    Name "AND", c5and1In, c5and1Out;]
-
-
-
-let first (x,_,_) = x
-let second (_,x,_) = x
-let third (_,_,x) = x
-
 let DFFTLogic (size: int) : TLogic =
     let sliceIndices = 
         match size with
@@ -186,11 +94,11 @@ let makeTLogicSVG (block: TLogic) xPos yPos=
         HTMLProps.Height (sprintf "%i" blockHeight);
     ]  (svgChildrenBase @ inputLabels @ outputLabels), blockHeight)
 
-let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
-    let (Name megaBlockName)  = first conn
-    let connTLogic = 
-        match megaBlockName with
-        |"DFF" -> DFFTLogic (Helper.netSize (conn |> second |> List.head |> Helper.extractNet))
+let blockToSVG (block: SimBlock) (tLogicLst: TLogic list) xPos yPos =
+
+    let blockTLogic = 
+        match block.MegablockType with
+        |"DFF" -> DFFTLogic (block.inNets |> List.head |> Helper.extractNetIDFromInfo |> EvalNetHelper.getBusSize)
         |combBlockName -> List.find (fun tlogic -> tlogic.Name = combBlockName) tLogicLst
 
     let formNetLines x1 x2 numLines =
@@ -204,11 +112,11 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
                     HTMLProps.Stroke "black"
                 ] []) 
 
-    let inputNetLines = formNetLines 0 75 (List.length connTLogic.Inputs)
-    let outputNetLines = formNetLines 275 350 (List.length connTLogic.Outputs)
+    let inputNetLines = formNetLines 0 75 (List.length blockTLogic.Inputs)
+    let outputNetLines = formNetLines 275 350 (List.length blockTLogic.Outputs)
 
-    let getTruncatedGeneralNetName truncateTo genNet = 
-        let name = genNet |> Connector.getName
+    let getTruncatedNetName truncateTo netInfo = 
+        let name = Helper.extractNameFromInfo netInfo
         let prefixRemovedName = 
             name
             |> Seq.toList
@@ -219,14 +127,14 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
         prefixRemovedName.[0..truncateTo]
 
     let inputNetLables = 
-        List.map (getTruncatedGeneralNetName 6) (second conn)
+        List.map (getTruncatedNetName 6) block.inNets
         |> makeLabelElements "0" -3 "start"
 
     let outputNetLables = 
-        List.map (getTruncatedGeneralNetName 6) (third conn)
+        List.map (getTruncatedNetName 6) block.outNets
         |> makeLabelElements "280" -3 "start"
 
-    let tLogicBlockSVG, blockHeight = makeTLogicSVG connTLogic "75" "0"
+    let tLogicBlockSVG, blockHeight = makeTLogicSVG blockTLogic "75" "0"
 
     (svg [
         HTMLProps.Y yPos;
@@ -237,18 +145,18 @@ let connToSVG (conn: Connection) (tLogicLst: TLogic list) xPos yPos =
 
 
 
-let drawBlocks (connLst: Connection list) (tLogicLst: TLogic list) =
+let drawBlocks (blockLst: SimBlock list) (tLogicLst: TLogic list) =
     let _, _, _, svgHeight, svgLst =
-        List.fold (fun (i, nextY, lastBlockHeight, _, svgLst) conn ->    
+        List.fold (fun (i, nextY, lastBlockHeight, _, svgLst) block ->    
             if i%2 = 0
             then 
-                let connSVG, blockHeight = connToSVG conn tLogicLst 25 nextY
-                i+1, nextY, blockHeight, nextY + blockHeight, (svgLst @ [connSVG])
+                let blockSVG, blockHeight = blockToSVG block tLogicLst 25 nextY
+                i+1, nextY, blockHeight, nextY + blockHeight, (svgLst @ [blockSVG])
             else 
-                let connSVG, blockHeight = connToSVG conn tLogicLst 425 nextY
-                i+1, nextY + (max lastBlockHeight blockHeight) + 20, blockHeight, nextY + (max lastBlockHeight blockHeight), (svgLst @ [connSVG])
+                let blockSVG, blockHeight = blockToSVG block tLogicLst 425 nextY
+                i+1, nextY + (max lastBlockHeight blockHeight) + 20, blockHeight, nextY + (max lastBlockHeight blockHeight), (svgLst @ [blockSVG])
                 
-            ) (0, 0, 0, 0, []) connLst
+            ) (0, 0, 0, 0, []) blockLst
 
     svg [
         HTMLProps.Y "0";

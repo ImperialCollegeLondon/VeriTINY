@@ -2,6 +2,11 @@ module EvalNetHelper
 open SharedTypes
 open EvalTypes
 
+let getNetByName name allNets = 
+        match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) allNets with
+        |Some key -> key
+        |None -> failwithf "Could not find net with name %s in netmap %A" name allNets
+
 let getNetEdgeIndices net =
     let wireIndices = net |> Map.toList |> List.map fst
     (List.min wireIndices, List.max wireIndices)
@@ -101,11 +106,17 @@ let getBusSize netID =
     |Some (_, None)
     |None -> 1
 
-let getStartIndex (netID: NetIdentifier) = 
+let getStartIndex (netID: NetIdentifier) (allNets: Map<NetIdentifier, EvalNet>)= 
     match netID.SliceIndices with
     |Some (x, Some y) -> min x y
     |Some (x, None) -> x
-    |None -> 0
+    |None -> 
+        allNets.[getNetByName netID.Name allNets]
+        |> extractLLMap
+        |> getNetEdgeIndices
+        |> fst
+
+        
 
 let evalNetToNet evalNet (defaults:Net) = 
 
@@ -130,7 +141,3 @@ let netToEvalNet net =
     |Bus busMap -> EvalBus(LLMapToOptLLMap busMap)
 
 
-let getNetByName name allNets = 
-        match Map.tryFindKey (fun (netID: NetIdentifier) _-> netID.Name = name) allNets with
-        |Some key -> key
-        |None -> failwithf "Could not find net with name %s in netmap %A" name allNets

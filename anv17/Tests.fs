@@ -489,6 +489,88 @@ let testModules = [
                 SliceIndices = Some(2, Some 0)
             }
         ]
+    };
+
+    { 
+        Name = "hex_to_7seg"
+        ExpressionList =
+            [
+                (
+                    Concat, 
+                    [{ Name = "6"; SliceIndices = Some (0, Some 3) }],
+
+                    [
+                        {Name = "in"; SliceIndices = Some (3, Some 2)};
+                        {Name = "in"; SliceIndices = Some (2, Some 1)}
+                    ]
+                );  
+                (
+                    And, 
+                    [{ Name = "out"; SliceIndices = Some (6, None) }],
+                    [
+                        { Name = "in"; SliceIndices = Some (3, None) };
+                        { Name = "in"; SliceIndices = Some (0, None) }
+                    ]
+                );
+                (
+                    And, 
+                    [{ Name = "out"; SliceIndices = Some (5, None) }],
+                    [
+                        { Name = "3"; SliceIndices = None }; 
+                        { Name = "4"; SliceIndices = None }
+                    ]
+                );
+                (
+                    Pass, 
+                    [{ Name = "3"; SliceIndices = None }],
+                    [{ Name = "in"; SliceIndices = Some (2, None) }]
+                );
+                (
+                    Not, 
+                    [{ Name = "4"; SliceIndices = None }], 
+                    [{ Name = "5"; SliceIndices = None }]
+                );
+                (
+                    Pass,
+                    [{ Name = "5"; SliceIndices = None }],
+                    [{ Name = "in"; SliceIndices = Some (3, None) }]
+                );
+                (
+                    Or,
+                    [{ Name = "out"; SliceIndices = Some (4, Some 1) }],
+                    [
+                        { Name = "0"; SliceIndices = None }; 
+                        { Name = "1"; SliceIndices = None }
+                    ]
+                );
+                (
+                    Pass,
+                    [{ Name = "0"; SliceIndices = None }],
+                    [{ Name = "6"; SliceIndices = None }]
+                );
+                (
+                    Pass, 
+                    [{ Name = "1"; SliceIndices = None }],
+                    [{ Name = "2"; SliceIndices = None }]
+                );
+                (
+                    Pass, 
+                    [{ Name = "2"; SliceIndices = None }],
+                    [{ Name = "in"; SliceIndices = Some (3, Some 0) }]
+                )
+            ];
+        Inputs = [{ Name = "in"; SliceIndices = Some (3, Some 0) }]
+        Outputs = [{ Name = "out"; SliceIndices = Some (6, Some 0) }]
+        Wires =
+            [
+                { Name = "6"; SliceIndices = Some (0, Some 3) }; 
+                { Name = "4"; SliceIndices = None };
+                { Name = "5"; SliceIndices = None }; 
+                { Name = "3"; SliceIndices = None };
+                { Name = "1"; SliceIndices = Some (4, Some 1) };
+                { Name = "2"; SliceIndices = Some (4, Some 1) };
+                { Name = "0"; SliceIndices = Some (4, Some 1) }
+            ] 
     }     
 
 
@@ -646,6 +728,22 @@ let testCases = [
         CurrOutputs = Map [
             ({Name = "c"; SliceIndices = Some(2, Some 0)}, [Low;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
             ({Name = "d"; SliceIndices = None}, [Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Wire)
+        ]
+    }
+
+    {
+        TestName = "test9"
+        Module = testModules.[5]
+        Inputs = Map[
+            ({ Name = "in"; SliceIndices = Some (3, Some 0) }, [Low;High;High;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+        ]
+
+        ExpectedOutputs = Map [
+            ({ Name = "out"; SliceIndices = Some (6, Some 0) }, [Low;High;High;High;Low;High;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
+        ]
+
+        CurrOutputs = Map [
+            ({ Name = "out"; SliceIndices = Some (6, Some 0) }, [Low;Low;Low;Low;Low;Low;Low] |> List.mapi (fun i el -> (i,el)) |> Map |> Bus);
         ]
     }
 ]
