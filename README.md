@@ -43,7 +43,7 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 1. Type Verilog code in the text editor. VeriTINY currently supports the following language features:
 
 * Gate instantiation 
-  * AND, OR, NOT only  
+  * AND, OR, NOT, XOR only  
   * Example: `and a1 (out, a, b)`
 * Continuous Assigns
   * "&", "|", "~" 
@@ -52,6 +52,8 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
   * Example: `a[2:0]`
 * Single-level concatenations
   * Example: `{currState[3], prevState[2:0]}`
+* Brackets
+  * Example: `assign out = ~(a & b)`
 
 Verilog code may also be saved and loaded as .v files.
 
