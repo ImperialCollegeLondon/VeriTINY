@@ -1,6 +1,60 @@
-# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png" width="26" height="26">
+# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png" width="32" height="32">
 
 VeriTINY is a simple and easy to use Verilog simulator for designing and simulating simple synchronous single-clock hardware. It supports a subset of the Verilog HDL and features a Verilog code editor, a block connections interface, and a digital circuit simulator.
+
+## Workflow
+
+1. Type Verilog code in the text editor. VeriTINY currently supports the following language features:
+
+* Gate Instantiation 
+  * AND, OR, NOT, XOR only  
+  * Example: `and a1 (out, a, b)`
+* Continuous Assigns
+  * `&`, `|`, `~`, `^`
+  * Example: `assign out = a & b`
+* Bus Slicing
+  * Example: `a[2:0]`
+* Single-level Concatenations
+  * Example: `{currState[3], prevState[2:0]}`
+* Bracketed Expressions
+  * Example: `assign out = ~(a & b)`
+
+Verilog code may also be saved and loaded as .v files.
+
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png" width="512" height="386">
+
+2. Press the `compile` button to convert Verilog code into a block. The block will appear in the `block list` drop down in the `Connections` tab.
+
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-2.png">
+
+3. Use the buttons in the `Connections` tab to add and connect blocks in the `Blocks Workspace`.  
+   * `Add Block` - Add selected block from the `block list` dropdown to the workspace
+     * You may also add `DFF` blocks from the dropdown, you must enter a positive integer for DFF size
+   * `Make Connection` - Connect the selected output and input nets from the relevant dropdowns. These nets will be renamed when a successful connection is made
+   * `Clear Blocks` - Clears the `Blocks Workspace`
+   * `Reset` - Clear the `block list` and the `Blocks Workspace`
+
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-3.png">
+
+4. Use the buttons in the `Simulation` tab to enter inputs to simulation. These will be displayed in the `Simulation Inputs Table`.
+   * Enter the number of cycles you wish to simulate for using the textbox at the top of the `Simulation` tab and press `Enter`
+    * `Refresh Connections` - Load the block diagram that is defined in the `Connections Tab` for simulation
+   * Select a `Net` using the dropdown and enter a decimal value to apply to the net into the `Input Value` textbox and press `Enter`
+     * Use the left and right buttons  `<` `>` to apply values to the nets for different cycles
+
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png">
+
+5. Use the buttons in the bottom half of the `Simulation` tab to simulate the circuit. The values of the nets will be displayed in the `Simulation Table`.
+   * `Run` - Simulate all cycles and display the final state
+   * `Step` - Simulate the next cycle and display the current state
+   * `Reset` - Reset simulation to the initial state
+   * `Show Output Nets only / Show All Nets` - Toggle between showing output nets and all nets in the `Simulation Table`
+
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png">
+
+#### Notes
+* You can switch between the `Connections` and `Simulation` tab freely, however if you make changes in the `Blocks Workspace` then you *must* press the `Refresh Connections` button to load your changes. Doing this will erase the simulation state and inputs.
+* You can change the *upcoming* simulation inputs *at any point* during simulation. Changing past inputs will have no effect on simulation.
 
 ## Build Instructions
 The build process is similar to the instructions found in Visual2. The full set of instructions which includes in-depth explanations for each command can be found [here](https://github.com/ImperialCollegeLondon/Visual2).
@@ -23,60 +77,6 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 6. Open your `electron` app in a new terminal tab by running `yarn launch`. This command will start the application and also _hot reload_ it whenever source files are recompiled, or CSS files changed. 
 
 7.  Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist/os-name/*` and a zip in `./dist`. Note that some host-target combinations will not correctly generate: pack-osx must be executed on os-x. 
-
-## Workflow
-
-1. Type Verilog code in the text editor. VeriTINY currently supports the following language features:
-
-* Gate instantiation 
-  * AND, OR, NOT, XOR only  
-  * Example: `and a1 (out, a, b)`
-* Continuous Assigns
-  * `&`, `|`, `~`, `^`
-  * Example: `assign out = a & b`
-* Bus slicing
-  * Example: `a[2:0]`
-* Single-level concatenations
-  * Example: `{currState[3], prevState[2:0]}`
-* Bracketed Expressions
-  * Example: `assign out = ~(a & b)`
-
-Verilog code may also be saved and loaded as .v files.
-
-![WF1](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png)
-
-2. Press the `compile` button to convert Verilog code into a block. The block will appear in the `block list` drop down in the `Connections` tab.
-
-![WF2](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-2.png)
-
-3. Use the buttons in the `Connections` tab to add and connect blocks in the `Blocks Workspace`.  
-   * `Add Block` - Add selected block from the `block list` dropdown to the workspace
-     * You may also add `DFF` blocks from the dropdown, you must enter a positive integer for DFF size
-   * `Make Connection` - Connect the selected output and input nets from the relevant dropdowns. These nets will be renamed when a successful connection is made
-   * `Clear Blocks` - Clears the `Blocks Workspace`
-   * `Reset` - Clear the `block list` and the `Blocks Workspace`
-
-![WF3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-3.png)
-
-4. Use the buttons in the `Simulation` tab to enter inputs to simulation. These will be displayed in the `Simulation Inputs Table`.
-   * Enter the number of cycles you wish to simulate for using the textbox at the top of the `Simulation` tab and press `Enter`
-    * `Refresh Connections` - Load the block diagram that is defined in the `Connections Tab` for simulation
-   * Select a `Net` using the dropdown and enter a decimal value to apply to the net into the `Input Value` textbox and press `Enter`
-     * Use the left and right buttons  `<` `>` to apply values to the nets for different cycles
-
-![WF4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png)
-  
-5. Use the buttons in the bottom half of the `Simulation` tab to simulate the circuit. The values of the nets will be displayed in the `Simulation Table`.
-   * `Run` - Simulate all cycles and display the final state
-   * `Step` - Simulate the next cycle and display the current state
-   * `Reset` - Reset simulation to the initial state
-   * `Show Output Nets only / Show All Nets` - Toggle between showing output nets and all nets in the `Simulation Table`
-
-![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png)
-
-#### Notes
-* You can switch between the `Connections` and `Simulation` tab freely, however if you make changes in the `Blocks Workspace` then you *must* press the `Refresh Connections` button to load your changes. Doing this will erase the simulation state and inputs.
-* You can change the *upcoming* simulation inputs *at any point* during simulation. Changing past inputs will have no effect on simulation.
 
 
 ## Project Structure
@@ -127,9 +127,6 @@ Contains functions to take a list of connections and user defined inputs and sim
 
 #### Files in VeriTINY-ui\src\Renderer
 
-#### Refs
-From Visual2, contains helper functions, javascripts interfaces. Added mutable variable definitions and HTML references for VeriTINY 
-
 #### BlockGraphics
 Takes connections list and renders it using SVG
 
@@ -141,46 +138,6 @@ Handles the gui elements of the `Connections` tab.
 
 #### ConnectionsManager
 Handles the gui elements of the `Simulation` tab. 
-
-#### Editors
-From Visual2, handles the Monaco Text Editor
-
-#### Files
-From Visual2, handles the file saving/loading
-
-#### Integration
-From Visual2, mostly unused, now just contains a reset function
-
-#### MenuBar
-From Visual2, handles GUI elements for the toolbar
-
-#### Renderer
-From Visual2, contains the attachers for most UI elements
-
-#### Settings
-From Visual2, handles settings menu, mostly unused
-
-#### Stats
-From Visual2, tracks program info, mostly unused
-
-#### Settings
-From Visual2, handles settings menu, completely unused
-
-#### Tabs
-From Visual2, handles the text editor tabs
-
-#### Testbench
-From Visual2, used for testing, unused
-
-#### Tests
-From Visual2, used for testing, unused
-
-#### Tooltips
-From Visual2, modified tooltips when hovering over objects. 
-
-#### Views
-From Visual2, handles the side menu tab switching. Also added helper functions for updating UI elements.
-
 
 ## Visual2
 
