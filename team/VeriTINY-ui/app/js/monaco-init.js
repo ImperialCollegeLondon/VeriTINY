@@ -50,7 +50,7 @@ amdRequire(['vs/editor/editor.main'], function () {
     // Set defaultToken to invalid to see what you do not tokenize yet
     defaultToken: 'invalid',
 
-    ignoreCase: true,
+    ignoreCase: false,
 
     brackets: [
       ['{', '}', 'delimiter.curly'],
