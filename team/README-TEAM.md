@@ -1,17 +1,22 @@
 # Team README - Post Demo Information 
 
+This README contains information on ... 
 
 # Demos 
-`Demo 1` - AND Gate
-![demo1](https://../readme-screenshots/andgate.png)
+There are pre-written verilog files that can be used with VeriTINY along with their respective block diagrams below:
 
-`Demo 2` - 4 Bit Shift Register
-![demo2](https://../readme-screenshots/shiftregister.png)
+`Demo 1` - [Simple 1-bit AND Gate](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/and_gate.v)
 
-`Demo 3` - Deca Lab 4 Finite State Machine
-![demo3]()
+![demo1](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/andgate.png)
+
+`Demo 2` - [4 Bit Shift Register](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/shift_reg_next_state.v)
+
+![demo2](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/shiftregister.png)
+
+`Demo 3` - [Deca Lab 4 Finite State Machine](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/deca4-fsm.v)
+
+![demo3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/deca4fsm.png)
 
 # Module Interfaces 
 
 # Extensions
-
