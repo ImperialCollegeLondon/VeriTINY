@@ -12,6 +12,8 @@ let OROp logicLvl1 logicLvl2 =
 let NOTOp logicLvl = 
     if logicLvl = High then Low else High
 
+let XOROp logicLvl1 logicLvl2 =
+    if (logicLvl1 = High && logicLvl2 = Low) || (logicLvl1 = Low && logicLvl2 = High) then High else Low
 
 //assumes little endian - bus1 determines output bus size, therefore when calling any derivatives of this function, use bus1 to give output size
 let apply2OpToEvalNets op (net1: EvalNet, net1StartIndex: int) (net2: EvalNet, net2StartIndex : int) = 
@@ -31,6 +33,8 @@ let ANDOpNet (net1: EvalNet, net1StartIndex: int) (net2: EvalNet, net2StartIndex
 let OROpNet(net1: EvalNet, net1StartIndex: int) (net2: EvalNet, net2StartIndex : int)  =
     apply2OpToEvalNets OROp (net1, net1StartIndex) (net2, net2StartIndex)
 
+let XOROpNet (net1: EvalNet, net1StartIndex: int) (net2: EvalNet, net2StartIndex : int)  =
+    apply2OpToEvalNets XOROp (net1, net1StartIndex) (net2, net2StartIndex)
 
 let NOTOpNet (net:EvalNet) (netStartIndex: int) (outputBusLength: int) = 
     let applyNotOpToLLOpt logicLevelOpt = 

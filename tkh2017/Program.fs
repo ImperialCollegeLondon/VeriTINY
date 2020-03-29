@@ -87,10 +87,10 @@ let main argv =
                     input  a, b, c;
                     output out;
 
-                    assign out = (a | b) | c;
+                    assign out = a ^ b;
                 endmodule"
-    // printf "%A" (test |> tokenise)
-    // printf "%A" (test |> tokenise |> parse) 
+    printf "%A" (test |> tokenise)
+    printf "%A" (test |> tokenise |> parse) 
     // printf "%A" (test |> tokenise |> parse |> (fun x -> match x with | Ok ast -> convertAST ast | _ -> failwithf "What?"))
     Console.ReadKey() |> ignore
     0 // return an integer exit code

@@ -41,7 +41,7 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 9. \<gate_instantiation> ::= <gate_type> <gate_instance> ";"
 
-10. \<gate_type> ::= "and" | "or" | "not"
+10. \<gate_type> ::= "and" | "or" | "not" | "xor"
 
 11. \<gate_instance> ::= \<identifier> "(" \<terminal_list> ")" | "(" \<terminal_list> ")"
 
@@ -63,7 +63,9 @@ The `TLogic` output from LogicBlockGen will be used by modules written by other 
 
 20. \<and_exp> ::= \<not_exp> | \<not_exp> "&" \<and_exp>
 
-21. \<or_exp> ::= \<and_exp> | \<and_exp> "|" \<or_exp>
+21. \<xor_exp> ::= \<and_exp> | \<and_exp> "^" \<xor_exp>
+
+22. \<or_exp> ::= \<xor_exp> | \<xor_exp> "|" \<or_exp>
 
 **No other code in this directory except for one function used in LogicBlockGen (**`getBusSize` from `EvalNetHelper`**) is written by other team members**
 

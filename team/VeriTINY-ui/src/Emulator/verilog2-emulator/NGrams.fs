@@ -22,7 +22,7 @@ let punctuationTok =
      [' '], true, true]
 
 let operatorTok = 
-    [['&'; '|'; '~'], false, false;
+    [['&'; '|'; '~'; '^'], false, false;
      [' '], true, true]
 
 let assignTok = 
@@ -46,6 +46,12 @@ let andTok =
 
 let orTok = 
     [['o'], false, false;
+     ['r'], false, false;
+     [' '], true, false]
+
+let xorTok = 
+    [['x'], false, false;
+     ['o'], false, false;
      ['r'], false, false;
      [' '], true, false]
 

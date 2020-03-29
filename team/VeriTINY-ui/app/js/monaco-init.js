@@ -50,7 +50,7 @@ amdRequire(['vs/editor/editor.main'], function () {
     // Set defaultToken to invalid to see what you do not tokenize yet
     defaultToken: 'invalid',
 
-    ignoreCase: true,
+    ignoreCase: false,
 
     brackets: [
       ['{', '}', 'delimiter.curly'],
@@ -60,11 +60,11 @@ amdRequire(['vs/editor/editor.main'], function () {
     ],
 
     operators: [
-      '&', '|', '~'
+      '&', '|', '~', '^'
     ],
 
     keywords: [
-      "module", "and", "or", "not", "endmodule", "wire", "input", "output", "assign"],
+      "module", "and", "or", "not", "xor", "endmodule", "wire", "input", "output", "assign"],
 
     // we include these common regular expressions
     symbols: /[=!~?:&|+\-*\/\^%]+/,
