@@ -1,4 +1,5 @@
-# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png" width="32" height="32">
+
+# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png" width="40" height="40"> 
 
 VeriTINY is a simple and easy to use Verilog simulator for designing and simulating simple synchronous single-clock hardware. It supports a subset of the Verilog HDL and features a Verilog code editor, a block connections interface, and a digital circuit simulator.
 
@@ -21,7 +22,7 @@ VeriTINY is a simple and easy to use Verilog simulator for designing and simulat
 
 Verilog code may also be saved and loaded as .v files.
 
-<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png" width="512" height="386">
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png">
 
 2. Press the `compile` button to convert Verilog code into a block. The block will appear in the `block list` drop down in the `Connections` tab.
 
@@ -76,7 +77,7 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 
 6. Open your `electron` app in a new terminal tab by running `yarn launch`. This command will start the application and also _hot reload_ it whenever source files are recompiled, or CSS files changed. 
 
-7.  Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist/os-name/*` and a zip in `./dist`. Note that some host-target combinations will not correctly generate: pack-osx must be executed on os-x. 
+7.  Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist`. Note that some host-target combinations will not correctly generate: pack-osx must be executed on os-x. 
 
 
 ## Project Structure
