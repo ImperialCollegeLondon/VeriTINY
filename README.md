@@ -1,5 +1,5 @@
 
-# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/veriTINY-logo.png" width="40" height="40"> 
+# VeriTINY <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/veriTINY-logo.png" width="40" height="40"> 
 
 VeriTINY is a simple and easy to use Verilog simulator for designing and simulating simple synchronous single-clock hardware. It supports a subset of the Verilog HDL and features a Verilog code editor, a block connections interface, and a digital circuit simulator.
 
@@ -22,11 +22,11 @@ VeriTINY is a simple and easy to use Verilog simulator for designing and simulat
 
 Verilog code may also be saved and loaded as .v files.
 
-<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow1.png">
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow1.png">
 
 2. Press the `compile` button to convert Verilog code into a block. The block will appear in the `block list` drop down in the `Connections` tab.
 
-<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-2.png">
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow-2.png">
 
 3. Use the buttons in the `Connections` tab to add and connect blocks in the `Blocks Workspace`.  
    * `Add Block` - Add selected block from the `block list` dropdown to the workspace
@@ -35,7 +35,7 @@ Verilog code may also be saved and loaded as .v files.
    * `Clear Blocks` - Clears the `Blocks Workspace`
    * `Reset` - Clear the `block list` and the `Blocks Workspace`
 
-<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-3.png">
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow-3.png">
 
 4. Use the buttons in the `Simulation` tab to enter inputs to simulation. These will be displayed in the `Simulation Inputs Table`.
    * Enter the number of cycles you wish to simulate for using the textbox at the top of the `Simulation` tab and press `Enter`
@@ -43,7 +43,7 @@ Verilog code may also be saved and loaded as .v files.
    * Select a `Net` using the dropdown and enter a decimal value to apply to the net into the `Input Value` textbox and press `Enter`
      * Use the left and right buttons  `<` `>` to apply values to the nets for different cycles
 
-<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png">
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow-4.png">
 
 5. Use the buttons in the bottom half of the `Simulation` tab to simulate the circuit. The values of the nets will be displayed in the `Simulation Table`.
    * `Run` - Simulate all cycles and display the final state
@@ -51,7 +51,7 @@ Verilog code may also be saved and loaded as .v files.
    * `Reset` - Reset simulation to the initial state
    * `Show Output Nets only / Show All Nets` - Toggle between showing output nets and all nets in the `Simulation Table`
 
-<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png">
+<img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow-5.png">
 
 #### Notes
 * You can switch between the `Connections` and `Simulation` tab freely, however if you make changes in the `Blocks Workspace` then you *must* press the `Refresh Connections` button to load your changes. Doing this will erase the simulation state and inputs.

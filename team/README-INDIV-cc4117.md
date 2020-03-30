@@ -4,12 +4,12 @@ I was responsible for the `Simulation` tab in the VeriTINY UI.
 
 The top half of the tab allows the user to apply inputs for simulation as well as set the number of cycles to simulate for. 
 
-![WF4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-4.png)
+![WF4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow-4.png)
 
 The bottom half of the tab contains the `Simulation Table` where the simulation takes place.
 
 
-![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png)
+![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow-5.png)
 
 In the group phase, I refactored the `Connector.fs` module which is used in the `Connections` tab to work with the UI. 
 

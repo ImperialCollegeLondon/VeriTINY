@@ -14,31 +14,31 @@
 
 # Module Interfaces 
 
-![interfaces](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/module-interfaces.png)
+![interfaces](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/module-interfaces.png)
 
 
 # Demos 
 This section contains pre-written verilog files along with their respective block diagrams that can be used in VeriTINY
 
-1. [Simple 1-bit AND Gate](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/and_gate.v)
+1. [Simple 1-bit AND Gate](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/demo-files/and_gate.v)
 
-![demo1](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/andgate.png)
+![demo1](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/andgate.png)
 
-2. [4 Bit Shift Register](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/shift_reg_next_state.v)
+2. [4 Bit Shift Register](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/demo-files/shift_reg_next_state.v)
 
-![demo2](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/shiftregister.png)
+![demo2](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/shiftregister.png)
 
-3. [DECA Lab 4 FSM](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/deca4-fsm.v) 
+3. [DECA Lab 4 FSM](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/demo-files/deca4-fsm.v) 
 
-![transitionTable](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/stateTransitionTable.png)
+![transitionTable](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/stateTransitionTable.png)
 
-![demo3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/deca4fsm.png)
+![demo3](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/deca4fsm.png)
 
-4. [Twos Complement Adder Subtractor](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/demo-files/adder_subtractor.v) 
+4. [Twos Complement Adder Subtractor](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/demo-files/adder_subtractor.v) 
 
 Information on this circuit can be found [here](http://www.yilectronics.com/Courses/ENGR338L/ENGR338L_2017f/StudentLabs/htregillus/FinalProject.html)
 
-![demo4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/adder-subtractor.png)
+![demo4](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/adder-subtractor.png)
 
 # Possible Improvements
 
