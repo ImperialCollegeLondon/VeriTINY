@@ -11,9 +11,11 @@ The bottom half of the tab contains the `Simulation Table` where the simulation 
 
 ![WF5](https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/team-README/team/readme-screenshots/workflow-5.png)
 
-In the group phase, I refactored the `Connector.fs` module to work with the UI. 
+In the group phase, I refactored the `Connector.fs` module which is used in the `Connections` tab to work with the UI. 
 
-I also created the `SimulationManager.fs` module which handles all interactions in the `Simulation` tab. It makes use of the `Simulator.fs` module that I created in the individual phase. The module and simulation tab has gone through extensive testing and debugging during the group phase with the help of anv17.
+I also created the `SimulationManager.fs` module which handles all interactions in the `Simulation` tab. It makes use of the `Simulator.fs` module that I created in the individual phase. The module and simulation tab has gone through extensive testing and debugging during the group phase with the help of anv17. 
+
+As I was the most familiar with the workflow and the UI, I would be in charge of testing whenever a new feature was added to VeriTINY. 
 
 Lastly, after the demo I helped refactor VeriTINY to use the new types `Simblock` and `SimNetInfo` which replaced the old `Connection` and `GeneralNet` types respectively.  
 

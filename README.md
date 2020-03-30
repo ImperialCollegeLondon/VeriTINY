@@ -84,7 +84,7 @@ The build process is similar to the instructions found in Visual2. The full set 
 
 1. Follow instructions to install [yarn](https://yarnpkg.com/lang/en/docs/install/) (which tell you to install Node as well).
 
-2. Download and install the latest (2.x) [Dotnet Core SDK](https://www.microsoft.com/net/learn/get-started).  
+2. Download and install the latest (2.x) [Dotnet Core SDK](https://dotnet.microsoft.com/download).  
 For Mac users, download and install [Mono](http://www.mono-project.com/download/stable/) from official website (the version from brew is incomplete, may lead to MSB error on step 7).
 
 1. Download & unzip this repo.
@@ -99,7 +99,7 @@ For Mac users, download and install [Mono](http://www.mono-project.com/download/
 
 6. Open your `electron` app in a new terminal tab by running `yarn launch`. This command will start the application and also _hot reload_ it whenever source files are recompiled, or CSS files changed. 
 
-7.  Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist`. Note that some host-target combinations will not correctly generate: pack-osx must be executed on os-x. 
+7. Run `yarn pack-win, yarn pack-linux, yarn pack-osx` at any time to create a set of system-specific self-contained binaries in `./dist`. Note that some host-target combinations will not correctly generate: pack-osx must be executed on os-x. 
 
 
 ## Project Structure
