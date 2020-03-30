@@ -19,8 +19,9 @@ VeriTINY is a simple and easy to use Verilog simulator for designing and simulat
   * Example: `{currState[3], prevState[2:0]}`
 * Bracketed Expressions
   * Example: `assign out = ~(a & b)`
-
-Verilog code may also be saved and loaded as .v files.
+#### Notes
+* VeriTINY is right associative, hence the statement `assign out = a|b|c` is the same as `assign out = a|(b|c)`.
+* Verilog code may also be saved and loaded as .v files.
 
 <img src="https://github.com/ImperialCollegeLondon/hlp2020-verilog2/blob/master/team/readme-screenshots/workflow1.png">
 
